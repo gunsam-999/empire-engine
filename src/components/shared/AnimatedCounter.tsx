@@ -1,85 +1,90 @@
-// AnimatedCounter — count-up tween over ~300ms when `value` changes.
-// Pure requestAnimationFrame, no external libs. Monospace tabular-nums.
+// AnimatedCounter — smoothly counts the displayed number toward `value`.
+//
+// Designed for idle games where the underlying value changes every game tick
+// (~100ms). A single persistent requestAnimationFrame loop eases the displayed
+// value toward the latest target with exponential smoothing, so the number
+// rises smoothly and monotonically instead of restarting a tween (and flashing)
+// on every tick — which read as nonstop flicker. We only re-render when the
+// *formatted* text actually changes, keeping it cheap and jitter-free.
 
 import { useEffect, useRef, useState } from 'react';
 import { formatValue, type NumberFormatterProps } from './NumberFormatter';
 
 export interface AnimatedCounterProps {
   value: number;
-  /** Tween duration in ms. Defaults to 300. */
+  /** Smoothing window in ms (~time to converge on a new target). Defaults to 450. */
   durationMs?: number;
   mode?: NumberFormatterProps['mode'];
   symbol?: string;
   decimals?: number;
   suffix?: string;
   prefix?: string;
-  /** Flash the accent color when the value changes. */
+  /** @deprecated No-op. Flashing on every change caused continuous flicker. */
   flash?: boolean;
   className?: string;
 }
 
-const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-
 export default function AnimatedCounter({
   value,
-  durationMs = 300,
+  durationMs = 450,
   mode = 'number',
   symbol = '$',
   decimals = 0,
   suffix = '',
   prefix = '',
-  flash = false,
   className = '',
 }: AnimatedCounterProps) {
-  const [display, setDisplay] = useState(value);
-  const fromRef = useRef(value);
-  const rafRef = useRef<number | null>(null);
-  const flashRef = useRef<HTMLSpanElement | null>(null);
+  const targetRef = useRef(value);
+  const displayRef = useRef(value);
+  const lastTextRef = useRef<string>('');
+  const [, forceRender] = useState(0);
+
+  // Always track the latest target without restarting any animation.
+  targetRef.current = value;
 
   useEffect(() => {
-    const from = fromRef.current;
-    const to = value;
+    let raf = 0;
+    let last = performance.now();
+    const fmt = (n: number) =>
+      `${prefix}${formatValue(n, mode, symbol, decimals)}${suffix}`;
+    lastTextRef.current = fmt(displayRef.current);
+    const tau = Math.max(60, durationMs) / 3;
 
-    // Skip the tween for non-finite or unchanged values.
-    if (!Number.isFinite(from) || !Number.isFinite(to) || from === to) {
-      fromRef.current = to;
-      setDisplay(to);
-      return;
-    }
+    const loop = (now: number) => {
+      const dt = Math.min(120, now - last);
+      last = now;
+      const target = targetRef.current;
+      const cur = displayRef.current;
 
-    const start = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / durationMs);
-      const eased = easeOutCubic(t);
-      setDisplay(from + (to - from) * eased);
-      if (t < 1) {
-        rafRef.current = requestAnimationFrame(tick);
+      if (!Number.isFinite(target)) {
+        displayRef.current = target;
       } else {
-        fromRef.current = to;
-        setDisplay(to);
+        const diff = target - cur;
+        const eps = Math.max(0.5, Math.abs(target) * 1e-6);
+        if (Math.abs(diff) <= eps) {
+          displayRef.current = target; // settle exactly
+        } else {
+          const k = 1 - Math.exp(-dt / tau);
+          displayRef.current = cur + diff * k;
+        }
       }
+
+      const text = fmt(displayRef.current);
+      if (text !== lastTextRef.current) {
+        lastTextRef.current = text;
+        forceRender((x) => (x + 1) & 0xffff);
+      }
+      raf = requestAnimationFrame(loop);
     };
 
-    rafRef.current = requestAnimationFrame(tick);
-
-    if (flash && flashRef.current) {
-      const el = flashRef.current;
-      el.classList.remove('animate-count-flash');
-      // Force reflow so the animation restarts on rapid changes.
-      void el.offsetWidth;
-      el.classList.add('animate-count-flash');
-    }
-
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, durationMs]);
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [durationMs, mode, symbol, decimals, prefix, suffix]);
 
   return (
-    <span ref={flashRef} className={`font-mono tabular-nums inline-block ${className}`}>
+    <span className={`font-mono tabular-nums inline-block ${className}`}>
       {prefix}
-      {formatValue(display, mode, symbol, decimals)}
+      {formatValue(displayRef.current, mode, symbol, decimals)}
       {suffix}
     </span>
   );
