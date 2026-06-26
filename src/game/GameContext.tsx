@@ -17,6 +17,7 @@ import {
 import type {
   Action,
   CompanySetup,
+  CofounderState,
   GameReward,
   GameState,
   OfflineSummary,
@@ -25,6 +26,9 @@ import type {
 
 import { INDUSTRIES } from '../data/industries';
 import { STORY_BEATS } from '../data/story';
+import { DEFAULT_COFOUNDER } from '../data/characters';
+import { GUIDANCE_BEATS } from '../data/guidance';
+import { getMarketingChannel, getMarketingCampaign } from '../data/marketing';
 
 import {
   facilityCost,
@@ -50,6 +54,15 @@ import { researchDurationMs } from '../systems/ResearchSystem';
 import { applyReward, canAfford } from '../systems/EventSystem';
 import { getRegion, expandDurationMs } from '../systems/TerritorySystem';
 import { levelCost } from '../systems/AdvisorSystem';
+import {
+  defaultMarketing,
+  defaultChannels,
+  getChannel,
+  channelStepCost,
+  channelHasNext,
+  tickMarketing,
+} from '../systems/MarketingSystem';
+import { newlyEligibleGuidance, IDLE_BEAT_ID } from '../systems/GuidanceSystem';
 
 import { startGameLoop } from './GameLoop';
 import { loadGame, saveGame, SAVE_VERSION } from './SaveSystem';
@@ -79,10 +92,70 @@ export function freshInitialState(now: number = Date.now()): GameState {
     market: defaultMarket(now),
     events: { boost: null, lastMicroAt: 0, bubbleAt: 0 },
     milestones: { unlocked: [] },
-    settings: { sound: true, buyQty: 1 },
+    marketing: defaultMarketing(),
+    cofounder: { ...DEFAULT_COFOUNDER, avatar: { ...DEFAULT_COFOUNDER.avatar } },
+    guidance: { seen: [], queue: [], dismissed: [], lastShownAt: 0 },
+    settings: { sound: true, buyQty: 1, liveView: false },
     stats: { clicks: 0, playSeconds: 0, prestiges: 0, created: 0 },
     lastTick: now,
     lastSaved: now,
+  };
+}
+
+// ---- Save migration (v1 -> v2, deep-merge new defaults) ---------------------
+
+/**
+ * Deep-merge the new v2 fields into any loaded save that lacks them so existing
+ * v1 games keep playing with full marketing/cofounder/guidance defaults.
+ * ADDITIVE ONLY — never drops existing fields.
+ */
+export function migrateSave(raw: GameState): GameState {
+  const s = raw as Partial<GameState> & GameState;
+
+  // marketing: ensure block + every known channel has a default entry.
+  const existingMarketing = s.marketing;
+  const channels = { ...defaultChannels(), ...(existingMarketing?.channels ?? {}) };
+  const marketing = existingMarketing
+    ? {
+        reach: existingMarketing.reach ?? 0,
+        audience: existingMarketing.audience ?? 0,
+        followers: existingMarketing.followers ?? 0,
+        brand: existingMarketing.brand ?? 1,
+        channels,
+        campaign: existingMarketing.campaign ?? null,
+      }
+    : { ...defaultMarketing(), channels };
+
+  const cofounder: CofounderState = s.cofounder
+    ? {
+        name: s.cofounder.name ?? DEFAULT_COFOUNDER.name,
+        role: s.cofounder.role ?? DEFAULT_COFOUNDER.role,
+        avatar: { ...DEFAULT_COFOUNDER.avatar, ...(s.cofounder.avatar ?? {}) },
+      }
+    : { ...DEFAULT_COFOUNDER, avatar: { ...DEFAULT_COFOUNDER.avatar } };
+
+  const guidance = s.guidance
+    ? {
+        seen: s.guidance.seen ?? [],
+        queue: s.guidance.queue ?? [],
+        dismissed: s.guidance.dismissed ?? [],
+        lastShownAt: s.guidance.lastShownAt ?? 0,
+      }
+    : { seen: [], queue: [], dismissed: [], lastShownAt: 0 };
+
+  const settings = {
+    sound: s.settings?.sound ?? true,
+    buyQty: s.settings?.buyQty ?? 1,
+    liveView: s.settings?.liveView ?? false,
+  };
+
+  return {
+    ...s,
+    marketing,
+    cofounder,
+    guidance,
+    settings,
+    version: SAVE_VERSION,
   };
 }
 
@@ -91,6 +164,8 @@ function newGameForSetup(setup: CompanySetup, now: number): GameState {
   const base = freshInitialState(now);
   // first start beat, if any
   const startBeat = STORY_BEATS.find((b: StoryBeat) => b.trigger.type === 'start');
+  // first co-founder guidance beat (welcome), if any
+  const firstGuidance = GUIDANCE_BEATS.find((b) => b.trigger.type === 'start');
   // Seed the empire so the loop is "running" from second one and the player can
   // immediately buy a few facilities — otherwise cash:0 + 0/s income soft-locks
   // the very first purchase. Genre-standard generous opening.
@@ -104,6 +179,16 @@ function newGameForSetup(setup: CompanySetup, now: number): GameState {
     story: {
       ...base.story,
       queue: startBeat ? [startBeat.id] : [],
+    },
+    // Seed co-founder with the player's chosen accent + queue the welcome beat.
+    cofounder: {
+      ...DEFAULT_COFOUNDER,
+      avatar: { ...DEFAULT_COFOUNDER.avatar, accent: setup.accent },
+    },
+    guidance: {
+      ...base.guidance,
+      queue: firstGuidance ? [firstGuidance.id] : [],
+      lastShownAt: now,
     },
     stats: { ...base.stats, created: now },
     lastTick: now,
@@ -143,6 +228,15 @@ export function reducer(state: GameState, action: Action): GameState {
       next.insight = next.insight + insightPerSec(state) * dt;
       next.influence = next.influence + incomePerSec(state) * dt * 1e-4;
 
+      // Marketing: advance reach/audience/followers/brand, pay paid upkeep,
+      // auto-pause unaffordable paid channels, expire campaign.
+      const mkt = tickMarketing(next, dt, now);
+      next.marketing = mkt.marketing;
+      if (mkt.cashDelta !== 0) next.cash = next.cash + mkt.cashDelta;
+      if (next.marketing.campaign && next.marketing.campaign.endsAt <= now) {
+        next.marketing = { ...next.marketing, campaign: null };
+      }
+
       // Research completion.
       if (state.research.active && now >= state.research.active.endsAt) {
         next.research = {
@@ -172,6 +266,17 @@ export function reducer(state: GameState, action: Action): GameState {
       const eligible = newlyEligibleBeats(next);
       if (eligible.length > 0) {
         next.story = { ...next.story, queue: [...next.story.queue, ...eligible] };
+      }
+
+      // Guidance (co-founder coaching) triggers — min-interval gated, one at a
+      // time so it is never spammy.
+      const eligibleGuidance = newlyEligibleGuidance(next, now);
+      if (eligibleGuidance.length > 0) {
+        next.guidance = {
+          ...next.guidance,
+          queue: [...next.guidance.queue, ...eligibleGuidance],
+          lastShownAt: now,
+        };
       }
 
       // Milestone triggers (apply rewards once).
@@ -439,10 +544,133 @@ export function reducer(state: GameState, action: Action): GameState {
       };
     }
 
+    // ----- MARKETING_UPGRADE -----
+    case 'MARKETING_UPGRADE': {
+      const ch = getMarketingChannel(action.channelId);
+      if (!ch) return state;
+      if (!channelHasNext(state, action.channelId)) return state;
+      const cost = channelStepCost(state, action.channelId);
+      if (!Number.isFinite(cost)) return state;
+      const currency = ch.costCurrency;
+      const have = currency === 'cash' ? state.cash : state.influence;
+      if (have < cost) return state;
+      const cs = getChannel(state, action.channelId);
+      const nextChannel = {
+        ...cs,
+        level: cs.level + 1,
+        invested: cs.invested + cost,
+        active: true,
+      };
+      return {
+        ...state,
+        cash: currency === 'cash' ? state.cash - cost : state.cash,
+        influence: currency === 'influence' ? state.influence - cost : state.influence,
+        marketing: {
+          ...state.marketing,
+          channels: { ...state.marketing.channels, [action.channelId]: nextChannel },
+        },
+      };
+    }
+
+    // ----- MARKETING_TOGGLE -----
+    case 'MARKETING_TOGGLE': {
+      const cs = getChannel(state, action.channelId);
+      if (cs.level <= 0) return state;
+      return {
+        ...state,
+        marketing: {
+          ...state.marketing,
+          channels: {
+            ...state.marketing.channels,
+            [action.channelId]: { ...cs, active: !cs.active },
+          },
+        },
+      };
+    }
+
+    // ----- MARKETING_CAMPAIGN -----
+    case 'MARKETING_CAMPAIGN': {
+      if (state.marketing.campaign && state.marketing.campaign.endsAt > now) return state;
+      const camp = getMarketingCampaign(action.id);
+      if (!camp) return state;
+      const have = camp.costCurrency === 'cash' ? state.cash : state.influence;
+      if (have < camp.cost) return state;
+      const liveBeat = GUIDANCE_BEATS.find((b) => b.trigger.type === 'campaign');
+      const queueCampaign =
+        liveBeat &&
+        !state.guidance.seen.includes(liveBeat.id) &&
+        !state.guidance.queue.includes(liveBeat.id) &&
+        !state.guidance.dismissed.includes(liveBeat.id)
+          ? [...state.guidance.queue, liveBeat.id]
+          : state.guidance.queue;
+      return {
+        ...state,
+        cash: camp.costCurrency === 'cash' ? state.cash - camp.cost : state.cash,
+        influence:
+          camp.costCurrency === 'influence' ? state.influence - camp.cost : state.influence,
+        marketing: {
+          ...state.marketing,
+          campaign: {
+            id: camp.id,
+            name: camp.name,
+            endsAt: now + camp.durationSec * 1000,
+            reachMult: camp.reachMult,
+          },
+        },
+        guidance: { ...state.guidance, queue: queueCampaign },
+      };
+    }
+
+    // ----- CHARACTER_CUSTOMIZE -----
+    case 'CHARACTER_CUSTOMIZE': {
+      const p = action.payload;
+      return {
+        ...state,
+        cofounder: {
+          name: p.name ?? state.cofounder.name,
+          role: p.role ?? state.cofounder.role,
+          avatar: p.avatar
+            ? { ...state.cofounder.avatar, ...p.avatar }
+            : state.cofounder.avatar,
+        },
+      };
+    }
+
+    // ----- GUIDANCE_SEEN -----
+    case 'GUIDANCE_SEEN': {
+      const queue = state.guidance.queue.filter((id) => id !== action.id);
+      const seen = state.guidance.seen.includes(action.id)
+        ? state.guidance.seen
+        : [...state.guidance.seen, action.id];
+      return {
+        ...state,
+        guidance: { ...state.guidance, queue, seen, lastShownAt: now },
+      };
+    }
+
+    // ----- GUIDANCE_DISMISS -----
+    case 'GUIDANCE_DISMISS': {
+      const queue = state.guidance.queue.filter((id) => id !== action.id);
+      const dismissed = state.guidance.dismissed.includes(action.id)
+        ? state.guidance.dismissed
+        : [...state.guidance.dismissed, action.id];
+      return {
+        ...state,
+        guidance: { ...state.guidance, queue, dismissed, lastShownAt: now },
+      };
+    }
+
+    // ----- TOGGLE_LIVE_VIEW -----
+    case 'TOGGLE_LIVE_VIEW':
+      return {
+        ...state,
+        settings: { ...state.settings, liveView: !state.settings.liveView },
+      };
+
     // ----- LOAD / IMPORT -----
     case 'LOAD':
     case 'IMPORT':
-      return { ...action.state };
+      return migrateSave(action.state);
 
     // ----- HARD_RESET -----
     case 'HARD_RESET':
@@ -479,8 +707,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
     bootstrapped.current = true;
     const saved = loadGame();
     if (saved && saved.setup) {
-      const { summary, state: advanced } = computeOffline(saved, Date.now());
-      dispatch({ type: 'LOAD', state: advanced });
+      // Migrate v1 -> v2 (deep-merge marketing/cofounder/guidance defaults)
+      // BEFORE offline so offline can safely read the new fields.
+      const migrated = migrateSave(saved);
+      const { summary, state: advanced } = computeOffline(migrated, Date.now());
+      // Welcome-back coaching beat on return from a meaningful absence.
+      let withGuidance = advanced;
+      if (
+        summary &&
+        !advanced.guidance.seen.includes(IDLE_BEAT_ID) &&
+        !advanced.guidance.queue.includes(IDLE_BEAT_ID) &&
+        !advanced.guidance.dismissed.includes(IDLE_BEAT_ID)
+      ) {
+        withGuidance = {
+          ...advanced,
+          guidance: {
+            ...advanced.guidance,
+            queue: [...advanced.guidance.queue, IDLE_BEAT_ID],
+          },
+        };
+      }
+      dispatch({ type: 'LOAD', state: withGuidance });
       if (summary) setOfflineSummary(summary);
     }
   }, []);
@@ -559,3 +806,29 @@ export {
 export { getAdvisor };
 export { INDUSTRIES, INDUSTRY_LIST } from '../data/industries';
 export { MILESTONES };
+
+// ---- Marketing selectors (UI imports from GameContext) ----------------------
+export {
+  reachPerSec,
+  followersPerSec,
+  audiencePerSec,
+  getMarketingMult,
+  getChannel,
+  getChannelConfig,
+  channelStepCost,
+  channelHasNext,
+  channelReachRate,
+  hasSocialContentSynergy,
+  paidUpkeepPerSec,
+  campaignActive,
+  campaignReachMult,
+  brandMult,
+} from '../systems/MarketingSystem';
+export { MARKETING_CHANNELS, MARKETING_CAMPAIGNS, getMarketingChannel, getMarketingCampaign } from '../data/marketing';
+export { GUIDANCE_BEATS, getGuidanceBeat } from '../data/guidance';
+export {
+  DEFAULT_COFOUNDER,
+  AVATAR_OPTIONS,
+  COFOUNDER_PRESETS,
+  avatarIndex,
+} from '../data/characters';

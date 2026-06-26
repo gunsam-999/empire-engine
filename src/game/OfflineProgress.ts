@@ -1,6 +1,7 @@
 // OfflineProgress — compute gains accrued while the game was closed.
 
 import { incomePerSec, insightPerSec } from '../systems/EconomyEngine';
+import { tickMarketing } from '../systems/MarketingSystem';
 import type { GameState, OfflineSummary } from './types';
 
 const MAX_OFFLINE_SECONDS = 86400; // 24h cap
@@ -31,16 +32,25 @@ export function computeOffline(state: GameState, now: number = Date.now()): Offl
   const cashGain = incomePerSec(state) * dt * OFFLINE_EFFICIENCY;
   const insightGain = insightPerSec(state) * dt * OFFLINE_EFFICIENCY;
 
+  // Organic marketing keeps working while away (at offline efficiency).
+  const offlineMktDt = dt * OFFLINE_EFFICIENCY;
+  const mkt = state.marketing
+    ? tickMarketing(state, offlineMktDt, now).marketing
+    : state.marketing;
+  const reachGain = mkt ? mkt.reach - (state.marketing?.reach ?? 0) : 0;
+
   const nextState: GameState = {
     ...state,
     cash: state.cash + cashGain,
     lifetimeEarnings: state.lifetimeEarnings + cashGain,
     insight: state.insight + insightGain,
+    marketing: mkt ?? state.marketing,
     lastTick: now,
   };
 
   const events: string[] = [];
   if (cashGain > 0) events.push('Production continued while you were away.');
+  if (reachGain > 1) events.push('Your marketing kept reaching new people.');
 
   const summary: OfflineSummary = {
     seconds: dt,

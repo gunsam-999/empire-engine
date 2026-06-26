@@ -4,10 +4,11 @@
 //
 //   • No setup yet -> full-screen IndustrySelect (founding flow).
 //   • Setup exists -> GameShell (TopBar + active screen + BottomNav).
-//       - BottomNav tabs:  Empire / Research / Advisors / Market / Prestige.
-//       - TopBar overlays: Story / Territory / Settings (full-screen sheets).
+//       - BottomNav tabs:  Empire / Marketing / Research / Market / Prestige.
+//       - TopBar overlays: Story / Advisors / Territory / Settings (sheets).
 //   • Always mounted: ToastHost, WelcomeBackModal (offline summary), a
-//     GoldenBubble that appears on a timer, and a micro-event driver.
+//     GoldenBubble that appears on a timer, a micro-event driver, and the
+//     co-founder GUIDANCE driver (coaching pop-ups).
 //
 // The game loop + autosave + accent var live inside GameProvider already, so
 // this file does NOT re-mount them.
@@ -15,13 +16,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { GameProvider, useGame } from './game/GameContext';
+import { GameProvider, useGame, getGuidanceBeat } from './game/GameContext';
 import GameShell from './components/layout/GameShell';
 import type { TabId } from './components/layout/BottomNav';
 import type { OverlayId } from './components/layout/TopBar';
 
 import IndustrySelect from './components/screens/IndustrySelect';
 import EmpireScreen from './components/screens/EmpireScreen';
+import MarketingScreen from './components/screens/MarketingScreen';
 import ResearchScreen from './components/screens/ResearchScreen';
 import AdvisorScreen from './components/screens/AdvisorScreen';
 import MarketScreen from './components/screens/MarketScreen';
@@ -33,6 +35,7 @@ import SettingsScreen from './components/screens/SettingsScreen';
 import WelcomeBackModal from './components/screens/WelcomeBackModal';
 import GoldenBubble from './components/screens/GoldenBubble';
 import EventModal from './components/screens/EventModal';
+import GuidancePopup from './components/screens/GuidancePopup';
 
 import { ToastHost } from './components/shared/ToastNotification';
 import Modal from './components/shared/Modal';
@@ -46,10 +49,10 @@ function ActiveScreen({ tab }: { tab: TabId }) {
   switch (tab) {
     case 'empire':
       return <EmpireScreen />;
+    case 'marketing':
+      return <MarketingScreen />;
     case 'research':
       return <ResearchScreen />;
-    case 'advisors':
-      return <AdvisorScreen />;
     case 'market':
       return <MarketScreen />;
     case 'prestige':
@@ -63,6 +66,7 @@ function ActiveScreen({ tab }: { tab: TabId }) {
 
 const OVERLAY_META: Record<OverlayId, { icon: string; title: string }> = {
   story: { icon: '📖', title: 'Saga' },
+  advisors: { icon: '🃏', title: 'Advisors' },
   territory: { icon: '🗺️', title: 'Territory' },
   settings: { icon: '⚙️', title: 'Settings' },
 };
@@ -72,6 +76,7 @@ function OverlaySheet({ id, onClose }: { id: OverlayId; onClose: () => void }) {
   return (
     <Modal icon={meta.icon} title={meta.title} onClose={onClose} size="lg">
       {id === 'story' && <StoryScreen />}
+      {id === 'advisors' && <AdvisorScreen />}
       {id === 'territory' && <TerritoryScreen />}
       {id === 'settings' && <SettingsScreen />}
     </Modal>
@@ -141,16 +146,33 @@ function useMicroEvents(active: boolean, suppressed: boolean): {
 // ---- The playing experience -------------------------------------------------
 
 function Game() {
-  const { state, offlineSummary } = useGame();
+  const { state, dispatch, offlineSummary } = useGame();
   const [tab, setTab] = useState<TabId>('empire');
   const [overlay, setOverlay] = useState<OverlayId | null>(null);
 
   const hasSetup = state.setup !== null;
 
-  // Suppress floating events while any blocking surface is open, or while
-  // there's a story beat waiting (the story badge should grab attention first).
+  // ---- Guidance (co-founder coaching) driver -------------------------------
+  // The reducer queues eligible beat ids into state.guidance.queue (min-interval
+  // gated). App decides WHEN to actually surface the head of the queue: only
+  // when nothing else is grabbing attention (no overlay, no offline summary, no
+  // pending story beat). The popup self-handles its dismiss animation, then we
+  // dispatch GUIDANCE_SEEN to retire it.
+  const guidanceQueued = state.guidance.queue.length > 0;
+  const storyQueued = state.story.queue.length > 0;
+
+  // Suppress floating events while any blocking surface is open, while there's a
+  // story beat waiting (the story badge should grab attention first), or while a
+  // coaching pop-up is on screen.
   const blocking =
-    overlay !== null || offlineSummary !== null || state.story.queue.length > 0;
+    overlay !== null || offlineSummary !== null || storyQueued || guidanceQueued;
+
+  // Show the head guidance beat only when no heavier surface is competing.
+  const guidanceBeatId =
+    guidanceQueued && overlay === null && offlineSummary === null && !storyQueued
+      ? state.guidance.queue[0]
+      : null;
+  const guidanceBeat = guidanceBeatId ? getGuidanceBeat(guidanceBeatId) : undefined;
 
   const golden = useGoldenBubble(hasSetup);
   const micro = useMicroEvents(hasSetup, blocking);
@@ -181,6 +203,16 @@ function Game() {
       {micro.event && <EventModal event={micro.event} onClose={micro.close} />}
 
       {golden.show && <GoldenBubble onDone={golden.done} lifespanSec={12} />}
+
+      {/* Co-founder coaching pop-up — keyed by id so each beat mounts fresh
+          (re-runs its line-by-line reveal animation). */}
+      {guidanceBeat && (
+        <GuidancePopup
+          key={guidanceBeat.id}
+          beat={guidanceBeat}
+          onDismiss={() => dispatch({ type: 'GUIDANCE_SEEN', id: guidanceBeat.id })}
+        />
+      )}
 
       <ToastHost />
     </>

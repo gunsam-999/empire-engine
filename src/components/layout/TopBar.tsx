@@ -2,9 +2,11 @@
 // TopBar — fixed header of the app frame. Shows who you are and what you have:
 //   • Company name + industry emoji, with a level / prestige-tier badge.
 //   • Primary cash with an AnimatedCounter and live per-second income.
+//   • Reach 📣 — the headline marketing metric (reach + audience subtitle).
 //   • Secondary currencies: Insight 🔬, Influence 🤝, Legacy Points ♾️.
-//   • Three small icon buttons that open overlays:
+//   • Small icon buttons that open overlays:
 //       Story 📖 (pulses when story.queue.length > 0)
+//       Advisors 🃏
 //       Territory 🗺️
 //       Settings ⚙️
 //
@@ -17,12 +19,13 @@ import {
   getIndustry,
   incomePerSec,
   insightPerSec,
+  reachPerSec,
 } from '../../game/GameContext';
 import AnimatedCounter from '../shared/AnimatedCounter';
 import { formatMoney, formatNumber } from '../../utils/bigNumber';
 
 /** Header overlay buttons. App maps these to its overlay surfaces. */
-export type OverlayId = 'story' | 'territory' | 'settings';
+export type OverlayId = 'story' | 'territory' | 'settings' | 'advisors';
 
 export interface TopBarProps {
   onOpenOverlay: (id: OverlayId) => void;
@@ -60,6 +63,41 @@ function CurrencyChip({ icon, value, title, tone }: CurrencyChipProps) {
         mode="number"
         className={`text-xs ${tone ?? 'text-ink'}`}
       />
+    </div>
+  );
+}
+
+interface ReachChipProps {
+  reach: number;
+  audience: number;
+  rate: number;
+}
+
+/**
+ * Headline marketing metric. Reach (📣) is the big number; audience rides as a
+ * subtitle so the player sees "people reached" and "loyal audience" at a glance.
+ */
+function ReachChip({ reach, audience, rate }: ReachChipProps) {
+  return (
+    <div
+      className="flex items-center gap-1.5 rounded-lg bg-[#151c2b] px-2 py-1 border border-[var(--accent)]/35"
+      title={`Reach — total people reached · +${formatNumber(rate)}/s\nAudience: ${formatNumber(
+        audience
+      )} loyal followers`}
+    >
+      <span className="text-xs leading-none" aria-hidden>
+        📣
+      </span>
+      <div className="flex flex-col leading-none">
+        <AnimatedCounter
+          value={reach}
+          mode="number"
+          className="text-xs font-semibold text-[var(--accent)]"
+        />
+        <span className="text-[9px] font-mono tabular-nums text-muted mt-0.5">
+          👥 {formatNumber(audience)}
+        </span>
+      </div>
     </div>
   );
 }
@@ -114,6 +152,11 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
   const badge = prestigeBadge(state);
   const storyQueued = state.story.queue.length;
 
+  // Marketing headline metric.
+  const reach = state.marketing?.reach ?? 0;
+  const audience = state.marketing?.audience ?? 0;
+  const reachRate = reachPerSec(state);
+
   return (
     <header
       className="fixed inset-x-0 top-0 z-30 mx-auto max-w-[480px] border-b border-[#232c3e]
@@ -152,6 +195,7 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
             pulse={storyQueued > 0}
             badge={storyQueued}
           />
+          <IconButton icon="🃏" label="Advisors" onClick={() => onOpenOverlay('advisors')} />
           <IconButton icon="🗺️" label="Territory" onClick={() => onOpenOverlay('territory')} />
           <IconButton icon="⚙️" label="Settings" onClick={() => onOpenOverlay('settings')} />
         </div>
@@ -172,8 +216,9 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
         </div>
       </div>
 
-      {/* Row 3: secondary currencies */}
+      {/* Row 3: secondary currencies (Reach leads — it's the headline metric) */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-3 py-2">
+        <ReachChip reach={reach} audience={audience} rate={reachRate} />
         <CurrencyChip
           icon="🔬"
           value={state.insight}

@@ -29,6 +29,7 @@ import {
 import type { FacilityConfig, GameState } from '../../game/types';
 import { formatMoney, formatNumber } from '../../utils/bigNumber';
 import AnimatedCounter from '../shared/AnimatedCounter';
+import LiveEmpireView from './LiveEmpireView';
 
 type BuyQty = GameState['settings']['buyQty'];
 const BUY_OPTIONS: BuyQty[] = [1, 10, 100, 'max'];
@@ -44,6 +45,7 @@ export default function EmpireScreen() {
   const price = marketPrice(state);
   const buyQty = state.settings.buyQty;
   const sym = industry?.currency ?? '$';
+  const liveView = state.settings.liveView;
 
   // Group facilities by tier once per facility-list identity.
   // (Hook runs unconditionally; `industry` is effectively always defined on
@@ -99,10 +101,56 @@ export default function EmpireScreen() {
             tone={price >= 1.05 ? 'good' : price <= 0.95 ? 'bad' : 'muted'}
           />
         </div>
+
+        {/* List / Live view toggle */}
+        <div className="mt-2 flex items-center justify-between">
+          <span className="text-[11px] uppercase tracking-wider text-muted">View</span>
+          <div
+            role="tablist"
+            aria-label="Empire view mode"
+            className="inline-flex rounded-xl bg-[#0e1420] border border-[#232c3e] p-0.5"
+          >
+            {([
+              { id: false, label: 'List', icon: '📋' },
+              { id: true, label: 'Live', icon: '🌆' },
+            ] as const).map((opt) => {
+              const active = liveView === opt.id;
+              return (
+                <button
+                  key={opt.label}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    if (liveView !== opt.id) dispatch({ type: 'TOGGLE_LIVE_VIEW' });
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all active:scale-95 ${
+                    active ? 'text-[#070b12]' : 'text-muted hover:text-[#e7ecf5]'
+                  }`}
+                  style={active ? { background: 'var(--accent)' } : undefined}
+                >
+                  <span className="mr-1">{opt.icon}</span>
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </header>
 
       {/* Scroll content (pb so the bulk bar / future nav never covers it) */}
       <div className="px-4 pt-3 pb-28">
+        {/* ===================== Live empire view (when enabled) ===================== */}
+        {liveView && (
+          <div className="mb-3">
+            <LiveEmpireView />
+            <div className="mt-1.5 flex items-center justify-center gap-1 text-[10px] text-muted">
+              <span>↓</span>
+              <span>Your facilities are below</span>
+            </div>
+          </div>
+        )}
+
         {/* ===================== Mechanic flavor ===================== */}
         <div
           className="rounded-2xl border border-[var(--accent)] p-3 mb-3 relative overflow-hidden"

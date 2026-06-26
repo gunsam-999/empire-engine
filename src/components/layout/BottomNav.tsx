@@ -1,21 +1,27 @@
 // ============================================================================
 // BottomNav — fixed 5-tab navigation pinned to the bottom of the app frame.
-// Tabs: Empire 🏭 · Research 🔬 · Advisors 🃏 · Market 📈 · Prestige ♻️.
-// The active tab glows in the dynamic accent. The Prestige tab pulses when a
-// rebirth would more than double your banked Legacy Points (potentialLP >
-// legacyPoints*2) — the classic "you should reset now" nudge.
+// Tabs: Empire 🏭 · Marketing 📣 · Research 🔬 · Market 📈 · Prestige ♻️.
+// The active tab glows in the dynamic accent.
+//
+// Attention pulses:
+//   • Prestige pulses when a rebirth would more than double your banked Legacy
+//     Points (potentialLP > legacyPoints*2) — the classic "you should reset now".
+//   • Marketing pulses while a MUST-HAVE channel (social or content) is still at
+//     level 0 — the player hasn't started growth yet.
+//
+// Advisors lives in the TopBar overlay buttons now, NOT on the bottom nav.
 //
 // `TabId` is the canonical screen identifier for the whole app; App.tsx owns
 // the active-tab state and imports this type.
 // ============================================================================
 
-import { useGame, potentialLP } from '../../game/GameContext';
+import { useGame, potentialLP, getChannel } from '../../game/GameContext';
 import TabButton from '../shared/TabButton';
 
 /** Canonical screen identifiers used by the router/App. */
-export type TabId = 'empire' | 'research' | 'advisors' | 'market' | 'prestige';
+export type TabId = 'empire' | 'marketing' | 'research' | 'market' | 'prestige';
 
-export const TAB_IDS: TabId[] = ['empire', 'research', 'advisors', 'market', 'prestige'];
+export const TAB_IDS: TabId[] = ['empire', 'marketing', 'research', 'market', 'prestige'];
 
 interface TabMeta {
   id: TabId;
@@ -25,8 +31,8 @@ interface TabMeta {
 
 const TABS: TabMeta[] = [
   { id: 'empire', label: 'Empire', icon: '🏭' },
+  { id: 'marketing', label: 'Marketing', icon: '📣' },
   { id: 'research', label: 'Research', icon: '🔬' },
-  { id: 'advisors', label: 'Advisors', icon: '🃏' },
   { id: 'market', label: 'Market', icon: '📈' },
   { id: 'prestige', label: 'Prestige', icon: '♻️' },
 ];
@@ -43,6 +49,10 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
   const lp = potentialLP(state);
   const prestigeReady = lp > state.legacyPoints * 2 && lp > 0;
 
+  // Marketing pulses while a must-have growth channel is still untouched.
+  const needsMarketing =
+    getChannel(state, 'social').level === 0 || getChannel(state, 'content').level === 0;
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-[#232c3e]
@@ -56,7 +66,10 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
             icon={tab.icon}
             label={tab.label}
             active={active === tab.id}
-            pulse={tab.id === 'prestige' && prestigeReady && active !== 'prestige'}
+            pulse={
+              (tab.id === 'prestige' && prestigeReady && active !== 'prestige') ||
+              (tab.id === 'marketing' && needsMarketing && active !== 'marketing')
+            }
             onClick={() => onChange(tab.id)}
           />
         ))}

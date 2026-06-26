@@ -6,6 +6,7 @@
 import { INDUSTRIES } from '../data/industries';
 import { RESEARCH_NODES } from '../data/research';
 import { getAdvisor } from '../data/advisors';
+import { getMarketingMult } from './MarketingSystem';
 import type {
   FacilityConfig,
   GameState,
@@ -59,6 +60,7 @@ export interface Multipliers {
   event: number;
   advisor: number;
   market: number;
+  marketing: number;
 }
 
 function researchProduct(
@@ -156,8 +158,10 @@ export function getMultipliers(state: GameState): Multipliers {
   const advisorProd = advisorProduction(state);
   const advisorInsight = advisorScalar(state, 'insight');
   const advisorMarket = advisorScalar(state, 'market');
+  const marketing = getMarketingMult(state);
 
-  const production = philosophyProd * prestige * researchProd * event * advisorProd;
+  const production =
+    philosophyProd * prestige * researchProd * event * advisorProd * marketing;
   const insight = researchInsight * advisorInsight;
 
   return {
@@ -168,8 +172,11 @@ export function getMultipliers(state: GameState): Multipliers {
     event,
     advisor: advisorProd,
     market: advisorMarket,
+    marketing,
   };
 }
+
+export { getMarketingMult };
 
 // ---- Tier / chain -----------------------------------------------------------
 

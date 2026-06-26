@@ -9,11 +9,14 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   </React.StrictMode>
 );
 
-// Register the service worker (guarded; non-fatal).
+// Register the service worker — PRODUCTION ONLY.
+// In dev, a SW would cache Vite's module URLs and serve stale code (which breaks
+// HMR and, e.g., made an old SAVE_VERSION reject a migrated save). So we only run
+// it in prod, and proactively unregister any stale dev worker.
 // Relative './sw.js' so it works on any host or subpath. Auto-applies new builds:
 // when an updated worker installs, activate it and reload once so corrections land
 // on the device without a manual cache clear.
-if ('serviceWorker' in navigator) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   let updatePending = false; // only reload for a real update, never on first install
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -38,7 +41,13 @@ if ('serviceWorker' in navigator) {
         });
       })
       .catch(() => {
-        /* ignore registration failures (e.g. dev / unsupported / insecure origin) */
+        /* ignore registration failures (e.g. unsupported / insecure origin) */
       });
   });
+} else if ('serviceWorker' in navigator) {
+  // Dev: make sure no stale worker keeps serving cached modules.
+  navigator.serviceWorker
+    .getRegistrations()
+    .then((regs) => regs.forEach((r) => r.unregister()))
+    .catch(() => undefined);
 }

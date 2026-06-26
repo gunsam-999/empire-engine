@@ -11,6 +11,7 @@ import { MILESTONES } from '../../data/milestones';
 import { exportSave, importSave, saveGame } from '../../game/SaveSystem';
 import { formatMoney } from '../../utils/bigNumber';
 import { formatDuration } from '../../utils/time';
+import CofounderCustomizer from './CofounderCustomizer';
 
 const BUY_OPTIONS: (1 | 10 | 100 | 'max')[] = [1, 10, 100, 'max'];
 
@@ -174,6 +175,28 @@ export default function SettingsScreen() {
               onChange={() => dispatch({ type: 'SET_SETTINGS', payload: { sound: !state.settings.sound } })}
             />
           </div>
+
+          {/* Live Empire View */}
+          <div className="flex items-center justify-between gap-3 p-3.5">
+            <div>
+              <div className="text-sm font-medium text-[#e7ecf5]">Live Empire View</div>
+              <div className="text-xs text-[#8a94a8]">
+                Watch your city grow — animated buildings, workers, and money.
+              </div>
+            </div>
+            <Toggle
+              on={state.settings.liveView}
+              onChange={() => dispatch({ type: 'TOGGLE_LIVE_VIEW' })}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ---- Co-founder ---- */}
+      <section>
+        <SectionTitle>Your Co-Founder</SectionTitle>
+        <div className="rounded-2xl border border-[#232c3e] bg-[#151c2b] p-3.5">
+          <CofounderCustomizer />
         </div>
       </section>
 

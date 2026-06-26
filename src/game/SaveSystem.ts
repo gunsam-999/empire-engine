@@ -3,7 +3,7 @@
 import type { GameState } from './types';
 
 export const SAVE_KEY = 'empire-engine-save-v1';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export function saveGame(state: GameState): boolean {
   try {

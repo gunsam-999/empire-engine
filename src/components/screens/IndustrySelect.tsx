@@ -20,9 +20,10 @@ import {
 } from '../../data/industries';
 import type { CompanySetup, IndustryType, Philosophy } from '../../game/types';
 import Card from '../shared/Card';
+import CofounderCustomizer from './CofounderCustomizer';
 
 export default function IndustrySelect() {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
 
   const [name, setName] = useState('');
   const [industry, setIndustry] = useState<IndustryType | null>(null);
@@ -61,7 +62,19 @@ export default function IndustrySelect() {
       philosophy,
       foundedAt: Date.now(),
     };
+    // Capture any co-founder customization the player made during onboarding —
+    // SETUP rebuilds state (and re-seeds the default co-founder with the chosen
+    // accent), so we re-apply the player's edits + accent right after.
+    const customized = state.cofounder;
     dispatch({ type: 'SETUP', payload: setup });
+    dispatch({
+      type: 'CHARACTER_CUSTOMIZE',
+      payload: {
+        name: customized.name,
+        role: customized.role,
+        avatar: { ...customized.avatar, accent },
+      },
+    });
   }
 
   return (
@@ -229,6 +242,15 @@ export default function IndustrySelect() {
             );
           })}
         </div>
+      </Section>
+
+      {/* ---------------- 5. Meet your co-founder ---------------- */}
+      <Section index={5} title="Meet your co-founder">
+        <p className="text-[11px] text-muted leading-snug mb-3 -mt-1">
+          Your right hand — they'll coach you, hype your wins, and run ops while
+          you build. Make them yours (or skip — we'll seed a great default).
+        </p>
+        <CofounderCustomizer compact />
       </Section>
 
       {/* ---------------- Found button (sticky) ---------------- */}

@@ -1,11 +1,12 @@
 // AnimatedCounter — smoothly counts the displayed number toward `value`.
 //
-// Designed for idle games where the underlying value changes every game tick
-// (~100ms). A single persistent requestAnimationFrame loop eases the displayed
-// value toward the latest target with exponential smoothing, so the number
-// rises smoothly and monotonically instead of restarting a tween (and flashing)
-// on every tick — which read as nonstop flicker. We only re-render when the
-// *formatted* text actually changes, keeping it cheap and jitter-free.
+// Idle values change every game tick (~100ms). A single persistent rAF loop
+// eases the displayed value toward the latest target with exponential smoothing,
+// so numbers rise smoothly and monotonically — no per-tick tween restart / flash
+// (which read as flicker). The displayed text lives in STATE (set from the loop),
+// and the target is tracked by a dedicated effect on `value`, so a counter that
+// starts at 0 and grows (e.g. Reach) animates up reliably. React bails out of the
+// re-render whenever the formatted text is unchanged, keeping it cheap.
 
 import { useEffect, useRef, useState } from 'react';
 import { formatValue, type NumberFormatterProps } from './NumberFormatter';
@@ -36,19 +37,22 @@ export default function AnimatedCounter({
 }: AnimatedCounterProps) {
   const targetRef = useRef(value);
   const displayRef = useRef(value);
-  const lastTextRef = useRef<string>('');
-  const [, forceRender] = useState(0);
+  const [text, setText] = useState(
+    () => `${prefix}${formatValue(value, mode, symbol, decimals)}${suffix}`
+  );
 
-  // Always track the latest target without restarting any animation.
-  targetRef.current = value;
+  // Reliably track the latest target whenever the prop changes (independent of
+  // the animation re-render), so growth from 0 is always picked up.
+  useEffect(() => {
+    if (Number.isFinite(value)) targetRef.current = value;
+  }, [value]);
 
   useEffect(() => {
     let raf = 0;
     let last = performance.now();
+    const tau = Math.max(60, durationMs) / 3;
     const fmt = (n: number) =>
       `${prefix}${formatValue(n, mode, symbol, decimals)}${suffix}`;
-    lastTextRef.current = fmt(displayRef.current);
-    const tau = Math.max(60, durationMs) / 3;
 
     const loop = (now: number) => {
       const dt = Math.min(120, now - last);
@@ -56,24 +60,16 @@ export default function AnimatedCounter({
       const target = targetRef.current;
       const cur = displayRef.current;
 
+      let next: number;
       if (!Number.isFinite(target)) {
-        displayRef.current = target;
+        next = 0;
       } else {
         const diff = target - cur;
         const eps = Math.max(0.5, Math.abs(target) * 1e-6);
-        if (Math.abs(diff) <= eps) {
-          displayRef.current = target; // settle exactly
-        } else {
-          const k = 1 - Math.exp(-dt / tau);
-          displayRef.current = cur + diff * k;
-        }
+        next = Math.abs(diff) <= eps ? target : cur + diff * (1 - Math.exp(-dt / tau));
       }
-
-      const text = fmt(displayRef.current);
-      if (text !== lastTextRef.current) {
-        lastTextRef.current = text;
-        forceRender((x) => (x + 1) & 0xffff);
-      }
+      displayRef.current = next;
+      setText(fmt(next)); // React bails out when the string is unchanged
       raf = requestAnimationFrame(loop);
     };
 
@@ -81,11 +77,5 @@ export default function AnimatedCounter({
     return () => cancelAnimationFrame(raf);
   }, [durationMs, mode, symbol, decimals, prefix, suffix]);
 
-  return (
-    <span className={`font-mono tabular-nums inline-block ${className}`}>
-      {prefix}
-      {formatValue(displayRef.current, mode, symbol, decimals)}
-      {suffix}
-    </span>
-  );
+  return <span className={`font-mono tabular-nums inline-block ${className}`}>{text}</span>;
 }

@@ -115,6 +115,56 @@ export interface RegionConfig {
   rival: string;
 }
 
+// ============================================================================
+// Marketing + Character + Guidance (additive systems)
+// ============================================================================
+
+export interface AvatarConfig {
+  skin: number;
+  hair: number;
+  hairColor: number;
+  outfit: number;
+  accessory: number;
+  expression: number;
+  accent: string;
+}
+
+export interface CofounderState {
+  name: string;
+  role: string;
+  avatar: AvatarConfig;
+}
+
+export interface MarketingChannelState {
+  level: number;
+  active: boolean;
+  invested: number;
+  progressMs: number;
+}
+
+export interface ActiveCampaign {
+  id: string;
+  name: string;
+  endsAt: number;
+  reachMult: number;
+}
+
+export interface MarketingState {
+  reach: number;
+  audience: number;
+  followers: number;
+  brand: number;
+  channels: Record<string, MarketingChannelState>;
+  campaign: ActiveCampaign | null;
+}
+
+export interface GuidanceState {
+  seen: string[];
+  queue: string[];
+  dismissed: string[];
+  lastShownAt: number;
+}
+
 export interface GameReward {
   cash?: number;
   insight?: number;
@@ -179,7 +229,10 @@ export interface GameState {
   };
   events: { boost: ActiveBoost | null; lastMicroAt: number; bubbleAt: number };
   milestones: { unlocked: string[] };
-  settings: { sound: boolean; buyQty: 1 | 10 | 100 | 'max' };
+  marketing: MarketingState;
+  cofounder: CofounderState;
+  guidance: GuidanceState;
+  settings: { sound: boolean; buyQty: 1 | 10 | 100 | 'max'; liveView: boolean };
   stats: { clicks: number; playSeconds: number; prestiges: number; created: number };
   lastTick: number;
   lastSaved: number;
@@ -215,6 +268,13 @@ export type Action =
   | { type: 'SET_BUYQTY'; qty: 1 | 10 | 100 | 'max' }
   | { type: 'SET_SETTINGS'; payload: Partial<GameState['settings']> }
   | { type: 'EXPAND_TERRITORY'; id: string }
+  | { type: 'MARKETING_UPGRADE'; channelId: string }
+  | { type: 'MARKETING_TOGGLE'; channelId: string }
+  | { type: 'MARKETING_CAMPAIGN'; id: string }
+  | { type: 'CHARACTER_CUSTOMIZE'; payload: Partial<CofounderState> }
+  | { type: 'GUIDANCE_SEEN'; id: string }
+  | { type: 'GUIDANCE_DISMISS'; id: string }
+  | { type: 'TOGGLE_LIVE_VIEW' }
   | { type: 'LOAD'; state: GameState }
   | { type: 'IMPORT'; state: GameState }
   | { type: 'HARD_RESET' };
