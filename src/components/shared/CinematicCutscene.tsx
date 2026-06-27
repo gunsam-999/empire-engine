@@ -80,6 +80,10 @@ function CabinScene({ accent }: { accent: string }) {
             <stop offset="0%"   stopColor={accent} stopOpacity="0.08"/>
             <stop offset="100%" stopColor="#060a14" stopOpacity="0.9"/>
           </linearGradient>
+          <radialGradient id="cabin-vignette" cx="35%" cy="60%" r="55%">
+            <stop offset="0%"   stopColor="#000000" stopOpacity="0"/>
+            <stop offset="100%" stopColor="#000000" stopOpacity="0.45"/>
+          </radialGradient>
         </defs>
         <rect x="0" y="0" width="380" height="300" fill="url(#cabin-bg)"/>
         {/* Room walls */}
@@ -124,7 +128,7 @@ function CabinScene({ accent }: { accent: string }) {
         {/* Warm lamp glow on floor */}
         <ellipse cx="73" cy="240" rx="60" ry="24" fill="url(#cabin-lamp)" opacity="0.6"/>
         {/* Ambient darkness vignette */}
-        <rect x="0" y="0" width="380" height="300" fill="radial-gradient(ellipse at 35% 60%, transparent 30%, rgba(0,0,0,0.5) 100%)"/>
+        <rect x="0" y="0" width="380" height="300" fill="url(#cabin-vignette)"/>
       </svg>
     </div>
   );

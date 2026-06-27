@@ -130,11 +130,14 @@ function EmoteBubble({ kind, visible }: { kind: EmoteKind; visible: boolean }) {
 
 // ---- Portrait body silhouette -----------------------------------------------
 // Tall portrait: large enough to be a real presence, not just a head.
+// Body SVG matches portrait width (96px) and overlaps by -mt-8 so shoulders
+// connect seamlessly to the bottom of the portrait circle.
 function PortraitBody({ avatar, side, accent }: {
   avatar: AvatarConfig; side: CharacterSide; accent: string;
 }) {
-  // Body is rendered as an SVG silhouette below the circular portrait
   const bodyColor = side === 'right' ? '#1a1022' : '#0e1420';
+  // Unique per accent so multiple characters in the same scene don't share defs.
+  const gradId = `bg-${accent.replace(/[^a-z0-9]/gi, '')}`;
   return (
     <div className="relative flex flex-col items-center">
       {/* Glow ring behind portrait */}
@@ -143,25 +146,24 @@ function PortraitBody({ avatar, side, accent }: {
         style={{ background: `radial-gradient(closest-side, ${accent}, transparent)` }}
         aria-hidden
       />
-      {/* Portrait */}
+      {/* Portrait head */}
       <CharacterPortrait avatar={avatar} size={96} ring className="relative z-10" />
-      {/* Body silhouette SVG */}
-      <svg width={80} height={80} viewBox="0 0 80 80" className="relative z-10 -mt-2" aria-hidden>
+      {/* Body — same width as portrait, overlaps bottom 32px to close the gap */}
+      <svg width={96} height={80} viewBox="0 0 96 80" className="relative z-10 -mt-8" aria-hidden>
         <defs>
-          <linearGradient id="body-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor={accent} stopOpacity="0.35"/>
-            <stop offset="100%" stopColor={accent} stopOpacity="0.05"/>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stopColor={accent} stopOpacity="0.3"/>
+            <stop offset="100%" stopColor={accent} stopOpacity="0.04"/>
           </linearGradient>
         </defs>
-        {/* Shoulders */}
-        <path d="M10 12 Q10 4 40 4 Q70 4 70 12 L68 80 L12 80 Z" fill={bodyColor}/>
-        <path d="M10 12 Q10 4 40 4 Q70 4 70 12 L68 80 L12 80 Z" fill="url(#body-grad)"/>
+        {/* Shoulder arch — starts at y=0 so it meets the portrait bottom */}
+        <path d="M10 16 Q10 0 48 0 Q86 0 86 16 L84 80 L12 80 Z" fill={bodyColor}/>
+        <path d="M10 16 Q10 0 48 0 Q86 0 86 16 L84 80 L12 80 Z" fill={`url(#${gradId})`}/>
         {/* Collar / lapel hint */}
-        <path d="M32 8 L40 22 L48 8 L44 6 L40 10 L36 6 Z" fill={accent} opacity="0.35"/>
-        {/* Lapel left */}
-        <path d="M18 10 L40 22 L26 14 Z" fill={accent} opacity="0.12"/>
-        {/* Lapel right */}
-        <path d="M62 10 L40 22 L54 14 Z" fill={accent} opacity="0.12"/>
+        <path d="M38 6 L48 22 L58 6 L53 4 L48 8 L43 4 Z" fill={accent} opacity="0.3"/>
+        {/* Lapels */}
+        <path d="M20 10 L48 22 L30 16 Z" fill={accent} opacity="0.1"/>
+        <path d="M76 10 L48 22 L66 16 Z" fill={accent} opacity="0.1"/>
       </svg>
     </div>
   );

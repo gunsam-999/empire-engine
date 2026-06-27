@@ -222,12 +222,6 @@ function Game() {
 
   const hasSetup = state.setup !== null;
 
-  // If the player already has a game, skip intro → home → go straight to game.
-  // Only show home screen when there's no save.
-  useEffect(() => {
-    if (hasSetup && phase !== 'game') setPhase('game');
-  }, [hasSetup, phase]);
-
   // Keep audio + haptic engines in sync with preferences.
   useEffect(() => { sfx.setEnabled(state.settings.sound); }, [state.settings.sound]);
   useEffect(() => { setHapticsEnabled(state.settings.haptics); }, [state.settings.haptics]);

@@ -288,6 +288,11 @@ button {
   100% { transform: scale(0.94); }
 }
 
+@keyframes cam-pan {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-20px); }
+}
+
 /* ---- World animations ---- */
 
 @keyframes aurora-sweep {
@@ -391,6 +396,7 @@ button {
 .wipe-exit               { animation: wipe-exit  0.45s ease-in forwards; }
 .cam-push                { animation: cam-push 8s ease-in-out infinite alternate; }
 .cam-pull                { animation: cam-pull 6s ease-in-out forwards; }
+.cam-pan                 { animation: cam-pan 12s ease-in-out infinite alternate; }
 .aurora-sweep            { animation: aurora-sweep 2.2s ease-in-out forwards; }
 
 /* World */
