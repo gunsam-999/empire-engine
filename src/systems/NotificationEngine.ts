@@ -141,5 +141,47 @@ export function detectNotifications(
     });
   }
 
+  // 8. Titan has noticed the player (from Pantheon system).
+  for (const t of next.pantheon?.titans ?? []) {
+    const prevT = (prev.pantheon?.titans ?? []).find((p) => p.id === t.id);
+    if (t.hasNoticedPlayer && !prevT?.hasNoticedPlayer) {
+      const body = `A Pantheon titan has taken notice of your empire. Check The Ledger and the Pantheon standings.`;
+      ns = push(ns, 'success', '🌐', 'Pantheon Noticed You', body, now);
+      toast.good('A Pantheon titan is watching you.', { icon: '🌐', durationMs: 4_000 });
+    }
+  }
+
+  // 9. Player surpassed a titan's estimated valuation.
+  const prevLE = prev.lifetimeEarnings ?? 0;
+  const nextLE = next.lifetimeEarnings ?? 0;
+  for (const t of next.pantheon?.titans ?? []) {
+    if (nextLE >= t.estimatedValuation && prevLE < t.estimatedValuation) {
+      const body = `Your empire has surpassed a Pantheon titan in estimated valuation. The world is watching.`;
+      ns = push(ns, 'success', '👑', 'Titan Surpassed!', body, now);
+      toast.good('You have surpassed a Pantheon titan!', { icon: '👑', durationMs: 5_000 });
+    }
+  }
+
+  // 10. Vendetta declared against you.
+  for (const v of next.intel?.vendettas ?? []) {
+    const prevV = (prev.intel?.vendettas ?? []).find((pv) => pv.rivalId === v.rivalId);
+    if (!prevV) {
+      const body = `A rival has declared a personal vendetta. Their attacks will intensify. Check the War Room.`;
+      ns = push(ns, 'urgent', '🔥', 'Vendetta Declared', body, now);
+      toast.bad('Vendetta declared  -  this just got personal.', { icon: '🔥', durationMs: 4_500 });
+    }
+  }
+
+  // 11. Breaking news in The Ledger.
+  const nextNews = next.newspaper?.items ?? [];
+  const prevNews = prev.newspaper?.items ?? [];
+  const newBreaking = nextNews.find(
+    (n) => n.isBreaking && !prevNews.some((p) => p.id === n.id)
+  );
+  if (newBreaking) {
+    ns = push(ns, 'info', '🔴', 'Breaking: Ledger', newBreaking.headline, now);
+    toast.warn(newBreaking.headline, { icon: '🔴', durationMs: 4_000 });
+  }
+
   return ns;
 }

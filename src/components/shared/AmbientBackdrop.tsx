@@ -1,44 +1,40 @@
 // ============================================================================
-// AmbientBackdrop  -  the living atmosphere behind the whole app.
+// AmbientBackdrop — the living atmosphere behind the whole app.
 //
-// A fixed, pointer-transparent layer of slow-drifting aurora blobs tinted from
-// the empire's accent palette. It is not decoration for its own sake: it reads
-// the game's *mood* and *era* and breathes with them  - 
-//   • Era (director phase) raises the ambient intensity and pulls a warmer,
-//     more golden cast as you climb BOOTSTRAPPING → TITAN.
-//   • Market mood tints the top glow: green-gold on a boom, cold red on a crash.
-//   • A soft top-down "spotlight" anchors the composition under the TopBar.
+// Four-layer aurora system driven by the industry's 3-layer color identity:
+//   Layer 0: Industry deep-base radial — bleeds the industry's very dark tint
+//             into the page background so the whole world feels distinctly theirs.
+//   Layer 1: Top spotlight — accent under the TopBar, mood-reactive.
+//   Layer 2+3: Drifting aurora blobs — accent + secondary, era-intensity scaled.
+//   Layer 4: Deep anchor blob — grounds the composition.
 //
-// Performance contract (mirrors LiveEmpireView): only 4 blurred elements, all
-// animated purely via CSS transform/opacity keyframes declared once. Nothing
-// re-renders per game tick  -  the component reads coarse, bucketed inputs so React
-// bails out between meaningful state changes. Honors reduce-motion by freezing
-// the drift to a static (still gorgeous) gradient.
+// Performance contract: only CSS keyframe animations, zero per-tick re-renders.
+// Reads coarse, bucketed inputs so React bails out between meaningful changes.
+// Honors reduce-motion by freezing drift to a static (still beautiful) gradient.
 // ============================================================================
 
 import { useGame } from '../../game/GameContext';
-import { getPalette, withAlpha, mixHex } from '../../utils/palette';
+import { getPalette, getIndustryLayers, withAlpha, mixHex } from '../../utils/palette';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import type { DirectorPhase } from '../../game/types';
 
-// Era → ambient intensity (0..1) and a "warmth" pull toward gold as you ascend.
 const ERA_INTENSITY: Record<DirectorPhase, number> = {
   BOOTSTRAPPING: 0.4,
-  GROWING: 0.55,
-  SCALING: 0.7,
-  ESTABLISHED: 0.85,
-  TITAN: 1,
+  GROWING:       0.55,
+  SCALING:       0.7,
+  ESTABLISHED:   0.85,
+  TITAN:         1,
 };
 const ERA_WARMTH: Record<DirectorPhase, number> = {
   BOOTSTRAPPING: 0,
-  GROWING: 0.08,
-  SCALING: 0.16,
-  ESTABLISHED: 0.26,
-  TITAN: 0.4,
+  GROWING:       0.08,
+  SCALING:       0.16,
+  ESTABLISHED:   0.26,
+  TITAN:         0.4,
 };
 
-const GOLD = '#fbbf24';
-const BOOM = '#34d399';
+const GOLD  = '#fbbf24';
+const BOOM  = '#34d399';
 const CRASH = '#f87171';
 
 export default function AmbientBackdrop() {
@@ -49,26 +45,23 @@ export default function AmbientBackdrop() {
   const phase: DirectorPhase = state.director?.currentPhase ?? 'BOOTSTRAPPING';
   const price = state.market?.priceMul ?? 1;
 
-  const pal = getPalette(accent);
-  const intensity = ERA_INTENSITY[phase];
-  const warmth = ERA_WARMTH[phase];
+  const pal    = getPalette(accent);
+  const layers = getIndustryLayers(accent);
 
-  // Warm the palette toward gold as the empire matures.
+  const intensity = ERA_INTENSITY[phase];
+  const warmth    = ERA_WARMTH[phase];
+
   const warm = (hex: string) => (warmth > 0 ? mixHex(hex, GOLD, warmth) : hex);
-  const aAccent = warm(pal.accent);
+  const aAccent    = warm(pal.accent);
   const aSecondary = warm(pal.secondary);
 
-  // Market mood tints the top spotlight.
   const mood: 'boom' | 'crash' | 'steady' =
     price >= 1.12 ? 'boom' : price <= 0.9 ? 'crash' : 'steady';
   const spotlight =
-    mood === 'boom'
-      ? mixHex(aAccent, BOOM, 0.45)
-      : mood === 'crash'
-        ? mixHex(aAccent, CRASH, 0.4)
-        : aAccent;
+    mood === 'boom'  ? mixHex(aAccent, BOOM,  0.45)
+    : mood === 'crash' ? mixHex(aAccent, CRASH, 0.40)
+    : aAccent;
 
-  // Opacity scales with era so the early game feels lean and the late game lush.
   const baseOpacity = (lo: number, hi: number) => lo + (hi - lo) * intensity;
 
   return (
@@ -78,67 +71,86 @@ export default function AmbientBackdrop() {
     >
       {!reduce && <BackdropStyles />}
 
-      {/* Base wash so blobs have something to sit over (matches page). */}
+      {/* Page base */}
       <div className="absolute inset-0 bg-[#070b12]" />
 
-      {/* Top spotlight under the TopBar  -  the anchor of the composition. */}
+      {/* Layer 0: Industry deep-base radial — entire world is tinted by the
+          player's chosen industry. Very subtle; makes each empire feel owned. */}
+      <div
+        className={reduce ? '' : 'ab-blob ab-blob-d'}
+        style={{
+          position:     'absolute',
+          left:         '-10%',
+          top:          '20%',
+          height:       480,
+          width:        520,
+          borderRadius: '50%',
+          filter:       'blur(80px)',
+          background: `radial-gradient(closest-side, ${withAlpha(
+            layers.deepBase,
+            baseOpacity(0.18, 0.42)
+          )}, transparent 72%)`,
+        }}
+      />
+
+      {/* Top spotlight */}
       <div
         className="absolute -top-24 left-1/2 h-[340px] w-[520px] -translate-x-1/2 rounded-full blur-3xl"
         style={{
           background: `radial-gradient(closest-side, ${withAlpha(
             spotlight,
-            baseOpacity(0.1, 0.26)
+            baseOpacity(0.10, 0.26)
           )}, transparent 72%)`,
         }}
       />
 
-      {/* Drifting aurora blob  -  accent, lower-left. */}
+      {/* Drifting aurora — accent, lower-left */}
       <div
         className={reduce ? '' : 'ab-blob ab-blob-a'}
         style={{
-          position: 'absolute',
-          left: '-18%',
-          top: '46%',
-          height: 360,
-          width: 360,
+          position:     'absolute',
+          left:         '-18%',
+          top:          '46%',
+          height:       360,
+          width:        360,
           borderRadius: '50%',
-          filter: 'blur(64px)',
+          filter:       'blur(64px)',
           background: `radial-gradient(closest-side, ${withAlpha(
             aAccent,
-            baseOpacity(0.12, 0.3)
+            baseOpacity(0.12, 0.30)
           )}, transparent 70%)`,
         }}
       />
 
-      {/* Drifting aurora blob  -  secondary, upper-right. */}
+      {/* Drifting aurora — secondary, upper-right */}
       <div
         className={reduce ? '' : 'ab-blob ab-blob-b'}
         style={{
-          position: 'absolute',
-          right: '-22%',
-          top: '8%',
-          height: 320,
-          width: 320,
+          position:     'absolute',
+          right:        '-22%',
+          top:          '8%',
+          height:       320,
+          width:        320,
           borderRadius: '50%',
-          filter: 'blur(64px)',
+          filter:       'blur(64px)',
           background: `radial-gradient(closest-side, ${withAlpha(
             aSecondary,
-            baseOpacity(0.1, 0.26)
+            baseOpacity(0.10, 0.26)
           )}, transparent 70%)`,
         }}
       />
 
-      {/* Deep anchor blob  -  bottom, grounds the scene. */}
+      {/* Deep anchor blob — bottom */}
       <div
         className={reduce ? '' : 'ab-blob ab-blob-c'}
         style={{
-          position: 'absolute',
-          left: '30%',
-          bottom: '-26%',
-          height: 360,
-          width: 420,
+          position:     'absolute',
+          left:         '30%',
+          bottom:       '-26%',
+          height:       360,
+          width:        420,
           borderRadius: '50%',
-          filter: 'blur(72px)',
+          filter:       'blur(72px)',
           background: `radial-gradient(closest-side, ${withAlpha(
             pal.deep,
             baseOpacity(0.16, 0.34)
@@ -146,19 +158,17 @@ export default function AmbientBackdrop() {
         }}
       />
 
-      {/* Vignette to focus the column and keep text crisp. */}
+      {/* Vignette to focus the column and keep text crisp */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(120% 80% at 50% 30%, transparent 50%, rgba(4,7,13,0.55) 100%)',
+            'radial-gradient(120% 80% at 50% 30%, transparent 50%, rgba(4,7,13,0.60) 100%)',
         }}
       />
     </div>
   );
 }
-
-// ---- One-time CSS keyframes (scoped class names, declared once) -------------
 
 function BackdropStyles() {
   return (
@@ -175,10 +185,15 @@ function BackdropStyles() {
         0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.9; }
         50%      { transform: translate3d(-24px, -20px, 0) scale(1.1); opacity: 1; }
       }
-      .ab-blob { will-change: transform; }
+      @keyframes ab-drift-d {
+        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+        50%      { transform: translate3d(16px, 12px, 0) scale(1.06); }
+      }
+      .ab-blob   { will-change: transform; }
       .ab-blob-a { animation: ab-drift-a 26s ease-in-out infinite; }
       .ab-blob-b { animation: ab-drift-b 32s ease-in-out infinite; }
       .ab-blob-c { animation: ab-drift-c 38s ease-in-out infinite; }
+      .ab-blob-d { animation: ab-drift-d 44s ease-in-out infinite; }
     `}</style>
   );
 }

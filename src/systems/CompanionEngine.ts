@@ -143,9 +143,18 @@ export function evaluateCompanion(
   const elapsedSec = (now - companion.lastActionAt) / 1000;
   const decay = elapsedSec * TRUST_DECAY_PER_SEC;
 
-  // Apply pending deltas (from player actions) and natural decay.
-  const newTrust = clampTrust(companion.trust - decay + companion.pendingTrustDelta);
-  const newRung = rungFromTrust(newTrust);
+  // Ruthless play accelerates estrangement. Ethics below −20 adds extra decay
+  // that scales with how far into ruthless territory the player has gone.
+  const ethics = state.story?.ethics ?? 0;
+  const ruthlessPenalty = ethics < -20
+    ? elapsedSec * (0.3 / 60) * Math.min(3, (-ethics - 20) / 20)
+    : 0;
+
+  const rawTrust = companion.trust - decay - ruthlessPenalty + companion.pendingTrustDelta;
+  const newTrust = clampTrust(rawTrust);
+  // Trust hitting zero under sustained ruthless play triggers estrangement.
+  const newRung: TrustRung =
+    rawTrust <= 0 && ethics < -30 ? 'ESTRANGED' : rungFromTrust(newTrust);
 
   // Update loyalty timer.
   const newLoyaltyHeld =

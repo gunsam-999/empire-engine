@@ -3,7 +3,7 @@
 // Fulfilling each clause unlocks a permanent production or cost bonus.
 
 import { useGame } from '../../game/GameContext';
-import { CLAUSE_CONFIGS } from '../../data/premises';
+import { ALL_CLAUSE_CONFIGS as CLAUSE_CONFIGS } from '../../data/premises';
 import type { ClauseStatus } from '../../game/types';
 
 const STATUS_ICON: Record<ClauseStatus, string> = {

@@ -10,7 +10,7 @@ import { getMarketingMult } from './MarketingSystem';
 import { getRivalPressureMults } from './RivalEngine';
 import { getCompanionBoostMult } from './CompanionEngine';
 import { getWorkforceMult } from './WorkforceEngine';
-import { getAidePassiveMult } from './AideEngine';
+import { getAidePassiveMult, getAideCostMult } from './AideEngine';
 import { getPremiseProdMult, getPremiseCostMult } from './PremiseEngine';
 import { getDynastyMults } from './DynastyEngine';
 import { getEchelonProdMult, defaultEchelonState } from './EchelonEngine';
@@ -239,7 +239,8 @@ export function getMultipliers(state: GameState): Multipliers {
     state.companionBoosts ?? []
   );
   const workforceMult = getWorkforceMult(state.workforce ?? []);
-  const aideProd = getAidePassiveMult(state.aides ?? []);
+  const aideProd = getAidePassiveMult(state.aides ?? [], state);
+  const aideCost = getAideCostMult(state.aides ?? []);
   const premiseProd = getPremiseProdMult(state.premise ?? null);
   const premiseCost = getPremiseCostMult(state.premise ?? null);
   const dynastyMults = getDynastyMults(state.dynasty ?? { runs: [], traits: [], heirlooms: [] });
@@ -251,7 +252,7 @@ export function getMultipliers(state: GameState): Multipliers {
     philosophyProd * prestige * researchProd * event * advisorProd * marketing *
     repMult.prod * rivalMult.production * companionMult * workforceMult * aideProd *
     premiseProd * dynastyMults.prod * echelonProd * newspaperProd * publicAffairsMult;
-  const cost = researchCostMul(state) * repMult.cost * premiseCost * dynastyMults.cost;
+  const cost = researchCostMul(state) * repMult.cost * premiseCost * dynastyMults.cost * aideCost;
   const insight = researchInsight * advisorInsight;
 
   return {

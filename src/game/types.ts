@@ -10,7 +10,13 @@ export type IndustryType =
   | 'fashion'
   | 'biotech'
   | 'media'
-  | 'agri';
+  | 'agri'
+  | 'finance'
+  | 'realestate'
+  | 'entertainment'
+  | 'hospitality';
+
+export type GameMode = 'inheritance' | 'empire_run';
 
 export type Philosophy = 'innovator' | 'efficiency' | 'people_first' | 'aggressive';
 export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
@@ -43,6 +49,12 @@ export interface IndustryConfig {
   advisorTitles: string[];
   facilities: FacilityConfig[];
   tierUnlock: [number, number, number, number, number];
+  /** 2–3 line evocative flavor description shown on industry cards. */
+  flavor: string;
+  /** Short phrase describing the industry's primary challenge. */
+  challenge: string;
+  /** Who this industry suits best. */
+  archetype: string;
 }
 
 export interface ResearchNode {
@@ -196,6 +208,17 @@ export interface CompanySetup {
   accent: string;
   philosophy: Philosophy;
   foundedAt: number;
+  gameMode: GameMode;
+  chosenAideId: string;
+}
+
+// ============================================================================
+// Old Master system  -  the legendary predecessor who transferred the empire.
+// ============================================================================
+
+export interface OldMasterState {
+  /** Indices of contact messages already delivered to the player. */
+  contactsSeen: string[];
 }
 
 export interface ActiveResearch {
@@ -278,6 +301,8 @@ export interface GameState {
   aides: AideState[];
   // Premise system (Session 4.3)  -  Old Master's inheritance with clauses.
   premise: PremiseState | null;
+  // Old Master system  -  contact delivery tracking.
+  oldMaster: OldMasterState | null;
   // Ambient feed (Session 4.4)  -  auto-generated dispatch from engine transitions.
   ambientFeed: AmbientEntry[];
   // Dynasty system (Session 4.5)  -  prestige chain and earned traits.
@@ -296,6 +321,8 @@ export interface GameState {
   publicAffairs: PublicAffairsState;
   // Investment system (Part 8)  -  portfolio tracker + The Wiz oracle.
   investments: InvestmentState;
+  // Pantheon system (Part 10)  -  fictional titan rivals, the aspirational ceiling.
+  pantheon: PantheonState;
   lastTick: number;
   lastSaved: number;
 }
@@ -357,11 +384,36 @@ export interface WorkerState {
 
 export type AideDomain = 'legal' | 'pr' | 'finance' | 'tech' | 'logistics' | 'creative';
 
+/**
+ * Each inner-circle aide has a UNIQUE mechanic kind — not just a % boost.
+ *   legal_fortress    Marcus  - defense charges absorb rival strikes
+ *   truth_cycle       Layla   - ethics directly scales production
+ *   compound_engine   Yuki    - accumulates a saved income buffer; restructures cost scaling
+ *   acceleration_loop Dev     - velocity (growth rate) multiplies production bonus
+ *   resilience_buffer Sofia   - converts income dips into a temporary soft-floor buffer
+ *   culture_mult      Ade     - workforce morale chains into production (morale-gated bonus)
+ */
+export type AideMechanicKind =
+  | 'legal_fortress'
+  | 'truth_cycle'
+  | 'compound_engine'
+  | 'acceleration_loop'
+  | 'resilience_buffer'
+  | 'culture_mult';
+
 export interface AideState {
   id: string;
   loyalty: number;             // 0–100
   lastBriefAt: number;         // ms  -  gates Brief button (120 s cooldown)
   deployCooldownUntil: number; // ms  -  gates Deploy button (600 s cooldown)
+  // Development arc stage (0=new, 1=warming, 2=bonded, 3=legacy). Advances at loyalty thresholds.
+  arcStage: number;
+  // Mechanic-specific runtime state (only meaningful for the relevant aide).
+  defenseCharges?: number;     // Marcus: charges that absorb rival strikes (max 3)
+  compoundBuffer?: number;     // Yuki: saved income buffer ($) released on Deploy
+  resilienceBuffer?: number;   // Sofia: temporary soft-floor buffer (decays over time)
+  resilienceBufferDecayUntil?: number; // Sofia: ms timestamp when buffer fully decays
+  lastLESnapshot?: number;     // Dev/Sofia: previous tick's lifetimeEarnings for velocity calc
 }
 
 // ============================================================================
@@ -542,6 +594,17 @@ export interface IntelState {
   reports: IntelReport[];
   /** ms  -  gates "Commission" button (300 s cooldown). */
   lastBriefAt: number;
+  // War Room additions (Part 10)
+  /** Current War Room upgrade level (0 = unbuilt, 1–5 = operational). */
+  warRoomLevel: WarRoomLevel;
+  /** Compiled dossiers on each active rival. */
+  dossiers: DossierFile[];
+  /** Active vendettas (rival has attacked 3+ times). */
+  vendettas: VendettaState[];
+  /** Counter-intel operation in progress (rival trying to spy on us). */
+  pendingCounterIntel: { rivalId: string; detectedAt: number; expiresAt: number } | null;
+  /** ms  -  gates War Room upgrades. */
+  lastUpgradeAt: number;
 }
 
 // ============================================================================
@@ -562,15 +625,26 @@ export interface NewsItem {
   sentimentScore: number;
   read: boolean;
   responded: boolean;
+  // Ledger additions (Part 10)
+  section?: LedgerSection;
+  arcId?: string;
+  titanId?: string;
+  rivalSourceId?: string;  // rival that planted this story (smear campaigns)
+  isFrontPage?: boolean;
+  isBreaking?: boolean;
 }
 
 export interface NewspaperState {
-  /** Rolling archive  -  max 20 items, newest first. */
+  /** Rolling archive  -  max 50 items, newest first. */
   items: NewsItem[];
   /** ms  -  gates new items (min 60 s apart). */
   lastPublishedAt: number;
   /** Accumulated negative coverage (0–100). Decays 0.5/min; respond to reduce. */
   heatScore: number;
+  // Ledger additions (Part 10)
+  arcs: LedgerStoryArc[];
+  frontPageItemId: string | null;
+  issueNumber: number;
 }
 
 // ============================================================================
@@ -677,6 +751,93 @@ export interface InvestmentState {
 }
 
 // ============================================================================
+// Pantheon system (Part 10)  -  fictional titan parodies, the aspirational ceiling.
+// Six legendary founders dominate the global economy. The player's arc is to
+// close the gap, enter their ranks, and ultimately surpass them.
+// ============================================================================
+
+export interface PantheonTitanActivity {
+  id: string;
+  headline: string;
+  body: string;
+  at: number; // ms
+}
+
+export interface PantheonTitanState {
+  id: string;
+  /** Simulated estimated valuation (grows each tick, player competes against this). */
+  estimatedValuation: number;
+  /** True once player's LE has crossed the titan's noticeThreshold. */
+  hasNoticedPlayer: boolean;
+  /** True once this titan has spawned as a playable rival (TITAN echelon only). */
+  enteredAsRival: boolean;
+  /** ms  -  last time this titan generated a Ledger article. */
+  lastActivityAt: number;
+  /** Last 3 activity snippets shown in the dossier. */
+  recentActivity: string[];
+}
+
+export interface PantheonState {
+  titans: PantheonTitanState[];
+  /** Player's global wealth rank (1 = richest, 7 = below all titans). */
+  playerRank: number;
+  /** ms  -  last time a titan generated a Ledger article. */
+  lastActivityAt: number;
+}
+
+// ============================================================================
+// War Room (Part 10)  -  Intel Desk upgrade into a full tactical operations center.
+// Five upgrade levels add dossier compilation, predictive analysis, counter-intel,
+// and eventually Pantheon intelligence access.
+// ============================================================================
+
+export type WarRoomLevel = 0 | 1 | 2 | 3 | 4 | 5;
+
+/** Compiled intelligence file on a single rival. Fills in as the player commissions reports. */
+export interface DossierFile {
+  rivalId: string;
+  /** True once War Room level 2+ and at least one report has been commissioned. */
+  profileUnlocked: boolean;
+  /** Move IDs we have observed fire (not feints). */
+  movesObserved: string[];
+  /** How many times this rival has attacked us. */
+  attacksOnPlayer: number;
+  /** ms  -  last time this rival's move executed (feint or real). */
+  lastObservedAt: number;
+  /** Inferred from move patterns at level 3+. null = not yet revealed. */
+  weaknessKind: 'price' | 'production' | 'brand' | null;
+  /** Move ID the system predicts is coming next. null = insufficient data. */
+  predictedNextMoveId: string | null;
+}
+
+/** Active vendetta: a rival who has attacked the player 3+ times enters a vendetta state. */
+export interface VendettaState {
+  rivalId: string;
+  escalationLevel: number; // 1 (personal feud) – 3 (total war)
+  triggeredAt: number;     // ms
+  totalAttacks: number;
+}
+
+// ============================================================================
+// Ledger system (Part 10)  -  The Financial Ledger.
+// Expands the Newspaper into a full publication: story arcs that bind multiple
+// headlines, Pantheon columns, rival smear campaigns, and a front-page slot.
+// ============================================================================
+
+export type LedgerSection = 'empire' | 'rivals' | 'pantheon' | 'world' | 'scandal';
+export type StoryArcPhase = 'emerging' | 'escalating' | 'peak' | 'resolved';
+
+/** A narrative thread that groups related headlines into a coherent story. */
+export interface LedgerStoryArc {
+  id: string;
+  title: string;
+  phase: StoryArcPhase;
+  relatedItemIds: string[];
+  startedAt: number;
+  resolvedAt: number | null;
+}
+
+// ============================================================================
 // Action discriminated union  -  one variant per reducer action.
 // ============================================================================
 
@@ -721,6 +882,14 @@ export type Action =
   | { type: 'INV_BUY'; portfolioId: string; amount: number; priceBonus: number }
   | { type: 'INV_SELL'; portfolioId: string; fraction: number }
   | { type: 'INV_DISMISS_OFFER' }
+  // War Room / Intel upgrades (Part 10)
+  | { type: 'WAR_ROOM_UPGRADE' }
+  // Rival proactive strikes (Part 10)
+  | { type: 'RIVAL_STRIKE'; rivalId: string; strikeKind: 'talent_poach' | 'patent_claim' | 'hostile_bid' | 'leak_story' | 'fund_competitor' | 'undercut' }
+  // Vendetta response (Part 10)
+  | { type: 'VENDETTA_RESPOND'; rivalId: string }
+  // Ledger (Part 10)
+  | { type: 'LEDGER_READ_ALL' }
   | { type: 'LOAD'; state: GameState }
   | { type: 'IMPORT'; state: GameState }
   | { type: 'HARD_RESET' };

@@ -28,6 +28,7 @@ import ResearchScreen from './components/screens/ResearchScreen';
 import AdvisorScreen from './components/screens/AdvisorScreen';
 import InvestmentScreen from './components/screens/InvestmentScreen';
 import PrestigeScreen from './components/screens/PrestigeScreen';
+import IntelScreen from './components/screens/IntelScreen';
 import StoryScreen from './components/screens/StoryScreen';
 import TerritoryScreen from './components/screens/TerritoryScreen';
 import SettingsScreen from './components/screens/SettingsScreen';
@@ -65,6 +66,8 @@ function ActiveScreen({ tab }: { tab: TabId }) {
       return <InvestmentScreen />;
     case 'prestige':
       return <PrestigeScreen />;
+    case 'intel':
+      return <IntelScreen />;
     default:
       return <EmpireScreen />;
   }

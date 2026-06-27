@@ -3,13 +3,18 @@
 // Pure, no side effects. Called from the TICK reducer each frame.
 // ============================================================================
 
-import type { GameState, PremiseClause, PremiseState } from '../game/types';
-import { CLAUSE_CONFIGS, PREMISE_REVEAL_THRESHOLD } from '../data/premises';
+import type { GameState, IndustryType, PremiseClause, PremiseState } from '../game/types';
+import {
+  ALL_CLAUSE_CONFIGS,
+  getClausesForIndustry,
+  PREMISE_REVEAL_THRESHOLD,
+} from '../data/premises';
 
-export function defaultPremiseState(now: number): PremiseState {
+export function defaultPremiseState(now: number, industry?: IndustryType): PremiseState {
+  const configs = industry ? getClausesForIndustry(industry) : ALL_CLAUSE_CONFIGS.slice(0, 5);
   return {
     revealedAt: now,
-    clauses: CLAUSE_CONFIGS.map((cfg) => ({
+    clauses: configs.map((cfg) => ({
       id: cfg.id,
       status: 'locked' as const,
       holdSec: 0,
@@ -20,7 +25,11 @@ export function defaultPremiseState(now: number): PremiseState {
 }
 
 export function shouldRevealPremise(state: GameState): boolean {
-  return !state.premise && (state.lifetimeEarnings ?? 0) >= PREMISE_REVEAL_THRESHOLD;
+  // Reveal if: no premise at all, OR premise exists but hasn't been revealed yet (revealedAt === 0).
+  const earned = (state.lifetimeEarnings ?? 0) >= PREMISE_REVEAL_THRESHOLD;
+  if (!earned) return false;
+  if (!state.premise) return true;
+  return state.premise.revealedAt === 0;
 }
 
 export function tickPremise(
@@ -30,7 +39,7 @@ export function tickPremise(
   now: number
 ): PremiseState {
   const clauses = premise.clauses.map((clause): PremiseClause => {
-    const cfg = CLAUSE_CONFIGS.find((c) => c.id === clause.id);
+    const cfg = ALL_CLAUSE_CONFIGS.find((c) => c.id === clause.id);
     if (!cfg) return clause;
 
     const conditionMet = cfg.check(state);
@@ -43,7 +52,6 @@ export function tickPremise(
         return { ...clause, breachSec: 0 };
       }
       if (graceSec <= 0) {
-        // breachGraceSec = 0 means this clause can never be breached.
         return clause;
       }
       const newBreachSec = clause.breachSec + dt;
@@ -86,7 +94,7 @@ export function getPremiseProdMult(premise: PremiseState | null): number {
   let mult = 1;
   for (const clause of premise.clauses) {
     if (clause.status !== 'fulfilled') continue;
-    const cfg = CLAUSE_CONFIGS.find((c) => c.id === clause.id);
+    const cfg = ALL_CLAUSE_CONFIGS.find((c) => c.id === clause.id);
     if (cfg?.prod) mult *= 1 + cfg.prod;
   }
   return mult;
@@ -98,7 +106,7 @@ export function getPremiseCostMult(premise: PremiseState | null): number {
   let mult = 1;
   for (const clause of premise.clauses) {
     if (clause.status !== 'fulfilled') continue;
-    const cfg = CLAUSE_CONFIGS.find((c) => c.id === clause.id);
+    const cfg = ALL_CLAUSE_CONFIGS.find((c) => c.id === clause.id);
     if (cfg?.costDiscount) mult *= 1 - cfg.costDiscount;
   }
   return mult;

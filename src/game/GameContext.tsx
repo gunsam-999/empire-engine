@@ -79,19 +79,31 @@ import {
 import { tickCompanions, shiftCompanionTrust } from '../systems/CompanionEngine';
 import { runDirector, directorBeatSeen, defaultDirectorState } from '../systems/DirectorEngine';
 import { tickWorkforce, shiftWorkerMorale } from '../systems/WorkforceEngine';
-import { tickAides, briefAide, markDeployed, canDeploy } from '../systems/AideEngine';
+import {
+  tickAides, briefAide, markDeployed, canDeploy,
+  consumeDefenseCharge, getResilienceBufferIncome,
+} from '../systems/AideEngine';
 import { shouldRevealPremise, defaultPremiseState, tickPremise } from '../systems/PremiseEngine';
+import { getClausesForIndustry } from '../data/premises';
 import { recordRun, applyPrestigeDynasty } from '../systems/DynastyEngine';
 import { defaultDynastyState } from '../data/dynasty';
 import { getEligibleEmergentTemplates, generateEmergentBeat } from '../data/emergentBeats';
 import { getAideConfig } from '../data/aides';
 import { getRivalConfig } from '../data/rivals';
 import { getCompanionConfig } from '../data/companions';
-import { CLAUSE_CONFIGS } from '../data/premises';
+import { ALL_CLAUSE_CONFIGS as CLAUSE_CONFIGS } from '../data/premises';
 import { moodFromMorale } from '../systems/WorkforceEngine';
 import { tickEchelon, defaultEchelonState } from '../systems/EchelonEngine';
-import { tickIntel, defaultIntelState, commissionReport, canGatherIntel, INTEL_COMMISSION_COST } from '../systems/IntelEngine';
-import { tickNewspaper, defaultNewspaperState, respondToNews, canRespondToNews, NEWS_RESPOND_COST } from '../systems/NewspaperEngine';
+import {
+  tickIntel, defaultIntelState, commissionReport, canGatherIntel, INTEL_COMMISSION_COST,
+  upgradeWarRoom, canUpgradeWarRoom, warRoomUpgradeCost, recordRivalAttack,
+} from '../systems/IntelEngine';
+import {
+  tickNewspaper, defaultNewspaperState, respondToNews, canRespondToNews, NEWS_RESPOND_COST,
+  publishPantheonItem, publishTitanSurpassed, publishTitanNoticed,
+} from '../systems/NewspaperEngine';
+import { tickPantheon, defaultPantheonState, getRankedTitans } from '../systems/PantheonEngine';
+import { getPantheonConfig } from '../data/pantheon';
 import { detectNotifications, defaultNotificationState, markAllRead } from '../systems/NotificationEngine';
 import {
   tickPublicAffairs,
@@ -100,6 +112,7 @@ import {
   canIssueStatement,
   STATEMENT_COST,
 } from '../systems/PublicAffairsEngine';
+import { applyIndustryTheme } from '../utils/palette';
 
 // ---- Initial state ----------------------------------------------------------
 
@@ -127,7 +140,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
     marketing: defaultMarketing(),
     cofounder: { ...DEFAULT_COFOUNDER, avatar: { ...DEFAULT_COFOUNDER.avatar } },
     guidance: { seen: [], queue: [], dismissed: [], lastShownAt: 0 },
-    settings: { sound: true, music: true, buyQty: 1, liveView: false, reduceMotion: false, haptics: true },
+    settings: { sound: true, music: true, buyQty: 1, liveView: true, reduceMotion: false, haptics: true },
     stats: { clicks: 0, playSeconds: 0, prestiges: 0, created: 0 },
     reputationHeldSec: 0,
     director: defaultDirectorState(now),
@@ -139,6 +152,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
     workforce: [],
     aides: [],
     premise: null,
+    oldMaster: null,
     ambientFeed: [],
     dynasty: defaultDynastyState(),
     generatedBeats: [],
@@ -148,6 +162,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
     notifications: defaultNotificationState(),
     publicAffairs: defaultPublicAffairsState(),
     investments: defaultInvestmentState(),
+    pantheon: defaultPantheonState(),
     lastTick: now,
     lastSaved: now,
   };
@@ -198,7 +213,7 @@ export function migrateSave(raw: GameState): GameState {
     sound: s.settings?.sound ?? true,
     music: s.settings?.music ?? true,
     buyQty: s.settings?.buyQty ?? 1,
-    liveView: s.settings?.liveView ?? false,
+    liveView: s.settings?.liveView ?? true,
     reduceMotion: s.settings?.reduceMotion ?? false,
     haptics: s.settings?.haptics ?? true,
   };
@@ -229,10 +244,20 @@ export function migrateSave(raw: GameState): GameState {
       ...w,
       lastEventAt: w.lastEventAt ?? w.hiredAt ?? 0,
     })),
-    aides: (s.aides ?? []).map((a) => ({
-      ...a,
-      deployCooldownUntil: a.deployCooldownUntil ?? 0,
-    })),
+    aides: (s.aides ?? []).map((a) => {
+      const cfg = getAideConfig(a.id);
+      const kind = cfg?.mechanicKind;
+      return {
+        ...a,
+        deployCooldownUntil: a.deployCooldownUntil ?? 0,
+        arcStage: (a as any).arcStage ?? 0,
+        defenseCharges: (a as any).defenseCharges ?? (kind === 'legal_fortress' ? 0 : undefined),
+        compoundBuffer: (a as any).compoundBuffer ?? (kind === 'compound_engine' ? 0 : undefined),
+        resilienceBuffer: (a as any).resilienceBuffer ?? (kind === 'resilience_buffer' ? 0 : undefined),
+        resilienceBufferDecayUntil: (a as any).resilienceBufferDecayUntil,
+        lastLESnapshot: (a as any).lastLESnapshot,
+      };
+    }),
     premise: s.premise
       ? {
           revealedAt: s.premise.revealedAt ?? 0,
@@ -257,6 +282,11 @@ export function migrateSave(raw: GameState): GameState {
             wasFeint: r.wasFeint ?? null,
           })),
           lastBriefAt: s.intel.lastBriefAt ?? 0,
+          warRoomLevel: (s.intel as any).warRoomLevel ?? 0,
+          dossiers: (s.intel as any).dossiers ?? [],
+          vendettas: (s.intel as any).vendettas ?? [],
+          pendingCounterIntel: (s.intel as any).pendingCounterIntel ?? null,
+          lastUpgradeAt: (s.intel as any).lastUpgradeAt ?? 0,
         }
       : defaultIntelState(),
     newspaper: s.newspaper
@@ -268,6 +298,9 @@ export function migrateSave(raw: GameState): GameState {
           })),
           lastPublishedAt: s.newspaper.lastPublishedAt ?? 0,
           heatScore: s.newspaper.heatScore ?? 0,
+          arcs: (s.newspaper as any).arcs ?? [],
+          frontPageItemId: (s.newspaper as any).frontPageItemId ?? null,
+          issueNumber: (s.newspaper as any).issueNumber ?? 1,
         }
       : defaultNewspaperState(),
     notifications: s.notifications
@@ -283,6 +316,30 @@ export function migrateSave(raw: GameState): GameState {
         }
       : defaultPublicAffairsState(),
     investments: s.investments ?? defaultInvestmentState(),
+    pantheon: s.pantheon
+      ? {
+          titans: (s.pantheon.titans ?? []).map((t) => ({
+            id: t.id,
+            estimatedValuation: t.estimatedValuation ?? 0,
+            hasNoticedPlayer: t.hasNoticedPlayer ?? false,
+            enteredAsRival: t.enteredAsRival ?? false,
+            lastActivityAt: t.lastActivityAt ?? 0,
+            recentActivity: t.recentActivity ?? [],
+          })),
+          playerRank: s.pantheon.playerRank ?? 7,
+          lastActivityAt: s.pantheon.lastActivityAt ?? 0,
+        }
+      : defaultPantheonState(),
+    // Old Master state: default for saves that predate this system.
+    oldMaster: (s as any).oldMaster ?? null,
+    // Backfill gameMode + chosenAideId for pre-existing CompanySetup saves.
+    setup: s.setup
+      ? {
+          ...s.setup,
+          gameMode: (s.setup as any).gameMode ?? 'inheritance',
+          chosenAideId: (s.setup as any).chosenAideId ?? 'marcus',
+        }
+      : null,
     version: SAVE_VERSION,
   };
 }
@@ -290,14 +347,28 @@ export function migrateSave(raw: GameState): GameState {
 /** A brand-new game for a given setup. */
 function newGameForSetup(setup: CompanySetup, now: number): GameState {
   const base = freshInitialState(now);
-  // first start beat, if any
-  const startBeat = STORY_BEATS.find((b: StoryBeat) => b.trigger.type === 'start');
-  // first co-founder guidance beat (welcome), if any
+  // Empire Run mode suppresses the story modal queue; narrative runs through
+  // companions, rivals, and the Ledger instead.
+  const isStoryMode = setup.gameMode !== 'empire_run';
+  const startBeat = isStoryMode
+    ? STORY_BEATS.find((b: StoryBeat) => b.trigger.type === 'start')
+    : undefined;
   const firstGuidance = GUIDANCE_BEATS.find((b) => b.trigger.type === 'start');
-  // Seed the empire so the loop is "running" from second one and the player can
-  // immediately buy a few facilities  -  otherwise cash:0 + 0/s income soft-locks
-  // the very first purchase. Genre-standard generous opening.
   const firstFacilityId = `${setup.industry}-t1-0`;
+
+  // Pre-build the industry-specific premise clauses so they're correct from day one.
+  const clauseConfigs = getClausesForIndustry(setup.industry);
+  const premiseState = {
+    revealedAt: 0, // not yet revealed; PremiseEngine reveals at PREMISE_REVEAL_THRESHOLD
+    clauses: clauseConfigs.map((cfg) => ({
+      id: cfg.id,
+      status: 'locked' as const,
+      holdSec: 0,
+      fulfilledAt: 0,
+      breachSec: 0,
+    })),
+  };
+
   return {
     ...base,
     setup: { ...setup, foundedAt: now },
@@ -308,7 +379,6 @@ function newGameForSetup(setup: CompanySetup, now: number): GameState {
       ...base.story,
       queue: startBeat ? [startBeat.id] : [],
     },
-    // Seed co-founder with the player's chosen accent + queue the welcome beat.
     cofounder: {
       ...DEFAULT_COFOUNDER,
       avatar: { ...DEFAULT_COFOUNDER.avatar, accent: setup.accent },
@@ -318,6 +388,9 @@ function newGameForSetup(setup: CompanySetup, now: number): GameState {
       queue: firstGuidance ? [firstGuidance.id] : [],
       lastShownAt: now,
     },
+    // Wire the industry-specific premise from the start (revealed later by PremiseEngine).
+    premise: premiseState,
+    oldMaster: { contactsSeen: [] },
     stats: { ...base.stats, created: now },
     lastTick: now,
   };
@@ -348,8 +421,10 @@ export function reducer(state: GameState, action: Action): GameState {
         next.resource = state.resource + resourceProdPerSec(state) * dt;
       } else {
         const income = incomePerSec(state) * dt;
-        next.cash = state.cash + income;
-        next.lifetimeEarnings = state.lifetimeEarnings + income;
+        // Sofia's resilience buffer drips a portion of its value back into earnings
+        const resilienceIncome = getResilienceBufferIncome(state.aides ?? [], dt);
+        next.cash = state.cash + income + resilienceIncome;
+        next.lifetimeEarnings = state.lifetimeEarnings + income + resilienceIncome;
       }
 
       // Insight + influence trickle.
@@ -473,7 +548,25 @@ export function reducer(state: GameState, action: Action): GameState {
         return { ...r, aggression: newAgg };
       });
       next.rivals = modifiedRivals;
-      next.rivalPressures = rivalResult.rivalPressures;
+
+      // Marcus (Legal Fortress): absorb any newly-landed rival pressure with a charge
+      const newPressuresThisTick = rivalResult.rivalPressures.filter(
+        (p) => !(state.rivalPressures ?? []).some((op) => op.rivalId === p.rivalId && op.endsAt === p.endsAt)
+      );
+      let pressuresToApply = rivalResult.rivalPressures;
+      if (newPressuresThisTick.length > 0) {
+        let currentAides = next.aides ?? [];
+        for (const _newP of newPressuresThisTick) {
+          const [updatedAides, absorbed] = consumeDefenseCharge(currentAides, now);
+          currentAides = updatedAides;
+          if (absorbed) {
+            // Remove the absorbed pressure from the list
+            pressuresToApply = pressuresToApply.filter((p) => p !== _newP);
+          }
+        }
+        next.aides = currentAides;
+      }
+      next.rivalPressures = pressuresToApply;
       next.coalitionActive = rivalResult.coalitionActive;
 
       // Companion engine: sync roster, evaluate trust, fire supportive moves.
@@ -498,7 +591,14 @@ export function reducer(state: GameState, action: Action): GameState {
       // Premise engine: reveal the Old Master's will once LE threshold is met,
       // then evaluate clause conditions each tick.
       if (shouldRevealPremise(next)) {
-        next.premise = defaultPremiseState(now);
+        // Premise was pre-seeded with industry clauses in newGameForSetup;
+        // here we just stamp the reveal time so the UI shows the will.
+        if (next.premise && next.premise.revealedAt === 0) {
+          next.premise = { ...next.premise, revealedAt: now };
+        } else if (!next.premise) {
+          // Fallback for saves that predate clause pre-seeding.
+          next.premise = defaultPremiseState(now, next.setup?.industry);
+        }
       }
       if (next.premise) {
         next.premise = tickPremise(next.premise, next, dt, now);
@@ -523,26 +623,48 @@ export function reducer(state: GameState, action: Action): GameState {
           }
         }
 
-        // Companion: trust rung upgraded (not including ESTRANGED).
+        // Companion: trust rung changed (including ESTRANGED departure).
         for (const c of next.companions) {
           const prev = (state.companions ?? []).find((p) => p.id === c.id);
-          if (prev && c.rung !== prev.rung && c.rung !== 'ESTRANGED') {
+          if (prev && c.rung !== prev.rung) {
             const cfg = getCompanionConfig(c.id);
-            const RUNG_LABELS: Record<string, string> = {
-              ACQUAINTANCE: 'joined as an acquaintance',
-              COLLEAGUE: 'become a trusted colleague',
-              CONFIDANT: 'reached confidant status',
-              INNER_CIRCLE: 'entered your inner circle',
-              LEGACY: 'formed a legacy bond',
-            };
-            newAmbients.push({
-              id: `${now}-companion-${c.id}`,
-              at: now,
-              icon: '🤝',
-              source: 'Inner Circle',
-              text: `${cfg?.name ?? c.id} has ${RUNG_LABELS[c.rung] ?? c.rung}.`,
-            });
+            if (c.rung === 'ESTRANGED') {
+              newAmbients.push({
+                id: `${now}-companion-${c.id}-estranged`,
+                at: now,
+                icon: '💔',
+                source: 'Inner Circle',
+                text: `${cfg?.name ?? c.id} has left the company. Your choices drove them away.`,
+              });
+            } else {
+              const RUNG_LABELS: Record<string, string> = {
+                ACQUAINTANCE: 'joined as an acquaintance',
+                COLLEAGUE: 'become a trusted colleague',
+                CONFIDANT: 'reached confidant status',
+                INNER_CIRCLE: 'entered your inner circle',
+                LEGACY: 'formed a legacy bond',
+              };
+              newAmbients.push({
+                id: `${now}-companion-${c.id}`,
+                at: now,
+                icon: '🤝',
+                source: 'Inner Circle',
+                text: `${cfg?.name ?? c.id} has ${RUNG_LABELS[c.rung] ?? c.rung}.`,
+              });
+            }
           }
+        }
+
+        // Companion: fired a supportive move (Mara reaches out).
+        for (const move of companionResult.firedMoves) {
+          const cfg = getCompanionConfig(move.companionId);
+          newAmbients.push({
+            id: `${now}-companion-move-${move.companionId}`,
+            at: now,
+            icon: '💬',
+            source: cfg?.name ?? move.companionId,
+            text: move.message,
+          });
         }
 
         // Workforce: collective mood tier shifted.
@@ -694,6 +816,88 @@ export function reducer(state: GameState, action: Action): GameState {
         ...(next.investments ?? defaultInvestmentState()),
         ...tickInvestments(next, dt, now),
       };
+
+      // Pantheon system (Part 10): grow titan valuations, generate Ledger articles, track rank.
+      {
+        const pantheonTick = tickPantheon(
+          next.pantheon ?? defaultPantheonState(),
+          next,
+          dt,
+          now,
+          state
+        );
+        next.pantheon = pantheonTick.pantheon;
+
+        // Titan generated a Ledger activity article.
+        if (pantheonTick.newLedgerItem) {
+          next.newspaper = publishPantheonItem(
+            next.newspaper ?? defaultNewspaperState(),
+            pantheonTick.newLedgerItem,
+            now
+          );
+        }
+
+        // Titan surpassed — front-page breaking story.
+        if (pantheonTick.surpassedTitanId) {
+          const titanCfg = getPantheonConfig(pantheonTick.surpassedTitanId);
+          const titanState = (next.pantheon.titans ?? []).find((t) => t.id === pantheonTick.surpassedTitanId);
+          if (titanCfg && titanState) {
+            next.newspaper = publishTitanSurpassed(
+              next.newspaper ?? defaultNewspaperState(),
+              titanCfg.name,
+              titanCfg.title,
+              `$${(titanState.estimatedValuation / 1e12).toFixed(1)}T`,
+              next.setup?.name ?? 'The Company',
+              now
+            );
+          }
+        }
+
+        // Titan just noticed the player — ambient article.
+        if (pantheonTick.noticedTitanId) {
+          const titanCfg = getPantheonConfig(pantheonTick.noticedTitanId);
+          if (titanCfg) {
+            next.newspaper = publishTitanNoticed(
+              next.newspaper ?? defaultNewspaperState(),
+              titanCfg.name,
+              titanCfg.title,
+              next.setup?.name ?? 'The Company',
+              now
+            );
+            // Also an ambient feed entry.
+            const ambientEntry: AmbientEntry = {
+              id: `${now}-titan-noticed-${titanCfg.id}`,
+              at: now,
+              icon: titanCfg.emoji,
+              source: 'World',
+              text: `${titanCfg.name} (${titanCfg.title}) has taken notice of your empire. The Ledger reports it.`,
+            };
+            next.ambientFeed = [...(next.ambientFeed ?? []), ambientEntry].slice(-30);
+          }
+        }
+
+        // Rival attack recording: when a rival's telegraph executes (pressure was applied this tick),
+        // record it in the dossier and check vendettas.
+        for (const r of next.rivals ?? []) {
+          const prevR = (state.rivals ?? []).find((p) => p.id === r.id);
+          // A pressure was created this tick if rivalPressures grew for this rival.
+          const hadNewPressure =
+            (next.rivalPressures ?? []).some(
+              (p) => p.rivalId === r.id && p.endsAt > now - 500
+            ) &&
+            !(state.rivalPressures ?? []).some(
+              (p) => p.rivalId === r.id && p.endsAt > now - 500
+            );
+          if (hadNewPressure && prevR?.telegraph?.moveId) {
+            next.intel = recordRivalAttack(
+              next.intel ?? defaultIntelState(),
+              r.id,
+              prevR.telegraph.moveId,
+              now
+            );
+          }
+        }
+      }
 
       next.stats = { ...next.stats, playSeconds: next.stats.playSeconds + dt };
       next.lastTick = now;
@@ -1219,17 +1423,47 @@ export function reducer(state: GameState, action: Action): GameState {
       if (!aide || !canDeploy(aide, now)) return state;
       const cfg = getAideConfig(action.aideId);
       if (!cfg) return state;
+
+      const updatedAides = markDeployed(state.aides ?? [], action.aideId, now);
+      let cashBonus = 0;
+      let clearedPressures = state.rivalPressures;
+      let ethicsBonus = 0;
+
+      // Mechanic-specific deploy effects
+      if (cfg.mechanicKind === 'compound_engine') {
+        // Yuki: release the full compound buffer as a cash injection
+        cashBonus = aide.compoundBuffer ?? 0;
+      }
+      if (cfg.mechanicKind === 'legal_fortress' || cfg.mechanicKind === 'resilience_buffer') {
+        // Marcus / Sofia: clear all active rival pressures on deploy
+        clearedPressures = [];
+      }
+      if (cfg.mechanicKind === 'truth_cycle') {
+        // Layla: ethics boost on deploy
+        ethicsBonus = 8;
+      }
+
+      const nextEthics =
+        ethicsBonus > 0
+          ? Math.min(100, (state.story?.ethics ?? 0) + ethicsBonus)
+          : state.story?.ethics ?? 0;
+
       return {
         ...state,
-        aides: markDeployed(state.aides ?? [], action.aideId, now),
-        events: {
-          ...state.events,
-          boost: {
-            mult: cfg.deployMult,
-            endsAt: now + cfg.deployDurationSec * 1000,
-            source: `${cfg.name}  -  ${cfg.deployLabel}`,
-          },
-        },
+        cash: state.cash + cashBonus,
+        aides: updatedAides,
+        rivalPressures: clearedPressures,
+        story: ethicsBonus > 0 ? { ...state.story, ethics: nextEthics } : state.story,
+        events: cfg.deployMult > 1 || cfg.deployDurationSec > 1
+          ? {
+              ...state.events,
+              boost: {
+                mult: cfg.deployMult,
+                endsAt: now + cfg.deployDurationSec * 1000,
+                source: `${cfg.name} — ${cfg.deployLabel}`,
+              },
+            }
+          : state.events,
       };
     }
 
@@ -1257,6 +1491,71 @@ export function reducer(state: GameState, action: Action): GameState {
     case 'INV_DISMISS_OFFER': {
       const inv = state.investments ?? defaultInvestmentState();
       return { ...state, investments: { ...inv, pendingOffer: null } };
+    }
+
+    // ----- WAR_ROOM_UPGRADE -----
+    case 'WAR_ROOM_UPGRADE': {
+      const intel = state.intel ?? defaultIntelState();
+      if (!canUpgradeWarRoom(intel, state.influence)) return state;
+      const cost = warRoomUpgradeCost(intel);
+      return {
+        ...state,
+        influence: state.influence - cost,
+        intel: upgradeWarRoom(intel, now),
+      };
+    }
+
+    // ----- RIVAL_STRIKE (proactive player attack — extends RIVAL_OFFENSE) -----
+    case 'RIVAL_STRIKE': {
+      const strikeCosts: Record<string, { cash: number; influence: number }> = {
+        talent_poach:    { cash: 20_000, influence: 0 },
+        patent_claim:    { cash: 0, influence: 800 },
+        hostile_bid:     { cash: 50_000, influence: 0 },
+        leak_story:      { cash: 0, influence: 500 },
+        fund_competitor: { cash: 10_000, influence: 0 },
+        undercut:        { cash: 5_000, influence: 0 },
+      };
+      const cost = strikeCosts[action.strikeKind];
+      if (!cost) return state;
+      if (state.cash < cost.cash || state.influence < cost.influence) return state;
+      // Map all strike kinds to existing offense function (which handles agg/rel penalties).
+      const offenseKind: 'leak_story' | 'fund_competitor' | 'undercut' =
+        action.strikeKind === 'talent_poach' ? 'fund_competitor'
+        : action.strikeKind === 'patent_claim' ? 'undercut'
+        : action.strikeKind === 'hostile_bid' ? 'leak_story'
+        : action.strikeKind as 'leak_story' | 'fund_competitor' | 'undercut';
+      return {
+        ...state,
+        cash: state.cash - cost.cash,
+        influence: state.influence - cost.influence,
+        rivals: applyPlayerOffense(state.rivals ?? [], action.rivalId, offenseKind),
+      };
+    }
+
+    // ----- VENDETTA_RESPOND (player actively responds to a vendetta) -----
+    case 'VENDETTA_RESPOND': {
+      const intel = state.intel ?? defaultIntelState();
+      const vendetta = intel.vendettas.find((v) => v.rivalId === action.rivalId);
+      if (!vendetta) return state;
+      if (state.influence < 300) return state;
+      // Cost 300 influence; reduces the vendetta rival's aggression by 25.
+      return {
+        ...state,
+        influence: state.influence - 300,
+        rivals: shiftRivalAggression(state.rivals ?? [], action.rivalId, -25),
+      };
+    }
+
+    // ----- LEDGER_READ_ALL -----
+    case 'LEDGER_READ_ALL': {
+      const newspaper = state.newspaper ?? defaultNewspaperState();
+      return {
+        ...state,
+        newspaper: {
+          ...newspaper,
+          items: newspaper.items.map((n) => ({ ...n, read: true })),
+        },
+      };
     }
 
     // ----- LOAD / IMPORT -----
@@ -1324,12 +1623,11 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Accent CSS var follows the setup.
+  // Apply full 3-layer industry theme (--accent, --accent-deep, --accent-elec, --accent-glow)
+  // whenever the player's accent color changes.
   useEffect(() => {
     const accent = state.setup?.accent;
-    if (accent) {
-      document.documentElement.style.setProperty('--accent', accent);
-    }
+    if (accent) applyIndustryTheme(accent);
   }, [state.setup?.accent]);
 
   // Game loop.

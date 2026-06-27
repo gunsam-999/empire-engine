@@ -132,3 +132,63 @@ export function getPalette(accent: string): Palette {
   paletteCache.set(accent, p);
   return p;
 }
+
+// ============================================================================
+// THREE-LAYER INDUSTRY COLOR SYSTEM
+//
+// Each industry's chromatic identity has three layers:
+//   deepBase  — a near-black tinted version for the page / world background
+//   surface   — a saturated mid-tone for card and panel surfaces
+//   electric  — a near-neon bright accent for interactive elements and highlights
+//
+// These three layers together make the player's world feel distinctly theirs.
+// The CSS custom properties --accent-deep, --accent, --accent-elec are set at
+// runtime by applyIndustryTheme().
+// ============================================================================
+
+export interface IndustryLayers {
+  /** Very dark, tinted base — bleeds into page background. */
+  deepBase: string;
+  /** Saturated mid-tone — used on frosted glass surfaces. */
+  surface: string;
+  /** Near-electric highlight — used on interactive elements, highlights. */
+  electric: string;
+  /** rgba() glow string for box-shadow / filter values. */
+  glowRgba: string;
+}
+
+const layerCache = new Map<string, IndustryLayers>();
+
+/** Derive the 3-layer identity from a raw accent hex. Memoized. */
+export function getIndustryLayers(accent: string): IndustryLayers {
+  const cached = layerCache.get(accent);
+  if (cached) return cached;
+
+  const layers: IndustryLayers = {
+    // Deep base: rotate hue +12°, saturate 110%, darken to ~18% lightness
+    deepBase: adjust(accent, 12, 1.1, 0.22),
+    // Surface mid-tone: original hue, 90% saturation, 55% lightness
+    surface:  adjust(accent,  0, 0.90, 0.55),
+    // Electric: -8° hue, 115% saturation, 175% lightness (capped at 0.82)
+    electric: adjust(accent, -8, 1.15, 1.75),
+    glowRgba: withAlpha(accent, 0.38),
+  };
+
+  layerCache.set(accent, layers);
+  return layers;
+}
+
+/**
+ * Apply the full industry theme to the document root CSS variables.
+ * Call this once when the player picks their industry / accent color.
+ * Every glass surface, glow, and backdrop will update instantly.
+ */
+export function applyIndustryTheme(accent: string): void {
+  const layers = getIndustryLayers(accent);
+  const root = document.documentElement;
+  root.style.setProperty('--accent',       accent);
+  root.style.setProperty('--accent-deep',  layers.deepBase);
+  root.style.setProperty('--accent-elec',  layers.electric);
+  root.style.setProperty('--accent-glow',  layers.glowRgba);
+  root.style.setProperty('--industry-deep', layers.deepBase);
+}

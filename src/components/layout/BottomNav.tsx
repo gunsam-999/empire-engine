@@ -4,9 +4,9 @@ import { sfx } from '../../systems/AudioEngine';
 import { haptic } from '../../utils/haptics';
 
 /** Canonical screen identifiers used by the router/App. */
-export type TabId = 'empire' | 'marketing' | 'research' | 'invest' | 'prestige';
+export type TabId = 'empire' | 'marketing' | 'research' | 'invest' | 'prestige' | 'intel';
 
-export const TAB_IDS: TabId[] = ['empire', 'marketing', 'research', 'invest', 'prestige'];
+export const TAB_IDS: TabId[] = ['empire', 'marketing', 'research', 'invest', 'prestige', 'intel'];
 
 interface TabMeta {
   id: TabId;
@@ -15,11 +15,12 @@ interface TabMeta {
 }
 
 const TABS: TabMeta[] = [
-  { id: 'empire', label: 'Empire', icon: '🏭' },
+  { id: 'empire',    label: 'Empire',    icon: '🏭' },
   { id: 'marketing', label: 'Marketing', icon: '📣' },
-  { id: 'research', label: 'Research', icon: '🔬' },
-  { id: 'invest', label: 'Invest', icon: '💎' },
-  { id: 'prestige', label: 'Prestige', icon: '♻️' },
+  { id: 'research',  label: 'Research',  icon: '🔬' },
+  { id: 'invest',    label: 'Invest',    icon: '💎' },
+  { id: 'prestige',  label: 'Prestige',  icon: '♻️' },
+  { id: 'intel',     label: 'Intel',     icon: '🕵️' },
 ];
 
 export interface BottomNavProps {
@@ -41,10 +42,17 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
   // Invest pulses when The Wiz has a pending offer.
   const wizHasOffer = !!(state.investments?.pendingOffer);
 
+  // Intel pulses when there's a rival telegraph, breaking news, or unread Ledger story.
+  const hasRivalTelegraph = (state.rivals ?? []).some((r) => r.telegraph);
+  const hasBreakingNews = (state.newspaper?.items ?? []).some((n) => n.isBreaking && !n.read);
+  const hasPendingCounterIntel = !!(state.intel?.pendingCounterIntel);
+  const intelPulse = hasRivalTelegraph || hasBreakingNews || hasPendingCounterIntel;
+
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-[#232c3e]
-        bg-[#0e1420]/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] glass-panel
+        pb-[env(safe-area-inset-bottom)]"
+      style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
       aria-label="Primary"
     >
       <div className="flex items-stretch px-2 py-1">
@@ -57,7 +65,8 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
             pulse={
               (tab.id === 'prestige' && prestigeReady && active !== 'prestige') ||
               (tab.id === 'marketing' && needsMarketing && active !== 'marketing') ||
-              (tab.id === 'invest' && wizHasOffer && active !== 'invest')
+              (tab.id === 'invest' && wizHasOffer && active !== 'invest') ||
+              (tab.id === 'intel' && intelPulse && active !== 'intel')
             }
             onClick={() => {
               if (active !== tab.id) {

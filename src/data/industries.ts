@@ -12,6 +12,9 @@ import type {
   Philosophy,
 } from '../game/types';
 
+// Re-export for convenience
+export type { IndustryType };
+
 // ----------------------------------------------------------------------------
 // Shared tuning curve (matches the build contract economy formulas)
 // ----------------------------------------------------------------------------
@@ -53,6 +56,9 @@ interface IndustrySeed {
   mechanicDesc: string;
   chain: [string, string, string, string, string];
   advisorTitles: string[];
+  flavor: string;
+  challenge: string;
+  archetype: string;
   // 5 tiers of themed facility names + icons
   tiers: [TierTheme, TierTheme, TierTheme, TierTheme, TierTheme];
 }
@@ -92,6 +98,10 @@ function tiersResourceWord(id: IndustryType): string {
     biotech: 'cures',
     media: 'attention',
     agri: 'harvest',
+    finance: 'capital',
+    realestate: 'property value',
+    entertainment: 'engagement',
+    hospitality: 'experience',
   };
   return w[id];
 }
@@ -116,6 +126,9 @@ const SEEDS: IndustrySeed[] = [
       'Chain your fabs to boost the next tier. Overclock active rigs for burst throughput before they throttle.',
     chain: ['Garage', 'Startup', 'Datacenter', 'Cloud Region', 'Quantum Grid'],
     advisorTitles: ['Hacker', 'CTO', 'AI Architect', 'Chief Scientist', 'Singularity Sage'],
+    flavor: 'Where thought becomes silicon and silicon becomes power. Build the infrastructure that runs the world — before the world knows it needs you.',
+    challenge: 'Research never sleeps — and neither do your competitors.',
+    archetype: 'Systems builders and relentless optimizers',
     tiers: [
       {
         names: [
@@ -175,6 +188,9 @@ const SEEDS: IndustrySeed[] = [
       'Stack thrust through your launch chain. Hit the launch window for a stacked multiplier, then refuel.',
     chain: ['Hangar', 'Spaceport', 'Orbital Yard', 'Lunar Base', 'Interstellar Dock'],
     advisorTitles: ['Test Pilot', 'Flight Director', 'Chief Engineer', 'Mission Commander', 'Astrarch'],
+    flavor: 'The vacuum between stars is a problem without a solution yet. Provide the solution — at launch windows the world will revolve around.',
+    challenge: 'Timing is everything; the window closes without apology.',
+    archetype: 'Long-bet strategists and mission-driven builders',
     tiers: [
       {
         names: [
@@ -234,6 +250,9 @@ const SEEDS: IndustrySeed[] = [
       'Prep stations feed the kitchens above them. Time a flawless service rush for a tip multiplier.',
     chain: ['Street Cart', 'Bistro', 'Fine Dining', 'Restaurant Group', 'Culinary Dynasty'],
     advisorTitles: ['Line Cook', 'Sous Chef', 'Head Chef', 'Restaurateur', 'Culinary Maestro'],
+    flavor: 'A meal is a memory in the making. Build the kitchens that create them, the supply chains that sustain them, the empires that carry them across borders.',
+    challenge: 'Quality cannot survive scale — unless you make it your obsession.',
+    archetype: 'Detail-obsessed operators who never forget the dish',
     tiers: [
       {
         names: [
@@ -293,6 +312,9 @@ const SEEDS: IndustrySeed[] = [
       'Generators feed substations feed the grid. Balance peak load to ride a surge-pricing multiplier.',
     chain: ['Generator', 'Power Plant', 'Grid Station', 'Mega Utility', 'Fusion Authority'],
     advisorTitles: ['Lineworker', 'Plant Manager', 'Grid Operator', 'Utility Director', 'Energy Sovereign'],
+    flavor: 'Power the present, bet on the future. The grid doesn\'t care about ideology — but the people it feeds do. Navigate both.',
+    challenge: 'Political exposure arrives with scale and doesn\'t leave.',
+    archetype: 'Infrastructure visionaries who think in decades',
     tiers: [
       {
         names: [
@@ -352,6 +374,9 @@ const SEEDS: IndustrySeed[] = [
       'Ateliers feed boutiques feed houses. Drop a collection at peak hype for a trend multiplier.',
     chain: ['Atelier', 'Boutique', 'Label', 'Fashion House', 'Couture Empire'],
     advisorTitles: ['Seamstress', 'Stylist', 'Designer', 'Creative Director', 'Couturier'],
+    flavor: 'A garment is a statement before it\'s a product. The question isn\'t what you\'re selling — it\'s what you\'re saying with it. Answer carefully.',
+    challenge: 'Identity vs. commercialization — every collection makes the argument again.',
+    archetype: 'Cultural curators and precision aestheticians',
     tiers: [
       {
         names: [
@@ -411,6 +436,9 @@ const SEEDS: IndustrySeed[] = [
       'Labs feed sequencers feed pharma. Push a breakthrough through trials for an approval multiplier.',
     chain: ['Wet Lab', 'Sequencer', 'Pharma Wing', 'Genomics Campus', 'Life Foundry'],
     advisorTitles: ['Lab Tech', 'Geneticist', 'Principal Investigator', 'Chief Medical Officer', 'Bio-Visionary'],
+    flavor: 'Life is the only market that doesn\'t care about margins. Until it has to. Navigate the space between discovery and delivery.',
+    challenge: 'Ethics holds the scalpel over profit — and it should.',
+    archetype: 'Patient, precise builders who think in breakthroughs',
     tiers: [
       {
         names: [
@@ -460,7 +488,7 @@ const SEEDS: IndustrySeed[] = [
     id: 'media',
     name: 'Viral Media House',
     tagline: 'Capture attention. Mint influence.',
-    emoji: '🎬',
+    emoji: '📱',
     accent: '#a78bfa',
     resource: 'Attention',
     resourceShort: 'ATN',
@@ -470,6 +498,9 @@ const SEEDS: IndustrySeed[] = [
       'Creators feed studios feed networks. Catch the algorithm at peak for a virality multiplier.',
     chain: ['Creator', 'Studio', 'Network', 'Media Empire', 'Cultural Monopoly'],
     advisorTitles: ['Editor', 'Producer', 'Showrunner', 'Studio Head', 'Media Mogul'],
+    flavor: 'Attention is the currency; truth is the reserve. When the reserve runs low, the currency devalues. Protect both — or choose.',
+    challenge: 'Trust is fragile and rivals know exactly how to break it.',
+    archetype: 'Narrative strategists and platform architects',
     tiers: [
       {
         names: [
@@ -529,6 +560,9 @@ const SEEDS: IndustrySeed[] = [
       'Plots feed farms feed agribusiness. Time the harvest season for a bumper-crop multiplier.',
     chain: ['Plot', 'Farm', 'Agribusiness', 'Agri-Conglomerate', 'Biosphere Authority'],
     advisorTitles: ['Farmhand', 'Agronomist', 'Farm Manager', 'Agribusiness Baron', 'Gaia Steward'],
+    flavor: 'The oldest industry is the one nobody romanticizes until it fails. You know it won\'t fail on your watch. Prove it to the world that forgot.',
+    challenge: 'Climate and timing answer to no one — not even you.',
+    archetype: 'Patient pragmatists who build for the long season',
     tiers: [
       {
         names: [
@@ -572,6 +606,254 @@ const SEEDS: IndustrySeed[] = [
       },
     ],
   },
+
+  // ------------------------------------------------------------- FINANCE ----
+  {
+    id: 'finance',
+    name: 'Voss Capital Group',
+    tagline: 'Where money becomes power becomes legacy.',
+    emoji: '📊',
+    accent: '#06b6d4',
+    resource: 'Capital',
+    resourceShort: 'CAP',
+    currency: '$',
+    mechanicName: 'Market Cycle',
+    mechanicDesc:
+      'Time capital deployments to market phases. Bull market - deploy; bear market - accumulate. Hit the cycle peak for a compound multiplier.',
+    chain: ['Analyst Desk', 'Trading Floor', 'Investment Fund', 'Capital Firm', 'Financial Authority'],
+    advisorTitles: ['Analyst', 'Portfolio Manager', 'Fund Director', 'Chief Investment Officer', 'Market Oracle'],
+    flavor: 'Money moves before news does. The question is whether yours moves toward something worth moving toward. That is the only question that matters.',
+    challenge: 'Systemic risk creates cascades you cannot see until they arrive.',
+    archetype: 'Macro thinkers and risk architects who play the long game',
+    tiers: [
+      {
+        names: [
+          'Market Research Desk', 'Financial Modeling Suite', 'Bloomberg Terminal', 'Options Calculator',
+          'Risk Assessment Bench', 'Earnings Monitor', 'Portfolio Tracker', 'Economic Data Feed',
+          'Technical Analysis Station', 'Quant Script Farm',
+        ],
+        icons: ['📊', '📈', '🖥️', '📉', '⚖️', '📞', '💼', '📡', '📐', '🤖'],
+      },
+      {
+        names: [
+          'Equities Trading Desk', 'Derivatives Pit', 'Fixed Income Desk', 'FX Trading Floor',
+          'Commodity Futures Bench', 'Arbitrage Station', 'Algo Trading Cluster', 'Market Making Desk',
+          'Prime Brokerage Suite', 'Securities Clearing House',
+        ],
+        icons: ['🏦', '📊', '🔒', '💱', '🛢️', '⚖️', '🤖', '🏛️', '🏢', '🔄'],
+      },
+      {
+        names: [
+          'Venture Capital Fund', 'Growth Equity Desk', 'Distressed Assets Unit', 'Leveraged Buyout Wing',
+          'Mezzanine Finance Unit', 'Real Assets Portfolio', 'Credit Opportunities Fund', 'Macro Strategy Desk',
+          'Long/Short Equity Fund', 'Quant Strategies Lab',
+        ],
+        icons: ['💡', '📈', '🔥', '🏗️', '🔀', '🏠', '💳', '🌐', '📊', '🧬'],
+      },
+      {
+        names: [
+          'Sovereign Wealth Mandate', 'Global Macro Fund', 'Multi-Strategy Platform', 'Endowment Management Unit',
+          'Insurance Capital Block', 'Pension Partnership', 'Family Office Division', 'Infrastructure Debt Fund',
+          'Special Situations Desk', 'Alternative Assets Tower',
+        ],
+        icons: ['🏛️', '🌍', '🎯', '🎓', '📋', '👥', '🏠', '🏗️', '⚡', '💎'],
+      },
+      {
+        names: [
+          'Central Bank Partnership', 'Sovereign Bond Issuance', 'Global Exchange Ownership', 'Systemic Institution Wing',
+          'Financial Infrastructure Core', 'Currency Reserve Management', 'Cross-Border Settlement Engine', 'Algorithmic Market Authority',
+          'Global Financial Network', 'Infinite Liquidity Nexus',
+        ],
+        icons: ['🏦', '📜', '🌐', '🏛️', '⚙️', '💵', '🔄', '🤖', '🌍', '♾️'],
+      },
+    ],
+  },
+
+  // --------------------------------------------------------- REAL ESTATE ----
+  {
+    id: 'realestate',
+    name: 'Okafor Developments',
+    tagline: 'Place isn\'t just land  -  it\'s potential waiting.',
+    emoji: '🏗️',
+    accent: '#f59e0b',
+    resource: 'Property Value',
+    resourceShort: 'PROP',
+    currency: '$',
+    mechanicName: 'Development Wave',
+    mechanicDesc:
+      'Acquire land, develop it, let it mature. Catch the market wave at project completion for a valuation surge multiplier.',
+    chain: ['Agent', 'Developer', 'Property Group', 'Real Estate Empire', 'City Architect'],
+    advisorTitles: ['Leasing Agent', 'Property Analyst', 'Development Director', 'Portfolio Chief', 'Master Builder'],
+    flavor: 'Every building is a bet on the future of a place. The places that survive are the ones someone believed in when nobody else did. Be that someone.',
+    challenge: 'Capital cycles are long; patience is the only skill that compounds.',
+    archetype: 'Place-makers and long-view investors with nerves of concrete',
+    tiers: [
+      {
+        names: [
+          'Single-Room Rental', 'Parking Lot Plot', 'Corner Shop Lease', 'Suburban Lot',
+          'Fixer-Upper House', 'Storage Unit Block', 'Foreclosed Property', 'Vacant Lot Option',
+          'Run-Down Duplex', 'Land Banking Parcel',
+        ],
+        icons: ['🏠', '🚗', '🛍️', '🏘️', '🔧', '📦', '📉', '📋', '🏚️', '🌿'],
+      },
+      {
+        names: [
+          'Residential Subdivision', 'Strip Mall Development', 'Mixed-Use Block', 'Apartment Complex',
+          'Industrial Warehouse', 'Medical Office Park', 'Retail Shopping Center', 'Urban Infill Project',
+          'Townhouse Row', 'Boutique Hotel Conversion',
+        ],
+        icons: ['🏘️', '🏬', '🏗️', '🏢', '🏭', '🏥', '🛒', '🌆', '🏠', '🏨'],
+      },
+      {
+        names: [
+          'Office Tower', 'Luxury Condo High-Rise', 'Tech Campus Development', 'Logistics Megawarehouse',
+          'Regional Shopping Mall', 'Hospitality Portfolio', 'Data Center Park', 'Urban Mixed-Use District',
+          'Waterfront Development', 'Cultural Arts District',
+        ],
+        icons: ['🏢', '🌟', '💻', '📦', '🛍️', '🏨', '🖥️', '🌆', '🌊', '🎭'],
+      },
+      {
+        names: [
+          'Skyscraper Complex', 'Smart City District', 'Airport Adjacent Zone', 'Harbor Redevelopment',
+          'University Quarter', 'Innovation Corridor', 'Sports Stadium Quarter', 'Transit-Oriented Hub',
+          'Metropolitan Crown Tower', 'Mega Mixed-Use Hub',
+        ],
+        icons: ['🗼', '🏙️', '✈️', '⚓', '🎓', '💡', '🏟️', '🚇', '👑', '🔀'],
+      },
+      {
+        names: [
+          'New City Foundation', 'Sovereign Territory Development', 'Artificial Island Construction', 'Underground City Complex',
+          'Floating Platform District', 'Space Station Habitat', 'Arcology Tower', 'Global Real Estate Exchange',
+          'Planetary Habitat Network', 'Legacy City Monument',
+        ],
+        icons: ['🌆', '🏛️', '🏝️', '🕳️', '🌊', '🛰️', '🌐', '🌍', '🪐', '🗿'],
+      },
+    ],
+  },
+
+  // --------------------------------------------------------- ENTERTAINMENT ----
+  {
+    id: 'entertainment',
+    name: 'Ventura Studios',
+    tagline: 'Tell the story. Hold the world.',
+    emoji: '🎭',
+    accent: '#ec4899',
+    resource: 'Engagement',
+    resourceShort: 'ENG',
+    currency: '$',
+    mechanicName: 'Cultural Moment',
+    mechanicDesc:
+      'Release a title at cultural peak for a compound engagement surge. The right story at the right moment rewrites the market.',
+    chain: ['Indie Creator', 'Production Studio', 'Distribution Network', 'Entertainment Empire', 'Cultural Monopoly'],
+    advisorTitles: ['Script Reader', 'Line Producer', 'Executive Producer', 'Studio President', 'Cultural Visionary'],
+    flavor: 'Stories change laws. Stories move markets. Stories are the only thing that outlasts the empire. Build the machine that tells them — carefully.',
+    challenge: 'Influence without propaganda is the tightest wire in the industry.',
+    archetype: 'Narrative builders and cultural power brokers',
+    tiers: [
+      {
+        names: [
+          'Self-Published Zine', 'YouTube Channel', 'Podcast Booth', 'Short Film Workshop',
+          'Comic Strip Studio', 'Bedroom Music Studio', 'Fan Fiction Archive', 'Twitch Stream Corner',
+          'Photography Darkroom', 'Sketch Comedy Troupe',
+        ],
+        icons: ['📰', '📱', '🎙️', '🎞️', '🖼️', '🎹', '📚', '🎮', '📷', '😂'],
+      },
+      {
+        names: [
+          'Indie Film Production House', 'Record Label', 'Animation Studio', 'Gaming Studio',
+          'Comedy Writing Room', 'Talent Management Agency', 'Music Video Production', 'Documentary Unit',
+          'Theater Production Company', 'Book Publishing Imprint',
+        ],
+        icons: ['🎬', '🎵', '🎨', '🕹️', '😄', '⭐', '🎶', '📹', '🎭', '📖'],
+      },
+      {
+        names: [
+          'Streaming Platform', 'Film Festival Circuit', 'Nationwide Theater Chain', 'Music Distribution Network',
+          'Sports League Broadcasting', 'Reality TV Production Wing', 'Licensed IP Portfolio', 'Esports League',
+          'Theme Park Concept', 'Literary Agency Network',
+        ],
+        icons: ['📺', '🏆', '🎪', '🎶', '🏅', '👁️', '🔐', '🎮', '🎡', '📚'],
+      },
+      {
+        names: [
+          'Blockbuster Studio Complex', 'Global Streaming Giant', 'Music Festival Empire', 'Sports Franchise Portfolio',
+          'Theme Park Resort', 'Cinematic Universe Factory', 'Award Show Ownership', 'Celebrity Talent Farm',
+          'Cross-Media IP Engine', 'Entertainment Megaplex',
+        ],
+        icons: ['🏛️', '🌐', '🎸', '🏟️', '🎢', '🦸', '🏆', '⭐', '🎯', '🏗️'],
+      },
+      {
+        names: [
+          'Cultural Zeitgeist Engine', 'Metaverse Entertainment Realm', 'AI Storytelling Platform', 'Consciousness Entertainment Lab',
+          'Neural Narrative Interface', 'Reality-Shaping Media Mesh', 'Global Memory Archive', 'Eternal IP Vault',
+          'Sentient Story Engine', 'Legacy of the Century Tower',
+        ],
+        icons: ['✨', '🕶️', '🤖', '🧠', '🔮', '🌀', '🗝️', '🔐', '💫', '🌌'],
+      },
+    ],
+  },
+
+  // --------------------------------------------------------- HOSPITALITY ----
+  {
+    id: 'hospitality',
+    name: 'Tanaka Collection',
+    tagline: 'The space between arrival and memory.',
+    emoji: '🏨',
+    accent: '#d946ef',
+    resource: 'Experience',
+    resourceShort: 'EXP',
+    currency: '$',
+    mechanicName: 'Experience Peak',
+    mechanicDesc:
+      'Staff morale directly multiplies guest output. Peak season compounds everything — the secret is the people, not the property.',
+    chain: ['Inn', 'Hotel', 'Resort', 'Hospitality Group', 'Empire of Experience'],
+    advisorTitles: ['Front Desk Agent', 'Guest Relations Manager', 'General Manager', 'VP of Operations', 'Legendary Host'],
+    flavor: 'Every guest arrives carrying a story and leaves making one. The hotel is the space between. Make that space worth remembering — always.',
+    challenge: 'People business at scale is the hardest art form that exists.',
+    archetype: 'Experience curators and detail perfectionists who build for memory',
+    tiers: [
+      {
+        names: [
+          'Bed & Breakfast', 'Hostel Bunk Room', 'Roadside Motel', 'Airbnb Property',
+          'Village Guesthouse', 'Mountain Cabin', 'Beachside Cottage', 'City Room Rental',
+          'Converted Barn Stay', 'Budget Inn',
+        ],
+        icons: ['🛏️', '🛖', '🏨', '🏠', '🏡', '⛺', '🏖️', '🌆', '🌾', '💤'],
+      },
+      {
+        names: [
+          'Business Class Hotel', 'Airport Transit Hotel', 'Seaside Boutique Hotel', 'City Center Hotel',
+          'Conference Hotel', 'Historic Building Hotel', 'All-Inclusive Resort Hotel', 'Extended Stay Suite',
+          'Wellness Retreat Hotel', 'Rooftop Pool Hotel',
+        ],
+        icons: ['🏢', '✈️', '🌊', '🌆', '🎤', '🏛️', '☀️', '🛋️', '🧘', '🏊'],
+      },
+      {
+        names: [
+          'Luxury Beachfront Resort', 'Mountain Ski Lodge', 'Vineyard Estate Resort', 'Safari Lodge',
+          'Private Island Resort', 'Wellness & Spa Retreat', 'Golf Course Estate', 'Desert Glamping Resort',
+          'Overwater Bungalow Complex', 'Heritage Castle Hotel',
+        ],
+        icons: ['🏖️', '⛷️', '🍷', '🦁', '🏝️', '🧖', '⛳', '🏕️', '🌊', '🏰'],
+      },
+      {
+        names: [
+          'International Hotel Chain', 'Lifestyle Brand Collection', 'Luxury Brand Portfolio', 'Themed Resort Empire',
+          'Convention Center Complex', 'Cruise Ship Line', 'Private Members Club', 'Branded Residences Tower',
+          'Casino Resort Complex', 'Hospitality Megafund',
+        ],
+        icons: ['🌐', '🎨', '💎', '🎭', '🏛️', '🚢', '🔑', '🏠', '🎰', '📈'],
+      },
+      {
+        names: [
+          'Floating Luxury Island', 'Space Tourism Terminal', 'Underground Palace Hotel', 'Holographic Experience Venue',
+          'Sentient Hotel AI Network', 'Zero-Gravity Suite', 'Cultural Preservation Estate', 'Eternal Guest Archive',
+          'Timeless Grand Hotel', 'The Last Great Host',
+        ],
+        icons: ['🏝️', '🛰️', '🕳️', '🎇', '🤖', '🌌', '🗿', '🔐', '♾️', '👑'],
+      },
+    ],
+  },
 ];
 
 // ----------------------------------------------------------------------------
@@ -594,6 +876,9 @@ function seedToConfig(seed: IndustrySeed): IndustryConfig {
     advisorTitles: seed.advisorTitles,
     facilities: buildFacilities(seed.id, seed.tiers),
     tierUnlock: [0, 1e4, 1e7, 1e10, 1e13],
+    flavor: seed.flavor,
+    challenge: seed.challenge,
+    archetype: seed.archetype,
   };
 }
 

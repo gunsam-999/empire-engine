@@ -1,17 +1,21 @@
-// Card  -  the standard premium panel used across the app.
-// Dark card surface, rounded-2xl, accent-aware hover/active states.
+// Card — the standard glass surface panel used across the app.
+//
+// Every surface feels like frosted glass sitting above a dark premium base:
+//   • Semi-transparent background with backdrop-blur
+//   • Thin bright border on upper + left edge (light catching the glass edge)
+//   • Very slight accent-tinted inner glow on active state
+//   • Industry accent bleeds into the glass background at low opacity
 
 import type { CSSProperties, ReactNode } from 'react';
 
 export interface CardProps {
   children: ReactNode;
-  /** Adds hover lift + pointer cursor and forwards onClick. */
   onClick?: () => void;
-  /** Glow + accent border, e.g. for a selected/affordable card. */
+  /** Accent-glowing border + glass-active treatment. */
   active?: boolean;
   /** Dims + disables interaction (e.g. unaffordable). */
   muted?: boolean;
-  /** Padding scale. Defaults to 'md' (p-4). */
+  /** Padding scale. Defaults to 'md'. */
   pad?: 'none' | 'sm' | 'md' | 'lg';
   className?: string;
   style?: CSSProperties;
@@ -19,34 +23,44 @@ export interface CardProps {
 
 const PAD: Record<NonNullable<CardProps['pad']>, string> = {
   none: '',
-  sm: 'p-3',
-  md: 'p-4',
-  lg: 'p-5',
+  sm:   'p-3',
+  md:   'p-4',
+  lg:   'p-5',
 };
 
 export default function Card({
   children,
   onClick,
-  active = false,
-  muted = false,
-  pad = 'md',
+  active  = false,
+  muted   = false,
+  pad     = 'md',
   className = '',
   style,
 }: CardProps) {
   const clickable = !!onClick && !muted;
 
-  const base =
-    'rounded-2xl border bg-[#151c2b] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.6)] transition-all duration-200';
-  const borderCls = active ? 'border-[var(--accent)]' : 'border-[#232c3e]';
-  const hoverCls = clickable ? 'hover:bg-[#1b2334] active:scale-[0.985] cursor-pointer' : '';
-  const mutedCls = muted ? 'opacity-50' : '';
+  const base = [
+    'relative rounded-2xl transition-all duration-200 overflow-hidden',
+    // Glass surface foundation
+    'backdrop-blur-sm',
+  ].join(' ');
 
-  const glow: CSSProperties = active
-    ? {
-        boxShadow:
-          '0 0 0 1px var(--accent), 0 6px 22px -8px color-mix(in srgb, var(--accent) 55%, transparent)',
-      }
-    : {};
+  const surface = active
+    ? 'glass-active'
+    : 'glass';
+
+  const hoverCls = clickable
+    ? [
+        'cursor-pointer',
+        'active:scale-[0.984]',
+        // On hover, the accent-tint in the glass deepens slightly
+        active
+          ? 'hover:brightness-110'
+          : 'hover:brightness-105',
+      ].join(' ')
+    : '';
+
+  const mutedCls = muted ? 'opacity-45 pointer-events-none' : '';
 
   return (
     <div
@@ -63,8 +77,8 @@ export default function Card({
             }
           : undefined
       }
-      className={`${base} ${borderCls} ${hoverCls} ${mutedCls} ${PAD[pad]} ${className}`}
-      style={{ ...glow, ...style }}
+      className={`${base} ${surface} ${hoverCls} ${mutedCls} ${PAD[pad]} ${className}`}
+      style={style}
     >
       {children}
     </div>

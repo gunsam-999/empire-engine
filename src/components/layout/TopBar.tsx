@@ -53,7 +53,7 @@ interface CurrencyChipProps {
 function CurrencyChip({ icon, value, title, tone }: CurrencyChipProps) {
   return (
     <div
-      className="flex items-center gap-1 rounded-lg bg-[#151c2b] px-2 py-1 border border-[#232c3e]"
+      className="flex items-center gap-1 rounded-lg glass px-2 py-1"
       title={title}
     >
       <span className="text-xs leading-none" aria-hidden>
@@ -81,7 +81,7 @@ interface ReachChipProps {
 function ReachChip({ reach, audience, rate }: ReachChipProps) {
   return (
     <div
-      className="flex items-center gap-1.5 rounded-lg bg-[#151c2b] px-2 py-1 border border-[var(--accent)]/35"
+      className="flex items-center gap-1.5 rounded-lg glass-active px-2 py-1"
       title={`Reach  -  total people reached · +${formatNumber(rate)}/s\nAudience: ${formatNumber(
         audience
       )} loyal followers`}
@@ -118,8 +118,8 @@ function IconButton({ icon, label, onClick, pulse = false, badge }: IconButtonPr
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="relative grid h-9 w-9 place-items-center rounded-xl border border-[#232c3e]
-        bg-[#151c2b] text-base transition-transform active:scale-90 hover:bg-[#1b2334]"
+      className="relative grid h-9 w-9 place-items-center rounded-xl glass
+        text-base transition-transform active:scale-90 hover:brightness-110"
     >
       {pulse && (
         <span
@@ -161,8 +161,9 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
 
   return (
     <header
-      className="fixed inset-x-0 top-0 z-30 mx-auto max-w-[480px] border-b border-[#232c3e]
-        bg-[#0e1420]/95 backdrop-blur-md pt-[env(safe-area-inset-top)]"
+      className="fixed inset-x-0 top-0 z-30 mx-auto max-w-[480px] glass-panel
+        pt-[env(safe-area-inset-top)]"
+      style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
     >
       {/* Row 1: identity + overlay buttons */}
       <div className="flex items-center justify-between gap-2 px-3 pt-2">

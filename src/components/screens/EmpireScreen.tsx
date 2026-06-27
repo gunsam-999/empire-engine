@@ -33,6 +33,7 @@ import type { FacilityConfig, GameState } from '../../game/types';
 import { formatMoney, formatNumber } from '../../utils/bigNumber';
 import AnimatedCounter from '../shared/AnimatedCounter';
 import LiveEmpireView from './LiveEmpireView';
+import { AmbientFeed } from '../shared/AmbientFeed';
 
 type BuyQty = GameState['settings']['buyQty'];
 const BUY_OPTIONS: BuyQty[] = [1, 10, 100, 'max'];
@@ -143,6 +144,11 @@ export default function EmpireScreen() {
 
       {/* Scroll content (pb so the bulk bar / future nav never covers it) */}
       <div className="px-4 pt-3 pb-28">
+        {/* ===================== Live dispatch feed ===================== */}
+        <div className="mb-3">
+          <AmbientFeed />
+        </div>
+
         {/* ===================== Live empire view (when enabled) ===================== */}
         {liveView && (
           <div className="mb-3">
