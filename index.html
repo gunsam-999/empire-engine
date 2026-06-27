@@ -18,7 +18,8 @@
     <link rel="apple-touch-icon" href="icon-192.png" />
     <title>Empire Engine</title>
     <style>
-      html, body { margin: 0; background: #070b12; overflow: hidden; }
+      html, body { margin: 0; background: #070b12; }
+      /* NOTE: no overflow:hidden — that breaks page scroll after boot. #boot is fixed-inset so it already covers the viewport. */
 
       /* ---- Boot splash ---- */
       #boot {
