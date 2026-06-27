@@ -25,6 +25,101 @@ import { sfx } from '../../systems/AudioEngine';
 import { haptic } from '../../utils/haptics';
 import { celebrate } from '../shared/CelebrationHost';
 
+// ---------------------------------------------------------------------------
+// Animated home-screen background
+// ---------------------------------------------------------------------------
+
+const FLOAT_ITEMS = [
+  { em: '💻', left: 6,  dur: 24, del: -5,  sz: 38, op: 0.08 },
+  { em: '🚀', left: 18, dur: 30, del: -12, sz: 42, op: 0.07 },
+  { em: '🍳', left: 33, dur: 20, del: -8,  sz: 36, op: 0.09 },
+  { em: '⚡', left: 50, dur: 27, del: -16, sz: 44, op: 0.07 },
+  { em: '👗', left: 64, dur: 22, del: -3,  sz: 38, op: 0.08 },
+  { em: '🧬', left: 76, dur: 33, del: -21, sz: 40, op: 0.06 },
+  { em: '🎬', left: 87, dur: 18, del: -10, sz: 36, op: 0.09 },
+  { em: '🌾', left: 94, dur: 26, del: -14, sz: 40, op: 0.07 },
+  { em: '💻', left: 12, dur: 28, del: -19, sz: 26, op: 0.055 },
+  { em: '🚀', left: 42, dur: 21, del: -7,  sz: 28, op: 0.05 },
+  { em: '⚡', left: 71, dur: 25, del: -4,  sz: 30, op: 0.055 },
+  { em: '🌾', left: 57, dur: 35, del: -23, sz: 24, op: 0.045 },
+  { em: '🧬', left: 25, dur: 29, del: -17, sz: 26, op: 0.05 },
+  { em: '🎬', left: 83, dur: 23, del: -9,  sz: 28, op: 0.045 },
+];
+
+function HomeBg({ accent }: { accent: string }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-0 -z-20 overflow-hidden"
+    >
+      <style>{`
+        @keyframes hb-drift {
+          0%   { transform: translateY(105vh) rotate(-6deg); opacity: 0; }
+          8%   { opacity: 1; }
+          92%  { opacity: 0.85; }
+          100% { transform: translateY(-12vh) rotate(6deg); opacity: 0; }
+        }
+        @keyframes hb-aurora {
+          0%,100% { opacity: 0.7; transform: scale(1) translateX(0); }
+          33%     { opacity: 1;   transform: scale(1.06) translateX(-2%); }
+          66%     { opacity: 0.8; transform: scale(0.97) translateX(2%); }
+        }
+        @keyframes hb-dot-pulse {
+          0%,100% { opacity: 0.035; }
+          50%     { opacity: 0.065; }
+        }
+        .hb-em { position: absolute; line-height: 1; animation: hb-drift linear infinite; }
+      `}</style>
+
+      {/* Aurora gradient layers */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `
+            radial-gradient(ellipse 130% 55% at 25% 15%, color-mix(in srgb, ${accent} 14%, transparent), transparent 65%),
+            radial-gradient(ellipse 90% 45% at 78% 85%, rgba(90,74,242,0.10), transparent 70%),
+            radial-gradient(ellipse 60% 40% at 55% 50%, rgba(55,48,163,0.07), transparent 70%)
+          `,
+          animation: 'hb-aurora 9s ease-in-out infinite',
+        }}
+      />
+
+      {/* Floating industry emojis */}
+      {FLOAT_ITEMS.map((p, i) => (
+        <span
+          key={i}
+          className="hb-em"
+          style={{
+            left: `${p.left}%`,
+            fontSize: `${p.sz}px`,
+            opacity: p.op,
+            filter: 'grayscale(25%) blur(0.4px)',
+            animationDuration: `${p.dur}s`,
+            animationDelay: `${p.del}s`,
+          }}
+        >
+          {p.em}
+        </span>
+      ))}
+
+      {/* Subtle dot grid */}
+      <svg
+        width="100%"
+        height="100%"
+        className="absolute inset-0"
+        style={{ animation: 'hb-dot-pulse 7s ease-in-out infinite' }}
+      >
+        <defs>
+          <pattern id="hb-dots" x="0" y="0" width="36" height="36" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill={accent} />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#hb-dots)" />
+      </svg>
+    </div>
+  );
+}
+
 export default function IndustrySelect() {
   const { state, dispatch } = useGame();
 
@@ -97,6 +192,7 @@ export default function IndustrySelect() {
       style={{ ['--accent' as string]: accent }}
       className="max-w-[480px] mx-auto min-h-screen relative px-4 pt-8 pb-28 animate-fade-in"
     >
+      <HomeBg accent={accent} />
       {/* Ambient accent glow behind the header */}
       <div
         aria-hidden
