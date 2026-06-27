@@ -36,6 +36,7 @@ export const STORY_BEATS: StoryBeat[] = [
       'Build yours so it can survive me being wrong about you.',
     ],
     reward: { cash: 100 },
+    dramatic: true,
   },
   {
     id: 'a1c2_partner',
@@ -167,6 +168,7 @@ export const STORY_BEATS: StoryBeat[] = [
       'And a warning.',
     ],
     reward: { insight: 25 },
+    dramatic: true,
   },
   {
     id: 'a2c3_rivalwar',
@@ -242,6 +244,7 @@ export const STORY_BEATS: StoryBeat[] = [
       'So I dissolve the company to found a better one. Same name. Sharper teeth.',
     ],
     reward: { insight: 100 },
+    dramatic: true,
   },
   {
     id: 'a3c2_partnerdoubt',
@@ -332,6 +335,7 @@ export const STORY_BEATS: StoryBeat[] = [
       'No advice. No warning. Just the weight, handed over.',
     ],
     reward: { lp: 5 },
+    dramatic: true,
   },
 
   // ==========================================================================
@@ -378,6 +382,7 @@ export const STORY_BEATS: StoryBeat[] = [
         },
       ],
     },
+    dramatic: true,
   },
   {
     id: 'a4c3_quorumvote',
@@ -556,5 +561,6 @@ export const STORY_BEATS: StoryBeat[] = [
       'The engine turns. It was always going to be someone. This time it was you.',
     ],
     reward: { lp: 100 },
+    dramatic: true,
   },
 ];

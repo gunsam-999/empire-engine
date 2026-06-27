@@ -17,6 +17,9 @@ import { reputationMultipliers } from '../../systems/EconomyEngine';
 import { CompanionPanel } from '../shared/CompanionPanel';
 import { WorkforcePanel } from '../shared/WorkforcePanel';
 import { AidePanel } from '../shared/AidePanel';
+import { PremisePanel } from '../shared/PremisePanel';
+import { AmbientFeed } from '../shared/AmbientFeed';
+import { DynastyPanel } from '../shared/DynastyPanel';
 
 // ---- Speaker presentation ---------------------------------------------------
 
@@ -193,6 +196,7 @@ function SeenBeat({ beat }: { beat: StoryBeat }) {
 function BeatModal({ beat, onClose }: { beat: StoryBeat; onClose: () => void }) {
   const { dispatch } = useGame();
   const meta = SPEAKERS[beat.speaker];
+  const isDramatic = beat.dramatic ?? false;
 
   // Reveal lines one at a time for a juicy "incoming dialogue" feel.
   const [revealed, setRevealed] = useState(1);
@@ -217,13 +221,38 @@ function BeatModal({ beat, onClose }: { beat: StoryBeat; onClose: () => void }) 
   const baseRewardChips = rewardChips(beat.reward);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#070b12]/80 backdrop-blur-sm sm:items-center">
-      <div className="animate-slide-up max-h-[88vh] w-full max-w-[480px] overflow-y-auto rounded-t-3xl border border-[#232c3e] bg-[#0e1420] p-4 sm:rounded-3xl">
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center backdrop-blur-sm sm:items-center"
+      style={{ background: isDramatic ? 'rgba(7,11,18,0.92)' : 'rgba(7,11,18,0.80)' }}
+    >
+      <div
+        className="animate-slide-up max-h-[88vh] w-full max-w-[480px] overflow-y-auto rounded-t-3xl bg-[#0e1420] sm:rounded-3xl"
+        style={{
+          padding: isDramatic ? '20px' : '16px',
+          border: isDramatic
+            ? `1px solid color-mix(in srgb, ${meta.color} 35%, #232c3e)`
+            : '1px solid #232c3e',
+          boxShadow: isDramatic ? `0 0 48px color-mix(in srgb, ${meta.color} 12%, transparent)` : undefined,
+        }}
+      >
+        {/* Dramatic accent bar */}
+        {isDramatic && (
+          <div
+            className="mb-4 h-0.5 w-full rounded-full opacity-60"
+            style={{ background: `linear-gradient(90deg, transparent, ${meta.color}, transparent)` }}
+          />
+        )}
+
         {/* Speaker header */}
         <div className="flex items-center gap-3">
           <div
-            className="flex h-11 w-11 items-center justify-center rounded-full text-2xl"
-            style={{ background: `color-mix(in srgb, ${meta.color} 18%, #151c2b)` }}
+            className="flex items-center justify-center rounded-full text-2xl"
+            style={{
+              width: isDramatic ? '52px' : '44px',
+              height: isDramatic ? '52px' : '44px',
+              background: `color-mix(in srgb, ${meta.color} 18%, #151c2b)`,
+              boxShadow: isDramatic ? `0 0 0 2px ${meta.color}, 0 0 16px color-mix(in srgb, ${meta.color} 30%, transparent)` : undefined,
+            }}
           >
             {meta.icon}
           </div>
@@ -347,21 +376,25 @@ export default function StoryScreen() {
   const { state } = useGame();
   const [openBeatId, setOpenBeatId] = useState<string | null>(null);
 
-  // Seen beats, in canonical story order.
-  const seenBeats = useMemo(
-    () => STORY_BEATS.filter((b) => state.story.seen.includes(b.id)),
-    [state.story.seen]
+  // Combined beat pool: canonical story beats + dynamically generated dynasty beats.
+  const allBeats = useMemo(
+    () => [...STORY_BEATS, ...(state.generatedBeats ?? [])],
+    [state.generatedBeats]
   );
 
-  // Next queued beat (canonical order), if any.
+  // Seen beats: static beats in canonical order, then generated beats appended.
+  const seenBeats = useMemo(
+    () => allBeats.filter((b) => state.story.seen.includes(b.id)),
+    [allBeats, state.story.seen]
+  );
+
+  // Next queued beat, looked up from the combined pool.
   const nextBeat = useMemo(() => {
     if (state.story.queue.length === 0) return null;
-    return (
-      STORY_BEATS.find((b) => state.story.queue.includes(b.id)) ?? null
-    );
-  }, [state.story.queue]);
+    return allBeats.find((b) => state.story.queue.includes(b.id)) ?? null;
+  }, [allBeats, state.story.queue]);
 
-  const openBeat = openBeatId ? STORY_BEATS.find((b) => b.id === openBeatId) ?? null : null;
+  const openBeat = openBeatId ? allBeats.find((b) => b.id === openBeatId) ?? null : null;
 
   const actLabel = ACT_TITLES[state.story.act] ?? `Act ${state.story.act}`;
 
@@ -404,6 +437,27 @@ export default function StoryScreen() {
       {(state.aides ?? []).length > 0 && (
         <div className="mt-3">
           <AidePanel />
+        </div>
+      )}
+
+      {/* Old Master's Will */}
+      {state.premise && (
+        <div className="mt-3">
+          <PremisePanel />
+        </div>
+      )}
+
+      {/* Dynasty — prestige chain, earned traits, heirlooms */}
+      {(state.dynasty?.runs ?? []).length > 0 && (
+        <div className="mt-3">
+          <DynastyPanel />
+        </div>
+      )}
+
+      {/* Dispatch Feed — ambient narrative channel */}
+      {(state.ambientFeed ?? []).length > 0 && (
+        <div className="mt-3">
+          <AmbientFeed />
         </div>
       )}
 

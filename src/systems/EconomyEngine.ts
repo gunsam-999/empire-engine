@@ -11,6 +11,8 @@ import { getRivalPressureMults } from './RivalEngine';
 import { getCompanionBoostMult } from './CompanionEngine';
 import { getWorkforceMult } from './WorkforceEngine';
 import { getAidePassiveMult } from './AideEngine';
+import { getPremiseProdMult, getPremiseCostMult } from './PremiseEngine';
+import { getDynastyMults } from './DynastyEngine';
 import type {
   FacilityConfig,
   GameState,
@@ -77,6 +79,12 @@ export interface Multipliers {
   workforceMorale: number;
   // Aide cabinet passive factor (Session 4.2). Bonus from loyal aides.
   aideProd: number;
+  // Premise clause bonuses (Session 4.3). From the Old Master's will.
+  premiseProd: number;
+  premiseCost: number;
+  // Dynasty trait bonuses (Session 4.5). Compound across prestige generations.
+  dynastyProd: number;
+  dynastyCost: number;
 }
 
 /**
@@ -223,11 +231,15 @@ export function getMultipliers(state: GameState): Multipliers {
   );
   const workforceMult = getWorkforceMult(state.workforce ?? []);
   const aideProd = getAidePassiveMult(state.aides ?? []);
+  const premiseProd = getPremiseProdMult(state.premise ?? null);
+  const premiseCost = getPremiseCostMult(state.premise ?? null);
+  const dynastyMults = getDynastyMults(state.dynasty ?? { runs: [], traits: [], heirlooms: [] });
 
   const production =
     philosophyProd * prestige * researchProd * event * advisorProd * marketing *
-    repMult.prod * rivalMult.production * companionMult * workforceMult * aideProd;
-  const cost = researchCostMul(state) * repMult.cost;
+    repMult.prod * rivalMult.production * companionMult * workforceMult * aideProd *
+    premiseProd * dynastyMults.prod;
+  const cost = researchCostMul(state) * repMult.cost * premiseCost * dynastyMults.cost;
   const insight = researchInsight * advisorInsight;
 
   return {
@@ -246,6 +258,10 @@ export function getMultipliers(state: GameState): Multipliers {
     companionProd: companionMult,
     workforceMorale: workforceMult,
     aideProd,
+    premiseProd,
+    premiseCost,
+    dynastyProd: dynastyMults.prod,
+    dynastyCost: dynastyMults.cost,
   };
 }
 

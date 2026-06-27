@@ -16,6 +16,7 @@ import {
 
 import type {
   Action,
+  AmbientEntry,
   CompanySetup,
   CofounderState,
   GameReward,
@@ -73,7 +74,15 @@ import { tickCompanions, shiftCompanionTrust } from '../systems/CompanionEngine'
 import { runDirector, directorBeatSeen, defaultDirectorState } from '../systems/DirectorEngine';
 import { tickWorkforce, shiftWorkerMorale } from '../systems/WorkforceEngine';
 import { tickAides, briefAide, markDeployed, canDeploy } from '../systems/AideEngine';
+import { shouldRevealPremise, defaultPremiseState, tickPremise } from '../systems/PremiseEngine';
+import { recordRun, applyPrestigeDynasty } from '../systems/DynastyEngine';
+import { defaultDynastyState } from '../data/dynasty';
+import { getEligibleEmergentTemplates, generateEmergentBeat } from '../data/emergentBeats';
 import { getAideConfig } from '../data/aides';
+import { getRivalConfig } from '../data/rivals';
+import { getCompanionConfig } from '../data/companions';
+import { CLAUSE_CONFIGS } from '../data/premises';
+import { moodFromMorale } from '../systems/WorkforceEngine';
 
 // ---- Initial state ----------------------------------------------------------
 
@@ -112,6 +121,10 @@ export function freshInitialState(now: number = Date.now()): GameState {
     coalitionActive: false,
     workforce: [],
     aides: [],
+    premise: null,
+    ambientFeed: [],
+    dynasty: defaultDynastyState(),
+    generatedBeats: [],
     lastTick: now,
     lastSaved: now,
   };
@@ -194,6 +207,21 @@ export function migrateSave(raw: GameState): GameState {
       ...a,
       deployCooldownUntil: a.deployCooldownUntil ?? 0,
     })),
+    premise: s.premise
+      ? {
+          revealedAt: s.premise.revealedAt ?? 0,
+          clauses: (s.premise.clauses ?? []).map((c) => ({
+            id: c.id,
+            status: c.status ?? 'locked',
+            holdSec: c.holdSec ?? 0,
+            fulfilledAt: c.fulfilledAt ?? 0,
+            breachSec: c.breachSec ?? 0,
+          })),
+        }
+      : null,
+    ambientFeed: s.ambientFeed ?? [],
+    dynasty: s.dynasty ?? defaultDynastyState(),
+    generatedBeats: s.generatedBeats ?? [],
     version: SAVE_VERSION,
   };
 }
@@ -343,6 +371,28 @@ export function reducer(state: GameState, action: Action): GameState {
         next.story = { ...next.story, queue: [...next.story.queue, ...allowedBeats] };
       }
 
+      // Emergent dynasty beats — procedurally generated from dynasty run history.
+      {
+        const dynasty = next.dynasty ?? defaultDynastyState();
+        const emergentSlots = dir.maxNewBeats - allowedBeats.length;
+        if (emergentSlots > 0 && dynasty.runs.length > 0) {
+          const templates = getEligibleEmergentTemplates(dynasty, next, next.story.seen);
+          const triggered = templates.filter((t) => {
+            if (t.trigger.type === 'earnings') return next.lifetimeEarnings >= (t.trigger.value ?? 0);
+            return false;
+          });
+          if (triggered.length > 0) {
+            const toAdd = triggered.slice(0, emergentSlots);
+            const generated = toAdd.map((t) => generateEmergentBeat(t, dynasty, next));
+            next.generatedBeats = [...(next.generatedBeats ?? []), ...generated];
+            next.story = {
+              ...next.story,
+              queue: [...next.story.queue, ...generated.map((b) => b.id)],
+            };
+          }
+        }
+      }
+
       // Golden bubble nudge: director may schedule a micro-event.
       if (dir.nudgeGoldenBubble && next.events.bubbleAt <= now) {
         next.events = { ...next.events, bubbleAt: now + 5_000, lastMicroAt: now };
@@ -384,6 +434,148 @@ export function reducer(state: GameState, action: Action): GameState {
       // Aide engine: sync roster, drift loyalty.
       next.aides = tickAides(next, dt, now);
 
+      // Premise engine: reveal the Old Master's will once LE threshold is met,
+      // then evaluate clause conditions each tick.
+      if (shouldRevealPremise(next)) {
+        next.premise = defaultPremiseState(now);
+      }
+      if (next.premise) {
+        next.premise = tickPremise(next.premise, next, dt, now);
+      }
+
+      // Ambient feed: detect notable transitions and post short dispatch entries.
+      {
+        const newAmbients: AmbientEntry[] = [];
+
+        // Rival: new telegraph fired (or replaced with a different move).
+        for (const r of next.rivals) {
+          const prev = (state.rivals ?? []).find((p) => p.id === r.id);
+          if (r.telegraph && (!prev?.telegraph || prev.telegraph.moveId !== r.telegraph.moveId)) {
+            const cfg = getRivalConfig(r.id);
+            newAmbients.push({
+              id: `${now}-rival-${r.id}`,
+              at: now,
+              icon: '⚔️',
+              source: 'Rival',
+              text: `${cfg?.name ?? r.id} is on the move — ${r.telegraph.message}`,
+            });
+          }
+        }
+
+        // Companion: trust rung upgraded (not including ESTRANGED).
+        for (const c of next.companions) {
+          const prev = (state.companions ?? []).find((p) => p.id === c.id);
+          if (prev && c.rung !== prev.rung && c.rung !== 'ESTRANGED') {
+            const cfg = getCompanionConfig(c.id);
+            const RUNG_LABELS: Record<string, string> = {
+              ACQUAINTANCE: 'joined as an acquaintance',
+              COLLEAGUE: 'become a trusted colleague',
+              CONFIDANT: 'reached confidant status',
+              INNER_CIRCLE: 'entered your inner circle',
+              LEGACY: 'formed a legacy bond',
+            };
+            newAmbients.push({
+              id: `${now}-companion-${c.id}`,
+              at: now,
+              icon: '🤝',
+              source: 'Inner Circle',
+              text: `${cfg?.name ?? c.id} has ${RUNG_LABELS[c.rung] ?? c.rung}.`,
+            });
+          }
+        }
+
+        // Workforce: collective mood tier shifted.
+        const prevWf = state.workforce ?? [];
+        const nextWf = next.workforce;
+        if (prevWf.length > 0 && nextWf.length > 0) {
+          const prevAvg = prevWf.reduce((s, w) => s + w.morale, 0) / prevWf.length;
+          const nextAvg = nextWf.reduce((s, w) => s + w.morale, 0) / nextWf.length;
+          const prevMood = moodFromMorale(prevAvg);
+          const nextMood = moodFromMorale(nextAvg);
+          if (prevMood !== nextMood) {
+            const MOOD_TEXT: Record<string, string> = {
+              BURNT_OUT: 'Team morale has collapsed — your people are burning out.',
+              DISENGAGED: 'Your workforce is disengaging. A rally is overdue.',
+              NEUTRAL: 'Team morale has stabilised. Things are holding together.',
+              ENGAGED: 'Your team is engaged — productivity is on the rise.',
+              INSPIRED: 'The workforce is inspired. Energy is at its peak.',
+            };
+            newAmbients.push({
+              id: `${now}-workforce`,
+              at: now,
+              icon: '👥',
+              source: 'Workforce',
+              text: MOOD_TEXT[nextMood] ?? `Team mood shifted to ${nextMood}.`,
+            });
+          }
+        }
+
+        // Aide: loyalty crossed 75 — passive bonus unlocked.
+        for (const a of next.aides) {
+          const prev = (state.aides ?? []).find((p) => p.id === a.id);
+          if (prev && prev.loyalty < 75 && a.loyalty >= 75) {
+            const cfg = getAideConfig(a.id);
+            newAmbients.push({
+              id: `${now}-aide-${a.id}`,
+              at: now,
+              icon: '💼',
+              source: 'Cabinet',
+              text: `${cfg?.name ?? a.id} is fully committed — their passive bonus is now active.`,
+            });
+          }
+        }
+
+        // Premise: clause fulfilled or breached.
+        if (next.premise && state.premise) {
+          for (const cl of next.premise.clauses) {
+            const prevCl = state.premise.clauses.find((p) => p.id === cl.id);
+            if (!prevCl || prevCl.status === cl.status) continue;
+            const clauseCfg = CLAUSE_CONFIGS.find((c) => c.id === cl.id);
+            const label = clauseCfg?.label ?? cl.id;
+            if (cl.status === 'fulfilled') {
+              newAmbients.push({
+                id: `${now}-premise-${cl.id}`,
+                at: now,
+                icon: '📜',
+                source: 'Inheritance',
+                text: `Old Master's clause fulfilled: "${label}" — your reward is active.`,
+              });
+            } else if (cl.status === 'breached' && prevCl.status === 'fulfilled') {
+              newAmbients.push({
+                id: `${now}-premise-breach-${cl.id}`,
+                at: now,
+                icon: '⚠️',
+                source: 'Inheritance',
+                text: `Clause breached: "${label}" — reward suspended until the condition is re-met.`,
+              });
+            }
+          }
+        }
+
+        // Director: era phase transition.
+        if (next.director.currentPhase !== state.director.currentPhase) {
+          const PHASE_LABELS: Record<string, string> = {
+            BOOTSTRAPPING: 'Bootstrapping',
+            GROWING: 'Growing',
+            SCALING: 'Scaling',
+            ESTABLISHED: 'Established',
+            TITAN: 'Titan',
+          };
+          newAmbients.push({
+            id: `${now}-phase`,
+            at: now,
+            icon: '🌐',
+            source: 'World',
+            text: `You've entered the ${PHASE_LABELS[next.director.currentPhase] ?? next.director.currentPhase} era — the landscape is shifting.`,
+          });
+        }
+
+        if (newAmbients.length > 0) {
+          const combined = [...(next.ambientFeed ?? []), ...newAmbients];
+          next.ambientFeed = combined.slice(-30);
+        }
+      }
+
       next.stats = { ...next.stats, playSeconds: next.stats.playSeconds + dt };
       next.lastTick = now;
       return next;
@@ -419,6 +611,15 @@ export function reducer(state: GameState, action: Action): GameState {
           ? [...state.story.queue, prestigeBeat.id]
           : state.story.queue;
 
+      // Dynasty: snapshot this run, earn a trait, unlock heirloom.
+      const dynastyRun = recordRun(state);
+      const newPrestigeCount = state.prestigeCount + 1;
+      const newDynasty = applyPrestigeDynasty(
+        state.dynasty ?? defaultDynastyState(),
+        dynastyRun,
+        newPrestigeCount
+      );
+
       return {
         ...state,
         cash: 0,
@@ -426,12 +627,13 @@ export function reducer(state: GameState, action: Action): GameState {
         facilities: {},
         insight: 0,
         legacyPoints: state.legacyPoints + lp,
-        prestigeCount: state.prestigeCount + 1,
+        prestigeCount: newPrestigeCount,
         research: { ...state.research, active: null },
         market: defaultMarket(now),
         events: { ...state.events, boost: null },
         story: { ...state.story, queue },
         stats: { ...state.stats, prestiges: state.stats.prestiges + 1 },
+        dynasty: newDynasty,
         lastTick: now,
       };
     }
