@@ -39,6 +39,7 @@ import GuidancePopup from './components/screens/GuidancePopup';
 
 import { ToastHost } from './components/shared/ToastNotification';
 import Modal from './components/shared/Modal';
+import NotificationDrawer from './components/shared/NotificationDrawer';
 
 import { MICRO_EVENTS, type GameEvent } from './data/events';
 import { pick } from './utils/random';
@@ -69,6 +70,7 @@ const OVERLAY_META: Record<OverlayId, { icon: string; title: string }> = {
   advisors: { icon: '🃏', title: 'Advisors' },
   territory: { icon: '🗺️', title: 'Territory' },
   settings: { icon: '⚙️', title: 'Settings' },
+  notifications: { icon: '🔔', title: 'Notifications' },
 };
 
 function OverlaySheet({ id, onClose }: { id: OverlayId; onClose: () => void }) {
@@ -79,6 +81,7 @@ function OverlaySheet({ id, onClose }: { id: OverlayId; onClose: () => void }) {
       {id === 'advisors' && <AdvisorScreen />}
       {id === 'territory' && <TerritoryScreen />}
       {id === 'settings' && <SettingsScreen />}
+      {id === 'notifications' && <NotificationDrawer />}
     </Modal>
   );
 }

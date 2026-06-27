@@ -83,6 +83,10 @@ import { getRivalConfig } from '../data/rivals';
 import { getCompanionConfig } from '../data/companions';
 import { CLAUSE_CONFIGS } from '../data/premises';
 import { moodFromMorale } from '../systems/WorkforceEngine';
+import { tickEchelon, defaultEchelonState } from '../systems/EchelonEngine';
+import { tickIntel, defaultIntelState, commissionReport, canGatherIntel, INTEL_COMMISSION_COST } from '../systems/IntelEngine';
+import { tickNewspaper, defaultNewspaperState, respondToNews, canRespondToNews, NEWS_RESPOND_COST } from '../systems/NewspaperEngine';
+import { detectNotifications, defaultNotificationState, markAllRead } from '../systems/NotificationEngine';
 
 // ---- Initial state ----------------------------------------------------------
 
@@ -125,6 +129,10 @@ export function freshInitialState(now: number = Date.now()): GameState {
     ambientFeed: [],
     dynasty: defaultDynastyState(),
     generatedBeats: [],
+    echelon: defaultEchelonState(),
+    intel: defaultIntelState(),
+    newspaper: defaultNewspaperState(),
+    notifications: defaultNotificationState(),
     lastTick: now,
     lastSaved: now,
   };
@@ -222,6 +230,34 @@ export function migrateSave(raw: GameState): GameState {
     ambientFeed: s.ambientFeed ?? [],
     dynasty: s.dynasty ?? defaultDynastyState(),
     generatedBeats: s.generatedBeats ?? [],
+    echelon: s.echelon ?? defaultEchelonState(),
+    intel: s.intel
+      ? {
+          level: s.intel.level ?? 0,
+          reports: (s.intel.reports ?? []).map((r) => ({
+            ...r,
+            wasFeint: r.wasFeint ?? null,
+          })),
+          lastBriefAt: s.intel.lastBriefAt ?? 0,
+        }
+      : defaultIntelState(),
+    newspaper: s.newspaper
+      ? {
+          items: (s.newspaper.items ?? []).map((n) => ({
+            ...n,
+            read: n.read ?? false,
+            responded: n.responded ?? false,
+          })),
+          lastPublishedAt: s.newspaper.lastPublishedAt ?? 0,
+          heatScore: s.newspaper.heatScore ?? 0,
+        }
+      : defaultNewspaperState(),
+    notifications: s.notifications
+      ? {
+          items: (s.notifications.items ?? []).map((n) => ({ ...n, read: n.read ?? false })),
+          lastSeenAt: s.notifications.lastSeenAt ?? 0,
+        }
+      : defaultNotificationState(),
     version: SAVE_VERSION,
   };
 }
@@ -575,6 +611,51 @@ export function reducer(state: GameState, action: Action): GameState {
           next.ambientFeed = combined.slice(-30);
         }
       }
+
+      // Echelon engine (5.1): advance tier as lifetime earnings grow.
+      {
+        const prevEchelon = next.echelon ?? defaultEchelonState();
+        next.echelon = tickEchelon(prevEchelon, next.lifetimeEarnings, now);
+        // Ambient dispatch on tier advance.
+        if (next.echelon.tier !== prevEchelon.tier) {
+          const TIER_LABELS: Record<string, string> = {
+            CONTENDER: 'Contender', PLAYER: 'Market Player',
+            LEADER: 'Industry Leader', MOGUL: 'Mogul', TITAN: 'Titan',
+          };
+          const label = TIER_LABELS[next.echelon.tier] ?? next.echelon.tier;
+          const ambientEntry = {
+            id: `${now}-echelon`,
+            at: now,
+            icon: '🏆',
+            source: 'Echelon',
+            text: `Your enterprise has risen to the ${label} echelon. New doors are opening.`,
+          };
+          next.ambientFeed = [...(next.ambientFeed ?? []), ambientEntry].slice(-30);
+        }
+      }
+
+      // Intel Desk engine (5.2): resolve pending reports, decay network level.
+      next.intel = tickIntel(next.intel ?? defaultIntelState(), next.rivals ?? [], dt, now);
+
+      // Newspaper engine (5.3): detect transitions, publish headline if warranted.
+      {
+        const newsTick = tickNewspaper(
+          next.newspaper ?? defaultNewspaperState(),
+          next,
+          dt,
+          now,
+          state
+        );
+        next.newspaper = newsTick.newspaper;
+      }
+
+      // Notification Engine (5.4): detect all notable transitions, push to log + toasts.
+      next.notifications = detectNotifications(
+        state,
+        next,
+        next.notifications ?? defaultNotificationState(),
+        now
+      );
 
       next.stats = { ...next.stats, playSeconds: next.stats.playSeconds + dt };
       next.lastTick = now;
@@ -1030,6 +1111,49 @@ export function reducer(state: GameState, action: Action): GameState {
       return {
         ...state,
         workforce: shiftWorkerMorale(state.workforce ?? [], action.workerId, action.delta, now),
+      };
+
+    // ----- INTEL_COMMISSION -----
+    case 'INTEL_COMMISSION': {
+      const intel = state.intel ?? defaultIntelState();
+      if (!canGatherIntel(intel, now)) return state;
+      if (state.influence < INTEL_COMMISSION_COST) return state;
+      // Auto-select target: prefer rival with active telegraph, else most aggressive.
+      let targetId = action.rivalId;
+      if (!targetId) {
+        const withTelegraph = (state.rivals ?? []).find((r) => r.telegraph);
+        const mostAggressive = (state.rivals ?? []).reduce<typeof state.rivals[0] | null>(
+          (best, r) => (!best || r.aggression > best.aggression ? r : best),
+          null
+        );
+        targetId = withTelegraph?.id ?? mostAggressive?.id;
+      }
+      if (!targetId) return state;
+      return {
+        ...state,
+        influence: state.influence - INTEL_COMMISSION_COST,
+        intel: commissionReport(intel, targetId, now),
+      };
+    }
+
+    // ----- NEWS_RESPOND -----
+    case 'NEWS_RESPOND': {
+      const newspaper = state.newspaper ?? defaultNewspaperState();
+      const item = newspaper.items.find((n) => n.id === action.itemId);
+      if (!item || !canRespondToNews(item)) return state;
+      if (state.influence < NEWS_RESPOND_COST) return state;
+      return {
+        ...state,
+        influence: state.influence - NEWS_RESPOND_COST,
+        newspaper: respondToNews(newspaper, action.itemId),
+      };
+    }
+
+    // ----- NOTIFICATION_READ_ALL -----
+    case 'NOTIFICATION_READ_ALL':
+      return {
+        ...state,
+        notifications: markAllRead(state.notifications ?? defaultNotificationState(), now),
       };
 
     // ----- AIDE_BRIEF -----

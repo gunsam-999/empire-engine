@@ -23,9 +23,10 @@ import {
 } from '../../game/GameContext';
 import AnimatedCounter from '../shared/AnimatedCounter';
 import { formatMoney, formatNumber } from '../../utils/bigNumber';
+import { unreadCount } from '../../systems/NotificationEngine';
 
 /** Header overlay buttons. App maps these to its overlay surfaces. */
-export type OverlayId = 'story' | 'territory' | 'settings' | 'advisors';
+export type OverlayId = 'story' | 'territory' | 'settings' | 'advisors' | 'notifications';
 
 export interface TopBarProps {
   onOpenOverlay: (id: OverlayId) => void;
@@ -151,6 +152,7 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
   const insightRate = insightPerSec(state);
   const badge = prestigeBadge(state);
   const storyQueued = state.story.queue.length;
+  const notifUnread = state.notifications ? unreadCount(state.notifications) : 0;
 
   // Marketing headline metric.
   const reach = state.marketing?.reach ?? 0;
@@ -197,6 +199,7 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
           />
           <IconButton icon="🃏" label="Advisors" onClick={() => onOpenOverlay('advisors')} />
           <IconButton icon="🗺️" label="Territory" onClick={() => onOpenOverlay('territory')} />
+          <IconButton icon="🔔" label="Notifications" onClick={() => onOpenOverlay('notifications')} badge={notifUnread} />
           <IconButton icon="⚙️" label="Settings" onClick={() => onOpenOverlay('settings')} />
         </div>
       </div>

@@ -6,7 +6,8 @@
 
 import { useGame } from '../../game/GameContext';
 import { getRivalConfig } from '../../data/rivals';
-import type { RivalTelegraph } from '../../game/types';
+import { getIntelVerdict } from '../../systems/IntelEngine';
+import type { IntelState, RivalTelegraph } from '../../game/types';
 
 interface AlertProps {
   telegraph: RivalTelegraph;
@@ -14,9 +15,10 @@ interface AlertProps {
   /** True if this is a feint — shown as a subtle "unverified" label to hint the
    *  player should invest in the Intel Desk for confirmation. */
   isFeint: boolean;
+  intel: IntelState;
 }
 
-function Alert({ telegraph, now, isFeint }: AlertProps) {
+function Alert({ telegraph, now, isFeint, intel }: AlertProps) {
   const { dispatch } = useGame();
   const cfg = getRivalConfig(telegraph.rivalId);
   const secsLeft = Math.max(0, Math.round((telegraph.executesAt - now) / 1000));
@@ -25,11 +27,12 @@ function Alert({ telegraph, now, isFeint }: AlertProps) {
   const borderColor = isUrgent ? '#FF5C5C' : '#F5C518';
   const labelColor = isUrgent ? '#FF5C5C' : '#F5C518';
 
+  // Intel verdict: null = unknown, 'feint' = safe, 'real' = confirmed threat
+  const verdict = getIntelVerdict(intel, telegraph.rivalId);
+
   function handleCounter() {
     if (!telegraph.counteredBy) return;
-    // Countering always dispatches RIVAL_COUNTER to clear the telegraph.
     dispatch({ type: 'RIVAL_COUNTER', rivalId: telegraph.rivalId });
-    // For moves that require TOGGLE_STOCKPILE as the counter, also toggle it.
     if (telegraph.counteredBy === 'TOGGLE_STOCKPILE') {
       dispatch({ type: 'TOGGLE_STOCKPILE' });
     }
@@ -45,9 +48,20 @@ function Alert({ telegraph, now, isFeint }: AlertProps) {
           <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider" style={{ color: labelColor }}>
             <span>⚔</span>
             <span>{cfg?.name ?? telegraph.rivalId}</span>
-            {isFeint && (
+            {/* Intel badge: show verdict if known, else "unverified" hint */}
+            {verdict === null && isFeint && (
               <span className="ml-1 rounded px-1 py-px text-[9px] font-normal normal-case bg-[#8a94a8]/20 text-[#8a94a8]">
                 unverified
+              </span>
+            )}
+            {verdict === 'feint' && (
+              <span className="ml-1 rounded px-1 py-px text-[9px] font-semibold normal-case bg-[#34d399]/15 text-[#34d399]">
+                feint confirmed
+              </span>
+            )}
+            {verdict === 'real' && (
+              <span className="ml-1 rounded px-1 py-px text-[9px] font-semibold normal-case bg-[#f87171]/15 text-[#f87171]">
+                ⚠ verified threat
               </span>
             )}
             <span className="ml-auto font-mono tabular-nums text-[#8a94a8]">
@@ -75,6 +89,7 @@ function Alert({ telegraph, now, isFeint }: AlertProps) {
 export default function RivalAlert() {
   const { state } = useGame();
   const now = Date.now();
+  const intel = state.intel ?? { level: 0, reports: [], lastBriefAt: 0 };
 
   const activeTelegraphs = (state.rivals ?? [])
     .filter((r) => r.telegraph !== null && (r.telegraph?.executesAt ?? 0) > now)
@@ -97,7 +112,7 @@ export default function RivalAlert() {
         </div>
       )}
       {activeTelegraphs.map(({ telegraph: t, isFeint }) => (
-        <Alert key={`${t.rivalId}-${t.moveId}`} telegraph={t} now={now} isFeint={isFeint} />
+        <Alert key={`${t.rivalId}-${t.moveId}`} telegraph={t} now={now} isFeint={isFeint} intel={intel} />
       ))}
     </div>
   );

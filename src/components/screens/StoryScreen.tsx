@@ -20,6 +20,9 @@ import { AidePanel } from '../shared/AidePanel';
 import { PremisePanel } from '../shared/PremisePanel';
 import { AmbientFeed } from '../shared/AmbientFeed';
 import { DynastyPanel } from '../shared/DynastyPanel';
+import EchelonBadge from '../shared/EchelonBadge';
+import IntelPanel from '../shared/IntelPanel';
+import NewspaperPanel from '../shared/NewspaperPanel';
 
 // ---- Speaker presentation ---------------------------------------------------
 
@@ -419,6 +422,13 @@ export default function StoryScreen() {
         <ReputationMeter ethics={state.story.ethics} reputationHeldSec={state.reputationHeldSec ?? 0} />
       </div>
 
+      {/* Echelon — competitive ranking tier */}
+      {state.echelon && (
+        <div className="mt-3">
+          <EchelonBadge />
+        </div>
+      )}
+
       {/* Inner Circle */}
       {(state.companions ?? []).length > 0 && (
         <div className="mt-3">
@@ -451,6 +461,20 @@ export default function StoryScreen() {
       {(state.dynasty?.runs ?? []).length > 0 && (
         <div className="mt-3">
           <DynastyPanel />
+        </div>
+      )}
+
+      {/* Intel Desk — rival intelligence and feint verification */}
+      {(state.rivals ?? []).length > 0 && (
+        <div className="mt-3">
+          <IntelPanel />
+        </div>
+      )}
+
+      {/* Newspaper — press coverage and heat score */}
+      {(state.newspaper?.items ?? []).length > 0 && (
+        <div className="mt-3">
+          <NewspaperPanel />
         </div>
       )}
 

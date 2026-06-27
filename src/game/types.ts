@@ -274,6 +274,14 @@ export interface GameState {
   dynasty: DynastyState;
   /** Story beats generated dynamically by emergent beat templates. */
   generatedBeats: StoryBeat[];
+  // Echelon system (Session 5.1) — competitive ranking ladder.
+  echelon: EchelonState;
+  // Intel Desk (Session 5.2) — spy network for rival intelligence.
+  intel: IntelState;
+  // Newspaper (Session 5.3) — press coverage and brand heat.
+  newspaper: NewspaperState;
+  // Notification Engine (Session 5.4) — persistent prioritised alert log.
+  notifications: NotificationState;
   lastTick: number;
   lastSaved: number;
 }
@@ -475,6 +483,107 @@ export interface DynastyState {
 }
 
 // ============================================================================
+// Echelon system (Session 5.1) — competitive ranking ladder.
+// Tier advances as lifetime earnings grow; each tier grants a passive
+// production multiplier. Rising in the world attracts press coverage and
+// intensifies rival aggression.
+// ============================================================================
+
+export type EchelonTier =
+  | 'STARTUP'    // < $10K lifetime earnings
+  | 'CONTENDER'  // $10K – $1M
+  | 'PLAYER'     // $1M – $100M
+  | 'LEADER'     // $100M – $10B
+  | 'MOGUL'      // $10B – $1T
+  | 'TITAN';     // $1T+
+
+export interface EchelonState {
+  tier: EchelonTier;
+  /** 0–100 progress within current tier. */
+  points: number;
+  /** ms timestamp when tier last advanced (0 = never). */
+  lastAdvancedAt: number;
+}
+
+// ============================================================================
+// Intel Desk (Session 5.2) — spy network for rival intelligence.
+// Commissioning a report investigates whether an active rival telegraph is
+// a feint. Reports resolve after 30 s; intel level decays slowly over time.
+// ============================================================================
+
+export interface IntelReport {
+  rivalId: string;
+  commissionedAt: number; // ms
+  /** ms — resolves 30 s after commissioned. */
+  revealsAt: number;
+  resolved: boolean;
+  /** null until resolved; true = the current telegraph is a feint. */
+  wasFeint: boolean | null;
+}
+
+export interface IntelState {
+  /** 0–100 network strength. Gained by commissioning reports; decays 2/min. */
+  level: number;
+  /** Up to 5 most-recent reports. */
+  reports: IntelReport[];
+  /** ms — gates "Commission" button (300 s cooldown). */
+  lastBriefAt: number;
+}
+
+// ============================================================================
+// Newspaper (Session 5.3) — press coverage system.
+// Notable transitions trigger headlines; negative coverage accumulates a heat
+// score that applies a small production debuff until the player responds.
+// ============================================================================
+
+export type NewsCategory = 'business' | 'scandal' | 'politics' | 'victory' | 'market';
+
+export interface NewsItem {
+  id: string;
+  at: number;             // ms timestamp
+  category: NewsCategory;
+  headline: string;
+  body: string;
+  /** −10 (crisis) to +10 (triumph). */
+  sentimentScore: number;
+  read: boolean;
+  responded: boolean;
+}
+
+export interface NewspaperState {
+  /** Rolling archive — max 20 items, newest first. */
+  items: NewsItem[];
+  /** ms — gates new items (min 60 s apart). */
+  lastPublishedAt: number;
+  /** Accumulated negative coverage (0–100). Decays 0.5/min; respond to reduce. */
+  heatScore: number;
+}
+
+// ============================================================================
+// Notification Engine (Session 5.4) — persistent alert log.
+// Priority-ranked history of game events. Urgent alerts also fire toasts.
+// ============================================================================
+
+export type NotificationPriority = 'urgent' | 'info' | 'success';
+
+export interface GameNotification {
+  id: string;
+  at: number; // ms
+  priority: NotificationPriority;
+  icon: string;
+  title: string;
+  body: string;
+  read: boolean;
+}
+
+export interface NotificationState {
+  /** Max 50 items, newest first. */
+  items: GameNotification[];
+  /** ms — items with at > lastSeenAt are "unread". */
+  lastSeenAt: number;
+}
+
+// ============================================================================
 // Director system (Session 3.5) — hardcoded pacing/orchestration layer.
 // ============================================================================
 
@@ -538,6 +647,9 @@ export type Action =
   | { type: 'WORKER_MORALE'; workerId: string; delta: number }
   | { type: 'AIDE_BRIEF'; aideId: string }
   | { type: 'AIDE_DEPLOY'; aideId: string }
+  | { type: 'INTEL_COMMISSION'; rivalId?: string }
+  | { type: 'NEWS_RESPOND'; itemId: string }
+  | { type: 'NOTIFICATION_READ_ALL' }
   | { type: 'LOAD'; state: GameState }
   | { type: 'IMPORT'; state: GameState }
   | { type: 'HARD_RESET' };

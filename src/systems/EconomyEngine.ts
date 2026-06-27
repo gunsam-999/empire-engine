@@ -13,6 +13,8 @@ import { getWorkforceMult } from './WorkforceEngine';
 import { getAidePassiveMult } from './AideEngine';
 import { getPremiseProdMult, getPremiseCostMult } from './PremiseEngine';
 import { getDynastyMults } from './DynastyEngine';
+import { getEchelonProdMult, defaultEchelonState } from './EchelonEngine';
+import { getNewspaperProdMult, defaultNewspaperState } from './NewspaperEngine';
 import type {
   FacilityConfig,
   GameState,
@@ -85,6 +87,10 @@ export interface Multipliers {
   // Dynasty trait bonuses (Session 4.5). Compound across prestige generations.
   dynastyProd: number;
   dynastyCost: number;
+  // Echelon tier bonus (Session 5.1). 1.00–1.30× based on competitive tier.
+  echelonProd: number;
+  // Newspaper heat debuff (Session 5.3). 0.82–1.00× based on press heat score.
+  newspaperProd: number;
 }
 
 /**
@@ -234,11 +240,13 @@ export function getMultipliers(state: GameState): Multipliers {
   const premiseProd = getPremiseProdMult(state.premise ?? null);
   const premiseCost = getPremiseCostMult(state.premise ?? null);
   const dynastyMults = getDynastyMults(state.dynasty ?? { runs: [], traits: [], heirlooms: [] });
+  const echelonProd = getEchelonProdMult(state.echelon ?? defaultEchelonState());
+  const newspaperProd = getNewspaperProdMult(state.newspaper ?? defaultNewspaperState());
 
   const production =
     philosophyProd * prestige * researchProd * event * advisorProd * marketing *
     repMult.prod * rivalMult.production * companionMult * workforceMult * aideProd *
-    premiseProd * dynastyMults.prod;
+    premiseProd * dynastyMults.prod * echelonProd * newspaperProd;
   const cost = researchCostMul(state) * repMult.cost * premiseCost * dynastyMults.cost;
   const insight = researchInsight * advisorInsight;
 
@@ -262,6 +270,8 @@ export function getMultipliers(state: GameState): Multipliers {
     premiseCost,
     dynastyProd: dynastyMults.prod,
     dynastyCost: dynastyMults.cost,
+    echelonProd,
+    newspaperProd,
   };
 }
 
