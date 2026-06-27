@@ -9,6 +9,7 @@
 import { useEffect, useState } from 'react';
 
 import { useGame } from '../../game/GameContext';
+import { getCofounderAvatar } from '../../data/characters';
 import type { GuidanceBeat } from '../../data/guidance';
 import CharacterPortrait from '../shared/CharacterPortrait';
 
@@ -32,6 +33,9 @@ const EMOTION: Record<
 export default function GuidancePopup({ beat, onDismiss }: GuidancePopupProps) {
   const { state } = useGame();
   const { cofounder } = state;
+  const avatar = getCofounderAvatar(cofounder);
+  const speakerName = cofounder.recruited ? cofounder.name : 'Empire HQ';
+  const speakerRole = cofounder.recruited ? cofounder.role : 'Strategic Advisor';
   const mood = EMOTION[beat.emotion] ?? EMOTION.tip;
 
   // Mount/leave animation state so dismiss slides out before unmount.
@@ -71,23 +75,35 @@ export default function GuidancePopup({ beat, onDismiss }: GuidancePopupProps) {
 
         <div className="p-3.5">
           <div className="flex gap-3">
-            {/* Portrait with emotion glow */}
+            {/* Portrait / icon with emotion glow */}
             <div
               className="shrink-0"
               style={{
                 filter: `drop-shadow(0 4px 12px color-mix(in srgb, ${mood.color} 55%, transparent))`,
               }}
             >
-              <CharacterPortrait avatar={cofounder.avatar} size={52} ring />
+              {avatar ? (
+                <CharacterPortrait avatar={avatar} size={52} ring />
+              ) : (
+                <div
+                  className="flex h-[52px] w-[52px] items-center justify-center rounded-full text-2xl"
+                  style={{
+                    background: `color-mix(in srgb, ${mood.color} 14%, #0e1420)`,
+                    border: `2px solid color-mix(in srgb, ${mood.color} 45%, transparent)`,
+                  }}
+                >
+                  🎯
+                </div>
+              )}
             </div>
 
             <div className="min-w-0 flex-1">
               {/* Name + role + emotion chip */}
               <div className="flex items-center gap-2">
                 <span className="truncate text-[14px] font-bold text-[#e7ecf5]">
-                  {cofounder.name}
+                  {speakerName}
                 </span>
-                <span className="truncate text-[11px] text-[#8a94a8]">· {cofounder.role}</span>
+                <span className="truncate text-[11px] text-[#8a94a8]">· {speakerRole}</span>
                 <span
                   className="ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
                   style={{

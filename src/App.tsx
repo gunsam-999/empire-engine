@@ -37,6 +37,7 @@ import WelcomeBackModal from './components/screens/WelcomeBackModal';
 import GoldenBubble from './components/screens/GoldenBubble';
 import EventModal from './components/screens/EventModal';
 import GuidancePopup from './components/screens/GuidancePopup';
+import CofounderRecruitModal from './components/screens/CofounderRecruitModal';
 
 import { ToastHost } from './components/shared/ToastNotification';
 import { FxLayer } from './components/shared/FxLayer';
@@ -220,6 +221,8 @@ function Game() {
   const [overlay, setOverlay] = useState<OverlayId | null>(null);
   const [phase, setPhase] = useState<AppPhase>('intro');
   const [preferredMode, setPreferredMode] = useState<GameMode>('inheritance');
+  const [showRecruit, setShowRecruit] = useState(false);
+  const recruitChecked = useRef(false);
 
   const hasSetup = state.setup !== null;
 
@@ -230,6 +233,17 @@ function Game() {
   useCelebrations();
   useMusicEngine();
   useFirstHourHaptics();
+
+  // Co-founder recruitment trigger — fires once when the player has early traction
+  useEffect(() => {
+    if (recruitChecked.current) return;
+    if (!hasSetup || state.cofounder.recruited) { recruitChecked.current = true; return; }
+    if (state.lifetimeEarnings >= 500) {
+      recruitChecked.current = true;
+      const t = setTimeout(() => setShowRecruit(true), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [hasSetup, state.cofounder.recruited, state.lifetimeEarnings]);
 
   const guidanceQueued = state.guidance.queue.length > 0;
   const storyQueued    = state.story.queue.length > 0;
@@ -308,8 +322,13 @@ function Game() {
         />
       )}
 
+      {/* Co-founder recruitment — fires once after early traction */}
+      {showRecruit && !state.cofounder.recruited && (
+        <CofounderRecruitModal onClose={() => setShowRecruit(false)} />
+      )}
+
       {/* Ambient character layer — co-founder + rival pop-ins */}
-      <AmbientCharacterLayer blocked={blocking || !!micro.event || !!overlay} />
+      <AmbientCharacterLayer blocked={blocking || !!micro.event || !!overlay || showRecruit} />
 
       <UpdateBanner />
       <ToastHost />

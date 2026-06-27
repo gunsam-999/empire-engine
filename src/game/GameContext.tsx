@@ -27,7 +27,7 @@ import type {
 
 import { INDUSTRIES } from '../data/industries';
 import { STORY_BEATS } from '../data/story';
-import { DEFAULT_COFOUNDER } from '../data/characters';
+import { getNpcCofounder } from '../data/characters';
 import { GUIDANCE_BEATS } from '../data/guidance';
 import { getMarketingChannel, getMarketingCampaign } from '../data/marketing';
 
@@ -138,7 +138,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
     events: { boost: null, lastMicroAt: 0, bubbleAt: 0 },
     milestones: { unlocked: [] },
     marketing: defaultMarketing(),
-    cofounder: { ...DEFAULT_COFOUNDER, avatar: { ...DEFAULT_COFOUNDER.avatar } },
+    cofounder: { recruited: false, presetId: null, name: '', role: '' },
     guidance: { seen: [], queue: [], dismissed: [], lastShownAt: 0 },
     settings: { sound: true, music: true, buyQty: 1, liveView: true, reduceMotion: false, haptics: true },
     stats: { clicks: 0, playSeconds: 0, prestiges: 0, created: 0 },
@@ -192,13 +192,13 @@ export function migrateSave(raw: GameState): GameState {
       }
     : { ...defaultMarketing(), channels };
 
-  const cofounder: CofounderState = s.cofounder
-    ? {
-        name: s.cofounder.name ?? DEFAULT_COFOUNDER.name,
-        role: s.cofounder.role ?? DEFAULT_COFOUNDER.role,
-        avatar: { ...DEFAULT_COFOUNDER.avatar, ...(s.cofounder.avatar ?? {}) },
-      }
-    : { ...DEFAULT_COFOUNDER, avatar: { ...DEFAULT_COFOUNDER.avatar } };
+  const rawCf = (s.cofounder as unknown) as Record<string, unknown> | undefined;
+  const cofounder: CofounderState = {
+    recruited: (rawCf?.recruited as boolean) ?? false,
+    presetId: (rawCf?.presetId as string | null) ?? null,
+    name: (rawCf?.name as string) ?? '',
+    role: (rawCf?.role as string) ?? '',
+  };
 
   const guidance = s.guidance
     ? {
@@ -379,10 +379,7 @@ function newGameForSetup(setup: CompanySetup, now: number): GameState {
       ...base.story,
       queue: startBeat ? [startBeat.id] : [],
     },
-    cofounder: {
-      ...DEFAULT_COFOUNDER,
-      avatar: { ...DEFAULT_COFOUNDER.avatar, accent: setup.accent },
-    },
+    cofounder: { recruited: false, presetId: null, name: '', role: '' },
     guidance: {
       ...base.guidance,
       queue: firstGuidance ? [firstGuidance.id] : [],
@@ -1244,17 +1241,17 @@ export function reducer(state: GameState, action: Action): GameState {
       };
     }
 
-    // ----- CHARACTER_CUSTOMIZE -----
-    case 'CHARACTER_CUSTOMIZE': {
-      const p = action.payload;
+    // ----- RECRUIT_COFOUNDER -----
+    case 'RECRUIT_COFOUNDER': {
+      const npc = getNpcCofounder(action.presetId);
+      if (!npc) return state;
       return {
         ...state,
         cofounder: {
-          name: p.name ?? state.cofounder.name,
-          role: p.role ?? state.cofounder.role,
-          avatar: p.avatar
-            ? { ...state.cofounder.avatar, ...p.avatar }
-            : state.cofounder.avatar,
+          recruited: true,
+          presetId: action.presetId,
+          name: npc.name,
+          role: npc.role,
         },
       };
     }
@@ -1728,8 +1725,9 @@ export {
 export { MARKETING_CHANNELS, MARKETING_CAMPAIGNS, getMarketingChannel, getMarketingCampaign } from '../data/marketing';
 export { GUIDANCE_BEATS, getGuidanceBeat } from '../data/guidance';
 export {
-  DEFAULT_COFOUNDER,
+  NPC_COFOUNDERS,
+  getCofounderAvatar,
+  getNpcCofounder,
   AVATAR_OPTIONS,
-  COFOUNDER_PRESETS,
   avatarIndex,
 } from '../data/characters';

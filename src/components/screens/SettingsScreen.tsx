@@ -13,12 +13,54 @@ import { sfx } from '../../systems/AudioEngine';
 import { music } from '../../systems/MusicEngine';
 import { formatMoney } from '../../utils/bigNumber';
 import { formatDuration } from '../../utils/time';
-import CofounderCustomizer from './CofounderCustomizer';
 import ShareCardModal from '../shared/ShareCardModal';
 
 const BUY_OPTIONS: (1 | 10 | 100 | 'max')[] = [1, 10, 100, 'max'];
 
 type Banner = { tone: 'good' | 'bad'; text: string } | null;
+
+// ---- SW update hook used for the in-settings update button ------------------
+function useSwUpdate() {
+  const [pending, setPending] = useState(false);
+  const [checking, setChecking] = useState(false);
+
+  function checkNow() {
+    if (!('serviceWorker' in navigator)) return;
+    setChecking(true);
+    navigator.serviceWorker.ready.then(reg => {
+      reg.update().then(() => {
+        if (reg.waiting) setPending(true);
+        setChecking(false);
+      }).catch(() => setChecking(false));
+    });
+  }
+
+  function applyUpdate() {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.waiting?.postMessage('SKIP_WAITING');
+    });
+    setTimeout(() => window.location.reload(), 300);
+  }
+
+  // Detect already-waiting SW on mount
+  useState(() => {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.ready.then(reg => {
+      if (reg.waiting) { setPending(true); return; }
+      reg.addEventListener('updatefound', () => {
+        const next = reg.installing;
+        if (!next) return;
+        next.addEventListener('statechange', () => {
+          if (next.state === 'installed' && navigator.serviceWorker.controller) {
+            setPending(true);
+          }
+        });
+      });
+    });
+  });
+
+  return { pending, checking, checkNow, applyUpdate };
+}
 
 export default function SettingsScreen() {
   const { state, dispatch } = useGame();
@@ -26,6 +68,7 @@ export default function SettingsScreen() {
   const [importText, setImportText] = useState('');
   const [confirmStage, setConfirmStage] = useState<0 | 1 | 2>(0);
   const [showCard, setShowCard] = useState(false);
+  const swUpdate = useSwUpdate();
 
   const flash = (tone: 'good' | 'bad', text: string) => {
     setBanner({ tone, text });
@@ -267,11 +310,44 @@ export default function SettingsScreen() {
         </div>
       </section>
 
-      {/* ---- Co-founder ---- */}
+      {/* ---- Game update ---- */}
       <section>
-        <SectionTitle>Your Co-Founder</SectionTitle>
-        <div className="rounded-2xl border border-[#232c3e] bg-[#151c2b] p-3.5">
-          <CofounderCustomizer />
+        <SectionTitle>Game Version</SectionTitle>
+        <div className="rounded-2xl border border-[#232c3e] bg-[#151c2b] p-3.5 flex items-center justify-between gap-3">
+          <div>
+            {swUpdate.pending ? (
+              <>
+                <div className="text-sm font-semibold text-[#e7ecf5]">Update available</div>
+                <div className="text-xs text-[#8a94a8] mt-0.5">
+                  A new version of Empire Engine is ready to install.
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-sm font-semibold text-[#e7ecf5]">Empire Engine</div>
+                <div className="text-xs text-[#8a94a8] mt-0.5">
+                  {swUpdate.checking ? 'Checking for updates…' : 'Up to date.'}
+                </div>
+              </>
+            )}
+          </div>
+          {swUpdate.pending ? (
+            <button
+              onClick={swUpdate.applyUpdate}
+              className="shrink-0 rounded-xl px-4 py-2 text-sm font-bold text-[#070b12] active:scale-95 transition-transform"
+              style={{ background: 'var(--accent)' }}
+            >
+              🔄 Update Now
+            </button>
+          ) : (
+            <button
+              onClick={swUpdate.checkNow}
+              disabled={swUpdate.checking}
+              className="shrink-0 rounded-xl border border-[#232c3e] px-3 py-2 text-xs font-semibold text-[#8a94a8] hover:text-[#e7ecf5] active:scale-95 transition-transform disabled:opacity-40"
+            >
+              Check
+            </button>
+          )}
         </div>
       </section>
 

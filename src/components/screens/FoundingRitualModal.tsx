@@ -1,26 +1,24 @@
 // ============================================================================
 // FoundingRitualModal — the ceremonial founding moment.
 //
-// Full-screen cinematic overlay that plays when the player clicks "Found":
-//   • Aurora sky band shifts into the company's accent colour
-//   • Company name types itself in letter by letter with a glow effect
+// Full-screen cinematic overlay when the player clicks "Found":
+//   • Aurora sky band shifts into the company accent colour
+//   • Company name types itself letter by letter with a glow effect
 //   • Industry emoji pulses into view
-//   • Co-founder character enters with 2 lines of dialogue
+//   • Chosen aide speaks the founding lines from an inline dialogue card
 //   • "Begin building" button appears when dialogue completes
-//
-// The parent (IndustrySelect) dispatches SETUP after onComplete fires.
 // ============================================================================
 
 import { useState, useEffect, useRef } from 'react';
-import CharacterPresence from '../shared/CharacterPresence';
-import type { CofounderState, IndustryType } from '../../game/types';
+import type { IndustryType } from '../../game/types';
 import { INDUSTRIES } from '../../data/industries';
+import { getAideConfig } from '../../data/aides';
 
 export interface FoundingRitualProps {
   companyName: string;
   industry: IndustryType;
   accent: string;
-  cofounder: CofounderState;
+  chosenAideId: string;
   onComplete: () => void;
 }
 
@@ -28,33 +26,33 @@ export default function FoundingRitualModal({
   companyName,
   industry,
   accent,
-  cofounder,
+  chosenAideId,
   onComplete,
 }: FoundingRitualProps) {
   const cfg = INDUSTRIES[industry];
   const emoji = cfg?.emoji ?? '🏛️';
+  const aide = getAideConfig(chosenAideId);
 
-  // Phase 0 → 1 → 2 → 3 → 4
-  // 0: dark screen
-  // 1: sky aurora fades in
-  // 2: name starts typing
-  // 3: co-founder enters (haptic fired by parent before mounting)
-  // 4: can close
   const [phase, setPhase] = useState(0);
   const [typedName, setTypedName] = useState('');
-  const [charReady, setCharReady] = useState(false);
+  const [lineIndex, setLineIndex] = useState(0);
   const [canProceed, setCanProceed] = useState(false);
+  const [dialogueVisible, setDialogueVisible] = useState(false);
   const typeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const lines = [
+    `${companyName}. Say it like you mean it.`,
+    "Not a company. An empire. Let's go build it.",
+  ];
 
   useEffect(() => {
     const t1 = setTimeout(() => setPhase(1), 200);
     const t2 = setTimeout(() => setPhase(2), 700);
-    const t3 = setTimeout(() => { setPhase(3); setCharReady(true); }, 2000);
-    const t4 = setTimeout(() => setCanProceed(true), 9000); // auto-allow after 9s
+    const t3 = setTimeout(() => setDialogueVisible(true), 2000);
+    const t4 = setTimeout(() => setCanProceed(true), 9000);
     return () => { [t1, t2, t3, t4].forEach(clearTimeout); };
   }, []);
 
-  // Type the company name letter by letter
   useEffect(() => {
     if (phase < 2) return;
     if (typedName.length >= companyName.length) return;
@@ -66,19 +64,21 @@ export default function FoundingRitualModal({
 
   const nameComplete = typedName.length === companyName.length;
 
-  const cofounderLines = [
-    `${companyName}. Say it like you mean it.`,
-    "Not a company. An empire. Let's go build it.",
-  ];
+  function advanceLine() {
+    if (lineIndex < lines.length - 1) {
+      setLineIndex(i => i + 1);
+    } else {
+      setCanProceed(true);
+    }
+  }
 
   return (
     <div
       className="fixed inset-0 z-[60] flex flex-col overflow-hidden max-w-[480px] mx-auto"
       style={{ background: '#030507' }}
     >
-      {/* ---- Sky aurora zone (top 45%) ---- */}
+      {/* Sky aurora zone (top 46%) */}
       <div className="shrink-0 relative overflow-hidden" style={{ height: '46%' }}>
-        {/* Aurora gradient bloom */}
         <div
           className="absolute inset-0 transition-opacity duration-700"
           style={{
@@ -86,7 +86,6 @@ export default function FoundingRitualModal({
             background: `radial-gradient(ellipse at 50% 110%, ${accent}38 0%, ${accent}12 40%, transparent 68%)`,
           }}
         />
-        {/* Aurora sweep line */}
         {phase >= 1 && (
           <div
             className="ritual-aurora-sweep absolute inset-0"
@@ -95,7 +94,6 @@ export default function FoundingRitualModal({
             }}
           />
         )}
-        {/* Star field */}
         {phase >= 1 && Array.from({ length: 22 }, (_, i) => {
           const x = ((i * 37 + 11) % 94) + 2;
           const y = ((i * 53 + 7) % 82) + 4;
@@ -116,9 +114,7 @@ export default function FoundingRitualModal({
           );
         })}
 
-        {/* Centered name + emoji in sky zone */}
         <div className="absolute inset-0 flex flex-col items-center justify-center px-6 gap-3">
-          {/* Industry emoji */}
           <div
             className="text-5xl"
             style={{
@@ -131,7 +127,6 @@ export default function FoundingRitualModal({
             {emoji}
           </div>
 
-          {/* Company name — typed reveal with glow */}
           <h1
             className="text-[1.9rem] font-bold tracking-wide text-center leading-tight"
             style={{
@@ -149,7 +144,6 @@ export default function FoundingRitualModal({
             )}
           </h1>
 
-          {/* "Your empire begins" tagline */}
           {nameComplete && (
             <p
               className="text-[11px] tracking-[0.22em] uppercase animate-fade-in"
@@ -161,35 +155,59 @@ export default function FoundingRitualModal({
         </div>
       </div>
 
-      {/* ---- Gradient transition from sky to dark ---- */}
       <div
         className="pointer-events-none shrink-0"
-        style={{
-          height: 56,
-          marginTop: -28,
-          background: 'linear-gradient(to bottom, transparent, #030507)',
-        }}
+        style={{ height: 56, marginTop: -28, background: 'linear-gradient(to bottom, transparent, #030507)' }}
       />
 
-      {/* ---- Co-founder zone (lower half) ---- */}
+      {/* Aide dialogue zone */}
       <div className="flex-1 flex flex-col justify-end relative">
-        {charReady && (
+        {dialogueVisible && aide && (
           <div
-            className="px-3 animate-fade-in"
-            style={{ paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }}
+            className="px-4 animate-fade-in"
+            style={{ paddingBottom: 'calc(90px + env(safe-area-inset-bottom))' }}
           >
-            <CharacterPresence
-              avatar={{ ...cofounder.avatar, accent }}
-              name={cofounder.name}
-              role={cofounder.role}
-              side="left"
-              lines={cofounderLines}
-              onComplete={() => setCanProceed(true)}
-            />
+            {/* Aide identity badge */}
+            <div className="flex items-center gap-2 mb-2">
+              <div
+                className="h-9 w-9 rounded-xl flex items-center justify-center text-xl shrink-0"
+                style={{
+                  background: `color-mix(in srgb, ${accent} 14%, #0e1420)`,
+                  border: `1px solid color-mix(in srgb, ${accent} 35%, transparent)`,
+                  boxShadow: `0 0 14px -4px color-mix(in srgb, ${accent} 50%, transparent)`,
+                }}
+              >
+                {aide.emoji}
+              </div>
+              <div>
+                <div className="text-[13px] font-bold" style={{ color: accent }}>{aide.name}</div>
+                <div className="text-[10px] text-muted">{aide.role}</div>
+              </div>
+            </div>
+
+            {/* Dialogue card */}
+            <button
+              type="button"
+              onClick={advanceLine}
+              className="w-full text-left rounded-2xl border px-4 py-3.5 transition-all active:scale-[0.98]"
+              style={{
+                background: `color-mix(in srgb, ${accent} 6%, #0a0f1a)`,
+                borderColor: `color-mix(in srgb, ${accent} 28%, #232c3e)`,
+                boxShadow: `0 0 24px -8px color-mix(in srgb, ${accent} 30%, transparent)`,
+              }}
+            >
+              <p className="text-[13px] leading-snug text-[#e7ecf5]">
+                {lines[lineIndex]}
+              </p>
+              {lineIndex < lines.length - 1 && (
+                <div className="mt-2 flex justify-end">
+                  <span className="text-[9px] animate-pulse" style={{ color: accent, opacity: 0.7 }}>tap ▶</span>
+                </div>
+              )}
+            </button>
           </div>
         )}
 
-        {/* "Begin building" CTA */}
         {canProceed && (
           <button
             className="absolute inset-x-0 bottom-0 flex justify-center animate-fade-in"

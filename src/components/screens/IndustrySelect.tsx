@@ -21,7 +21,6 @@ import {
 import { AIDE_CONFIGS } from '../../data/aides';
 import type { CompanySetup, GameMode, IndustryType, Philosophy } from '../../game/types';
 import Card from '../shared/Card';
-import CofounderCustomizer from './CofounderCustomizer';
 import OldMasterOriginModal from './OldMasterOriginModal';
 import FoundingRitualModal from './FoundingRitualModal';
 import { getOldMaster } from '../../data/oldMasters';
@@ -389,7 +388,7 @@ function AideCard({
 // ---------------------------------------------------------------------------
 
 export default function IndustrySelect({ initialMode }: { initialMode?: GameMode } = {}) {
-  const { state, dispatch } = useGame();
+  const { dispatch } = useGame();
 
   const [name, setName] = useState('');
   const [industry, setIndustry] = useState<IndustryType | null>(null);
@@ -460,16 +459,7 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
 
   function completeSetup() {
     if (!pendingSetup) return;
-    const customized = state.cofounder;
     dispatch({ type: 'SETUP', payload: pendingSetup });
-    dispatch({
-      type: 'CHARACTER_CUSTOMIZE',
-      payload: {
-        name: customized.name,
-        role: customized.role,
-        avatar: { ...customized.avatar, accent: pendingSetup.accent },
-      },
-    });
     celebrate({
       kind: 'milestone',
       icon: '🏛️',
@@ -486,7 +476,7 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
         companyName={pendingSetup.name}
         industry={industry}
         accent={accent}
-        cofounder={state.cofounder}
+        chosenAideId={chosenAideId}
         onComplete={completeSetup}
       />
     );
@@ -685,14 +675,6 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
             );
           })}
         </div>
-      </Section>
-
-      {/* 7→8. Co-founder */}
-      <Section index={8} title="Meet your right hand">
-        <p className="text-[11px] text-muted leading-snug mb-3 -mt-1">
-          Your co-founder coaches you, hypes your wins, and runs ops while you build. Make them yours — or skip for a great default.
-        </p>
-        <CofounderCustomizer compact />
       </Section>
 
       {/* Found button */}

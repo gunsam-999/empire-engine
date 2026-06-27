@@ -15,6 +15,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import CharacterPresence, { type CharacterPresenceConfig } from './CharacterPresence';
 import { useGame } from '../../game/GameContext';
+import { getCofounderAvatar } from '../../data/characters';
 
 export interface AmbientCharacterLayerProps {
   /** True when any heavier surface (modal, story, guidance) is on screen. */
@@ -85,11 +86,13 @@ export default function AmbientCharacterLayer({ blocked }: AmbientCharacterLayer
     setCurrent(appearance);
   }, [blocked, current]);
 
-  // Build a co-founder config from current game state
-  const buildCofounder = useCallback((lines: string[]): CharacterPresenceConfig => {
+  // Build a co-founder config — only if co-founder has been recruited
+  const buildCofounder = useCallback((lines: string[]): CharacterPresenceConfig | null => {
     const cf = state.cofounder;
+    const avatar = getCofounderAvatar(cf);
+    if (!avatar) return null;
     return {
-      avatar: { ...cf.avatar },
+      avatar,
       name: cf.name,
       role: cf.role,
       side: 'left',
@@ -105,14 +108,16 @@ export default function AmbientCharacterLayer({ blocked }: AmbientCharacterLayer
     const elapsed = (Date.now() - (state.lastSaved ?? 0));
     if (elapsed > 2 * 60 * 60 * 1000) { // 2+ hour gap
       const t = setTimeout(() => {
-        show({ character: buildCofounder(pick(CF_LINES_WELCOME_BACK)) });
+        const char = buildCofounder(pick(CF_LINES_WELCOME_BACK));
+        if (char) show({ character: char });
       }, 5000);
       return () => clearTimeout(t);
     }
     // First-session 30s nudge
     const t = setTimeout(() => {
       if (!blocked && Date.now() - lastShownAt.current > 30_000) {
-        show({ character: buildCofounder(pick(CF_LINES_NEUTRAL)) });
+        const char = buildCofounder(pick(CF_LINES_NEUTRAL));
+        if (char) show({ character: char });
       }
     }, 35_000);
     return () => clearTimeout(t);
@@ -121,10 +126,11 @@ export default function AmbientCharacterLayer({ blocked }: AmbientCharacterLayer
 
   // ---- Trigger: income spike ---------------------------------------------------
   useEffect(() => {
-    const inc = state.events?.boost?.mult ? 1 : 0; // simple proxy for now
+    const inc = state.events?.boost?.mult ? 1 : 0;
     if (inc && prevIncomeRef.current === 0) {
       prevIncomeRef.current = 1;
-      show({ character: buildCofounder(pick(CF_LINES_INCOME_UP)) });
+      const char = buildCofounder(pick(CF_LINES_INCOME_UP));
+      if (char) show({ character: char });
     }
   }, [state.events, show, buildCofounder]);
 
@@ -134,7 +140,8 @@ export default function AmbientCharacterLayer({ blocked }: AmbientCharacterLayer
     const count = (state.rivals ?? []).filter(r => HOSTILE_POSTURES.has((r as { posture?: string }).posture ?? '')).length;
     if (count > prevRivalCountRef.current) {
       prevRivalCountRef.current = count;
-      show({ character: buildCofounder(pick(CF_LINES_RIVAL)) });
+      const char = buildCofounder(pick(CF_LINES_RIVAL));
+      if (char) show({ character: char });
     }
   }, [state.rivals, show, buildCofounder]);
 
@@ -143,7 +150,8 @@ export default function AmbientCharacterLayer({ blocked }: AmbientCharacterLayer
     const id = setInterval(() => {
       if (blocked || current || Date.now() - lastShownAt.current < 90_000) return;
       if (Date.now() - sessionStartRef.current < 30_000) return;
-      show({ character: buildCofounder(pick(CF_LINES_NEUTRAL)) });
+      const char = buildCofounder(pick(CF_LINES_NEUTRAL));
+      if (char) show({ character: char });
     }, 15_000);
     return () => clearInterval(id);
   }, [blocked, current, show, buildCofounder]);

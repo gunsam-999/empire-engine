@@ -158,9 +158,10 @@ export interface AvatarConfig {
 }
 
 export interface CofounderState {
+  recruited: boolean;
+  presetId: string | null;
   name: string;
   role: string;
-  avatar: AvatarConfig;
 }
 
 export interface MarketingChannelState {
@@ -863,7 +864,7 @@ export type Action =
   | { type: 'MARKETING_UPGRADE'; channelId: string }
   | { type: 'MARKETING_TOGGLE'; channelId: string }
   | { type: 'MARKETING_CAMPAIGN'; id: string }
-  | { type: 'CHARACTER_CUSTOMIZE'; payload: Partial<CofounderState> }
+  | { type: 'RECRUIT_COFOUNDER'; presetId: string }
   | { type: 'GUIDANCE_SEEN'; id: string }
   | { type: 'GUIDANCE_DISMISS'; id: string }
   | { type: 'GUIDANCE_QUEUE'; id: string }
