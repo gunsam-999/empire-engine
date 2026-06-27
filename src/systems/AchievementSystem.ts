@@ -1,4 +1,4 @@
-// AchievementSystem — evaluate milestone triggers. Pure.
+// AchievementSystem  -  evaluate milestone triggers. Pure.
 
 import { MILESTONES } from '../data/milestones';
 import type { GameReward, GameState } from '../game/types';

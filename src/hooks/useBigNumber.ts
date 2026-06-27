@@ -1,4 +1,4 @@
-// useBigNumber — memoized number/money/pct formatters.
+// useBigNumber  -  memoized number/money/pct formatters.
 
 import { useCallback } from 'react';
 import { formatMoney, formatNumber, formatPct, formatRate } from '../utils/bigNumber';

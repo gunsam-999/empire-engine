@@ -1,5 +1,5 @@
 // ============================================================================
-// EmpireScreen — the core gameplay loop. Tap to build, watch numbers climb.
+// EmpireScreen  -  the core gameplay loop. Tap to build, watch numbers climb.
 //
 // Layout:
 //   • Sticky header: company name, big animated cash, income/sec context,
@@ -9,7 +9,7 @@
 //   • 5 tier sections. Locked tiers are dimmed and show their unlock threshold.
 //     Each unlocked facility is a Card: icon, name, owned count, its live
 //     prodPerSec contribution, a chain-bonus hint (tier > 1), and a BUY button
-//     showing the cost for the current buyQty — green & tappable when
+//     showing the cost for the current buyQty  -  green & tappable when
 //     affordable, dim & disabled otherwise, with a juicy flash on purchase.
 // ============================================================================
 
@@ -336,7 +336,7 @@ function LockedTier({
 }
 
 // ---------------------------------------------------------------------------
-// Facility row — the core tappable unit
+// Facility row  -  the core tappable unit
 // ---------------------------------------------------------------------------
 
 function FacilityRow({
@@ -460,7 +460,7 @@ function FacilityRow({
             Buy {buyQty === 'max' ? `×${formatNumber(count)}` : `×${buyQty}`}
           </span>
           <span className="block font-mono tabular-nums">
-            {Number.isFinite(cost) && count > 0 ? formatMoney(cost, sym) : '—'}
+            {Number.isFinite(cost) && count > 0 ? formatMoney(cost, sym) : ' - '}
           </span>
         </button>
       </div>

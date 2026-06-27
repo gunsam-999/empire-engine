@@ -1,5 +1,5 @@
 // ============================================================================
-// IntelEngine (Session 5.2) — spy network for rival intelligence.
+// IntelEngine (Session 5.2)  -  spy network for rival intelligence.
 // Player commissions reports (50 influence, 300 s cooldown); each report
 // resolves after 30 s and reveals whether the rival's active telegraph is a
 // genuine threat or a feint. Intel level decays gradually; higher levels

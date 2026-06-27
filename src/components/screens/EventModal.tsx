@@ -1,4 +1,4 @@
-// EventModal — renders a single random event (micro / major / crisis).
+// EventModal  -  renders a single random event (micro / major / crisis).
 // Each option applies its reward (and pays its cost) via EVENT_RESOLVE, then
 // closes. Options the player cannot afford are dimmed + disabled.
 

@@ -1,5 +1,5 @@
 // ============================================================================
-// Emergent beat templates — procedurally generated story beats that reference
+// Emergent beat templates  -  procedurally generated story beats that reference
 // dynasty history. Each template has a condition (runs > 0, outcomes from last
 // run) and a generator that produces a StoryBeat's content from dynasty data.
 // ============================================================================
@@ -30,7 +30,7 @@ const TEMPLATES: EmergentTemplate[] = [
         title: 'The Second Dawn',
         speaker: 'narrator',
         lines: [
-          `The company has been reborn — its foundations laid ${tone} in the generation before.`,
+          `The company has been reborn  -  its foundations laid ${tone} in the generation before.`,
           'Old workers who survived the first era speak of it quietly, in the margins of long meetings.',
           'The name carries weight now. Use it carefully.',
         ],
@@ -49,7 +49,7 @@ const TEMPLATES: EmergentTemplate[] = [
         title: 'Echoes of War',
         speaker: 'rival',
         lines: [
-          `Word reaches you: ${name} has reorganized. The old guard was broken — but something new carries their banner.`,
+          `Word reaches you: ${name} has reorganized. The old guard was broken  -  but something new carries their banner.`,
           'Rivals have long memories. So should you.',
         ],
       };

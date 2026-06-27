@@ -1,4 +1,4 @@
-// useCelebrations — watches the game state for "big moment" transitions and
+// useCelebrations  -  watches the game state for "big moment" transitions and
 // fires the CelebrationHost (confetti + title card) plus a matching synthesized
 // fanfare. Fully decoupled from the reducer: it diffs the current state against
 // the previous render via refs, so no game-logic file needs to know the
@@ -126,7 +126,7 @@ export function useCelebrations(): void {
         kind: 'prestige',
         icon: '♾️',
         title: 'Restructured',
-        subtitle: 'A new cycle begins — stronger, wiser, compounding.',
+        subtitle: 'A new cycle begins  -  stronger, wiser, compounding.',
       });
       sfx.play('prestige');
       music.sting('prestige');

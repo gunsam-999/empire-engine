@@ -1,4 +1,4 @@
-// WelcomeBackModal — shown on launch when offline progress accrued.
+// WelcomeBackModal  -  shown on launch when offline progress accrued.
 // Reads offlineSummary from the game context; dismiss clears it.
 // Renders nothing when there is no summary (App can mount it unconditionally).
 

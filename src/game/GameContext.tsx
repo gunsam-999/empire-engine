@@ -1,5 +1,5 @@
 // ============================================================================
-// GameContext — provider, reducer (all actions), selector re-exports,
+// GameContext  -  provider, reducer (all actions), selector re-exports,
 // accent effect, offline progress, game loop + autosave wiring.
 // ============================================================================
 
@@ -70,6 +70,12 @@ import { loadGame, saveGame, SAVE_VERSION } from './SaveSystem';
 import { computeOffline } from './OfflineProgress';
 import { MILESTONES } from '../data/milestones';
 import { tickRivals, shiftRivalAggression, counterRivalMove, applyPlayerOffense } from '../systems/RivalEngine';
+import {
+  tickInvestments,
+  buyPortfolio,
+  sellPortfolio,
+  defaultInvestmentState,
+} from '../systems/InvestmentEngine';
 import { tickCompanions, shiftCompanionTrust } from '../systems/CompanionEngine';
 import { runDirector, directorBeatSeen, defaultDirectorState } from '../systems/DirectorEngine';
 import { tickWorkforce, shiftWorkerMorale } from '../systems/WorkforceEngine';
@@ -141,6 +147,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
     newspaper: defaultNewspaperState(),
     notifications: defaultNotificationState(),
     publicAffairs: defaultPublicAffairsState(),
+    investments: defaultInvestmentState(),
     lastTick: now,
     lastSaved: now,
   };
@@ -151,7 +158,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
 /**
  * Deep-merge the new v2 fields into any loaded save that lacks them so existing
  * v1 games keep playing with full marketing/cofounder/guidance defaults.
- * ADDITIVE ONLY — never drops existing fields.
+ * ADDITIVE ONLY  -  never drops existing fields.
  */
 export function migrateSave(raw: GameState): GameState {
   const s = raw as Partial<GameState> & GameState;
@@ -275,6 +282,7 @@ export function migrateSave(raw: GameState): GameState {
           lastStatementAt: s.publicAffairs.lastStatementAt ?? 0,
         }
       : defaultPublicAffairsState(),
+    investments: s.investments ?? defaultInvestmentState(),
     version: SAVE_VERSION,
   };
 }
@@ -287,7 +295,7 @@ function newGameForSetup(setup: CompanySetup, now: number): GameState {
   // first co-founder guidance beat (welcome), if any
   const firstGuidance = GUIDANCE_BEATS.find((b) => b.trigger.type === 'start');
   // Seed the empire so the loop is "running" from second one and the player can
-  // immediately buy a few facilities — otherwise cash:0 + 0/s income soft-locks
+  // immediately buy a few facilities  -  otherwise cash:0 + 0/s income soft-locks
   // the very first purchase. Genre-standard generous opening.
   const firstFacilityId = `${setup.industry}-t1-0`;
   return {
@@ -382,7 +390,7 @@ export function reducer(state: GameState, action: Action): GameState {
       // Market drift.
       next.market = driftMarket(next.market, dt, now);
 
-      // Guidance (co-founder coaching) triggers — min-interval gated, one at a
+      // Guidance (co-founder coaching) triggers  -  min-interval gated, one at a
       // time so it is never spammy.
       const eligibleGuidance = newlyEligibleGuidance(next, now);
       if (eligibleGuidance.length > 0) {
@@ -424,7 +432,7 @@ export function reducer(state: GameState, action: Action): GameState {
         next.story = { ...next.story, queue: [...next.story.queue, ...allowedBeats] };
       }
 
-      // Emergent dynasty beats — procedurally generated from dynasty run history.
+      // Emergent dynasty beats  -  procedurally generated from dynasty run history.
       {
         const dynasty = next.dynasty ?? defaultDynastyState();
         const emergentSlots = dir.maxNewBeats - allowedBeats.length;
@@ -510,7 +518,7 @@ export function reducer(state: GameState, action: Action): GameState {
               at: now,
               icon: '⚔️',
               source: 'Rival',
-              text: `${cfg?.name ?? r.id} is on the move — ${r.telegraph.message}`,
+              text: `${cfg?.name ?? r.id} is on the move  -  ${r.telegraph.message}`,
             });
           }
         }
@@ -547,10 +555,10 @@ export function reducer(state: GameState, action: Action): GameState {
           const nextMood = moodFromMorale(nextAvg);
           if (prevMood !== nextMood) {
             const MOOD_TEXT: Record<string, string> = {
-              BURNT_OUT: 'Team morale has collapsed — your people are burning out.',
+              BURNT_OUT: 'Team morale has collapsed  -  your people are burning out.',
               DISENGAGED: 'Your workforce is disengaging. A rally is overdue.',
               NEUTRAL: 'Team morale has stabilised. Things are holding together.',
-              ENGAGED: 'Your team is engaged — productivity is on the rise.',
+              ENGAGED: 'Your team is engaged  -  productivity is on the rise.',
               INSPIRED: 'The workforce is inspired. Energy is at its peak.',
             };
             newAmbients.push({
@@ -563,7 +571,7 @@ export function reducer(state: GameState, action: Action): GameState {
           }
         }
 
-        // Aide: loyalty crossed 75 — passive bonus unlocked.
+        // Aide: loyalty crossed 75  -  passive bonus unlocked.
         for (const a of next.aides) {
           const prev = (state.aides ?? []).find((p) => p.id === a.id);
           if (prev && prev.loyalty < 75 && a.loyalty >= 75) {
@@ -573,7 +581,7 @@ export function reducer(state: GameState, action: Action): GameState {
               at: now,
               icon: '💼',
               source: 'Cabinet',
-              text: `${cfg?.name ?? a.id} is fully committed — their passive bonus is now active.`,
+              text: `${cfg?.name ?? a.id} is fully committed  -  their passive bonus is now active.`,
             });
           }
         }
@@ -591,7 +599,7 @@ export function reducer(state: GameState, action: Action): GameState {
                 at: now,
                 icon: '📜',
                 source: 'Inheritance',
-                text: `Old Master's clause fulfilled: "${label}" — your reward is active.`,
+                text: `Old Master's clause fulfilled: "${label}"  -  your reward is active.`,
               });
             } else if (cl.status === 'breached' && prevCl.status === 'fulfilled') {
               newAmbients.push({
@@ -599,7 +607,7 @@ export function reducer(state: GameState, action: Action): GameState {
                 at: now,
                 icon: '⚠️',
                 source: 'Inheritance',
-                text: `Clause breached: "${label}" — reward suspended until the condition is re-met.`,
+                text: `Clause breached: "${label}"  -  reward suspended until the condition is re-met.`,
               });
             }
           }
@@ -619,7 +627,7 @@ export function reducer(state: GameState, action: Action): GameState {
             at: now,
             icon: '🌐',
             source: 'World',
-            text: `You've entered the ${PHASE_LABELS[next.director.currentPhase] ?? next.director.currentPhase} era — the landscape is shifting.`,
+            text: `You've entered the ${PHASE_LABELS[next.director.currentPhase] ?? next.director.currentPhase} era  -  the landscape is shifting.`,
           });
         }
 
@@ -680,6 +688,12 @@ export function reducer(state: GameState, action: Action): GameState {
         next,
         dt
       );
+
+      // Investment system (Part 8): tick portfolio prices, recalculate wealth, gen Wiz offers.
+      next.investments = {
+        ...(next.investments ?? defaultInvestmentState()),
+        ...tickInvestments(next, dt, now),
+      };
 
       next.stats = { ...next.stats, playSeconds: next.stats.playSeconds + dt };
       next.lastTick = now;
@@ -1213,10 +1227,36 @@ export function reducer(state: GameState, action: Action): GameState {
           boost: {
             mult: cfg.deployMult,
             endsAt: now + cfg.deployDurationSec * 1000,
-            source: `${cfg.name} — ${cfg.deployLabel}`,
+            source: `${cfg.name}  -  ${cfg.deployLabel}`,
           },
         },
       };
+    }
+
+    // ----- INVESTMENT -----
+    case 'INV_BUY': {
+      const inv = state.investments ?? defaultInvestmentState();
+      const result = buyPortfolio(inv, action.portfolioId, action.amount, action.priceBonus, now);
+      if (result.error || result.cashSpent > state.cash) return state;
+      return {
+        ...state,
+        cash: state.cash - result.cashSpent,
+        investments: result.newState,
+      };
+    }
+    case 'INV_SELL': {
+      const inv = state.investments ?? defaultInvestmentState();
+      const result = sellPortfolio(inv, action.portfolioId, action.fraction, now);
+      if (result.error) return state;
+      return {
+        ...state,
+        cash: state.cash + result.cashGained,
+        investments: result.newState,
+      };
+    }
+    case 'INV_DISMISS_OFFER': {
+      const inv = state.investments ?? defaultInvestmentState();
+      return { ...state, investments: { ...inv, pendingOffer: null } };
     }
 
     // ----- LOAD / IMPORT -----

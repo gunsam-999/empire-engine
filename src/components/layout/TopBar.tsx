@@ -1,8 +1,8 @@
 // ============================================================================
-// TopBar — fixed header of the app frame. Shows who you are and what you have:
+// TopBar  -  fixed header of the app frame. Shows who you are and what you have:
 //   • Company name + industry emoji, with a level / prestige-tier badge.
 //   • Primary cash with an AnimatedCounter and live per-second income.
-//   • Reach 📣 — the headline marketing metric (reach + audience subtitle).
+//   • Reach 📣  -  the headline marketing metric (reach + audience subtitle).
 //   • Secondary currencies: Insight 🔬, Influence 🤝, Legacy Points ♾️.
 //   • Small icon buttons that open overlays:
 //       Story 📖 (pulses when story.queue.length > 0)
@@ -11,7 +11,7 @@
 //       Settings ⚙️
 //
 // The TopBar is presentational + reads from the game context. It does not own
-// overlay state — it calls `onOpenOverlay(id)` so App can render the overlay.
+// overlay state  -  it calls `onOpenOverlay(id)` so App can render the overlay.
 // ============================================================================
 
 import {
@@ -82,7 +82,7 @@ function ReachChip({ reach, audience, rate }: ReachChipProps) {
   return (
     <div
       className="flex items-center gap-1.5 rounded-lg bg-[#151c2b] px-2 py-1 border border-[var(--accent)]/35"
-      title={`Reach — total people reached · +${formatNumber(rate)}/s\nAudience: ${formatNumber(
+      title={`Reach  -  total people reached · +${formatNumber(rate)}/s\nAudience: ${formatNumber(
         audience
       )} loyal followers`}
     >
@@ -219,7 +219,7 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
         </div>
       </div>
 
-      {/* Row 3: secondary currencies (Reach leads — it's the headline metric) */}
+      {/* Row 3: secondary currencies (Reach leads  -  it's the headline metric) */}
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar px-3 py-2">
         <ReachChip reach={reach} audience={audience} rate={reachRate} />
         <CurrencyChip
@@ -231,14 +231,14 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
         <CurrencyChip
           icon="🤝"
           value={state.influence}
-          title="Influence — levels up advisors"
+          title="Influence  -  levels up advisors"
           tone="text-[#c4b5fd]"
         />
         {state.legacyPoints > 0 && (
           <CurrencyChip
             icon="♾️"
             value={state.legacyPoints}
-            title="Legacy Points — permanent production multiplier"
+            title="Legacy Points  -  permanent production multiplier"
             tone="text-[var(--accent)]"
           />
         )}
@@ -256,6 +256,14 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
             value={state.transcendShards}
             title="Transcend Shards"
             tone="text-[var(--accent)]"
+          />
+        )}
+        {(state.investments?.wealthPortfolio ?? 0) > 0 && (
+          <CurrencyChip
+            icon="💎"
+            value={state.investments?.wealthPortfolio ?? 0}
+            title="Wealth Portfolio  - total investment value"
+            tone="text-emerald-400"
           />
         )}
       </div>

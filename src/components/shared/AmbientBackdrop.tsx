@@ -1,9 +1,9 @@
 // ============================================================================
-// AmbientBackdrop — the living atmosphere behind the whole app.
+// AmbientBackdrop  -  the living atmosphere behind the whole app.
 //
 // A fixed, pointer-transparent layer of slow-drifting aurora blobs tinted from
 // the empire's accent palette. It is not decoration for its own sake: it reads
-// the game's *mood* and *era* and breathes with them —
+// the game's *mood* and *era* and breathes with them  - 
 //   • Era (director phase) raises the ambient intensity and pulls a warmer,
 //     more golden cast as you climb BOOTSTRAPPING → TITAN.
 //   • Market mood tints the top glow: green-gold on a boom, cold red on a crash.
@@ -11,7 +11,7 @@
 //
 // Performance contract (mirrors LiveEmpireView): only 4 blurred elements, all
 // animated purely via CSS transform/opacity keyframes declared once. Nothing
-// re-renders per game tick — the component reads coarse, bucketed inputs so React
+// re-renders per game tick  -  the component reads coarse, bucketed inputs so React
 // bails out between meaningful state changes. Honors reduce-motion by freezing
 // the drift to a static (still gorgeous) gradient.
 // ============================================================================
@@ -81,7 +81,7 @@ export default function AmbientBackdrop() {
       {/* Base wash so blobs have something to sit over (matches page). */}
       <div className="absolute inset-0 bg-[#070b12]" />
 
-      {/* Top spotlight under the TopBar — the anchor of the composition. */}
+      {/* Top spotlight under the TopBar  -  the anchor of the composition. */}
       <div
         className="absolute -top-24 left-1/2 h-[340px] w-[520px] -translate-x-1/2 rounded-full blur-3xl"
         style={{
@@ -92,7 +92,7 @@ export default function AmbientBackdrop() {
         }}
       />
 
-      {/* Drifting aurora blob — accent, lower-left. */}
+      {/* Drifting aurora blob  -  accent, lower-left. */}
       <div
         className={reduce ? '' : 'ab-blob ab-blob-a'}
         style={{
@@ -110,7 +110,7 @@ export default function AmbientBackdrop() {
         }}
       />
 
-      {/* Drifting aurora blob — secondary, upper-right. */}
+      {/* Drifting aurora blob  -  secondary, upper-right. */}
       <div
         className={reduce ? '' : 'ab-blob ab-blob-b'}
         style={{
@@ -128,7 +128,7 @@ export default function AmbientBackdrop() {
         }}
       />
 
-      {/* Deep anchor blob — bottom, grounds the scene. */}
+      {/* Deep anchor blob  -  bottom, grounds the scene. */}
       <div
         className={reduce ? '' : 'ab-blob ab-blob-c'}
         style={{

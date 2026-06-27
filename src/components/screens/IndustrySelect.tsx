@@ -1,5 +1,5 @@
 // ============================================================================
-// IndustrySelect — premium onboarding / company-founding flow.
+// IndustrySelect  -  premium onboarding / company-founding flow.
 //   1. Name your company (validated non-empty).
 //   2. Pick one of 8 industries (accent ring on select).
 //   3. Choose an accent color (live-previews across the whole screen).
@@ -76,7 +76,7 @@ export default function IndustrySelect() {
       philosophy,
       foundedAt: Date.now(),
     };
-    // Capture any co-founder customization the player made during onboarding —
+    // Capture any co-founder customization the player made during onboarding  - 
     // SETUP rebuilds state (and re-seeds the default co-founder with the chosen
     // accent), so we re-apply the player's edits + accent right after.
     const customized = state.cofounder;
@@ -261,8 +261,8 @@ export default function IndustrySelect() {
       {/* ---------------- 5. Meet your co-founder ---------------- */}
       <Section index={5} title="Meet your co-founder">
         <p className="text-[11px] text-muted leading-snug mb-3 -mt-1">
-          Your right hand — they'll coach you, hype your wins, and run ops while
-          you build. Make them yours (or skip — we'll seed a great default).
+          Your right hand  -  they'll coach you, hype your wins, and run ops while
+          you build. Make them yours (or skip  -  we'll seed a great default).
         </p>
         <CofounderCustomizer compact />
       </Section>

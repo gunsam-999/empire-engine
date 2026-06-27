@@ -1,10 +1,10 @@
 // ============================================================================
-// PrestigeScreen — the rebirth / meta-progression screen.
+// PrestigeScreen  -  the rebirth / meta-progression screen.
 // Renders the three PRESTIGE_TIERS as cards:
-//   • Restructure (T1)  — live potentialLP, current LP, the +1%/LP multiplier,
+//   • Restructure (T1)   -  live potentialLP, current LP, the +1%/LP multiplier,
 //                         eligibility, and a double-confirm Restructure button
 //                         dispatching PRESTIGE.
-//   • IPO (T2) / Conglomerate (T3) — shown locked with their unlock requirements
+//   • IPO (T2) / Conglomerate (T3)  -  shown locked with their unlock requirements
 //                         and a live progress bar toward eligibility.
 // ============================================================================
 
@@ -201,7 +201,7 @@ function RestructureCard() {
         </div>
       )}
 
-      {/* Action — double confirm */}
+      {/* Action  -  double confirm */}
       <div className="mt-3">
         {confirmStep === 1 && eligible && (
           <p className="mb-2 text-center text-[12px] font-semibold text-[#fbbf24] animate-fade-in">
@@ -225,7 +225,7 @@ function RestructureCard() {
             {!eligible
               ? 'Not eligible yet'
               : confirmStep === 1
-              ? 'Yes — Restructure now'
+              ? 'Yes  -  Restructure now'
               : `Restructure for +${formatNumber(lp)} LP`}
           </button>
           {confirmStep === 1 && eligible && (
@@ -328,7 +328,7 @@ function LockedTierCard({ index }: { index: 1 | 2 }) {
         disabled
         className="mt-3 w-full cursor-not-allowed rounded-xl bg-[#1b2334] py-3 text-[14px] font-semibold text-[#8a94a8] opacity-50"
       >
-        Locked — {tier.name}
+        Locked  -  {tier.name}
       </button>
     </div>
   );

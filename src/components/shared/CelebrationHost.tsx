@@ -1,5 +1,5 @@
 // ============================================================================
-// CelebrationHost — the "big moment" overlay. When the empire crosses a real
+// CelebrationHost  -  the "big moment" overlay. When the empire crosses a real
 // threshold (a milestone unlocked, an echelon climbed, a new era, a prestige),
 // this paints a full-screen procedural confetti burst behind a centered title
 // card that swells in, holds, and fades.
@@ -12,7 +12,7 @@
 // moments queue so two never collide. Honors reduce-motion by skipping the
 // confetti entirely and showing only the (calm) title card.
 //
-// Same decoupled bus pattern as toast/fx — fire from anywhere.
+// Same decoupled bus pattern as toast/fx  -  fire from anywhere.
 // ============================================================================
 
 import { useEffect, useRef, useState } from 'react';

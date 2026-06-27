@@ -1,5 +1,5 @@
 // ============================================================================
-// MarketingSystem — all marketing formulas + selectors. Pure, side-effect free.
+// MarketingSystem  -  all marketing formulas + selectors. Pure, side-effect free.
 // Reach is the headline metric. Audience meaningfully boosts income via
 // getMarketingMult (consumed by EconomyEngine.getMultipliers).
 // ============================================================================
@@ -124,7 +124,7 @@ export function channelReachRate(
   rate *= brandMult(state);
   rate *= compoundingFactor(state, ch);
 
-  // Community: viral — scales with existing audience.
+  // Community: viral  -  scales with existing audience.
   if (ch.kind === 'community') {
     const audience = state.marketing?.audience ?? 0;
     rate *= 1 + Math.log10(1 + audience) * 0.5;
@@ -252,7 +252,7 @@ export function tickMarketing(
     if ((state.cash ?? 0) + cashDelta >= due) {
       cashDelta -= due;
     } else {
-      // Cannot afford — pause it.
+      // Cannot afford  -  pause it.
       channels = { ...channels, [ch.id]: { ...cs, active: false } };
     }
   }
@@ -274,7 +274,7 @@ export function tickMarketing(
   if (audience < target) {
     audience += (target - audience) * Math.min(1, 0.05 * dt);
   } else if (reachRate <= 0) {
-    // No marketing pressure — gentle churn, dampened by email retention.
+    // No marketing pressure  -  gentle churn, dampened by email retention.
     const churn = 0.01 * dt / retentionFactor(reactiveState);
     audience -= audience * Math.min(0.5, churn);
   }

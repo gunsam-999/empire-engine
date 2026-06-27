@@ -1,13 +1,13 @@
 // ============================================================================
-// Empire Engine — random events. Three tiers of escalating stakes:
-//   MICRO   — frequent, fast dopamine. Tap to collect, or a one-tap snap choice.
-//   MAJOR   — rarer, meaningful forks with real trade-offs.
-//   CRISIS  — dangerous. Pay to defend, or accept the damage and gamble.
+// Empire Engine  -  random events. Three tiers of escalating stakes:
+//   MICRO    -  frequent, fast dopamine. Tap to collect, or a one-tap snap choice.
+//   MAJOR    -  rarer, meaningful forks with real trade-offs.
+//   CRISIS   -  dangerous. Pay to defend, or accept the damage and gamble.
 //
 // Shape (consumed by EVENT_RESOLVE):
 //   { id, title, text, icon, options: [{ label, reward?, cost? }] }
-//   reward: GameReward  — { cash, insight, influence, lp, boost{mult,seconds} }
-//   cost:   { cash?, influence?, lp? } — subtracted only if affordable.
+//   reward: GameReward   -  { cash, insight, influence, lp, boost{mult,seconds} }
+//   cost:   { cash?, influence?, lp? }  -  subtracted only if affordable.
 // ============================================================================
 
 import type { GameReward } from '../game/types';
@@ -27,7 +27,7 @@ export interface GameEvent {
 }
 
 // ---------------------------------------------------------------------------
-// MICRO EVENTS — quick collect / snap choice. Rewards lean on % boosts so they
+// MICRO EVENTS  -  quick collect / snap choice. Rewards lean on % boosts so they
 // scale with the player's stage instead of going stale.
 // ---------------------------------------------------------------------------
 export const MICRO_EVENTS: GameEvent[] = [
@@ -99,14 +99,14 @@ export const MICRO_EVENTS: GameEvent[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// MAJOR EVENTS — genuine forks. Each option trades one currency for another or
+// MAJOR EVENTS  -  genuine forks. Each option trades one currency for another or
 // a sustained boost; no purely free lunch.
 // ---------------------------------------------------------------------------
 export const MAJOR_EVENTS: GameEvent[] = [
   {
     id: 'major_acquisition',
     title: 'Acquisition Offer',
-    text: 'A struggling competitor will sell you their whole operation — for a price.',
+    text: 'A struggling competitor will sell you their whole operation  -  for a price.',
     icon: '🏢',
     options: [
       {
@@ -120,7 +120,7 @@ export const MAJOR_EVENTS: GameEvent[] = [
   {
     id: 'major_ipo_buzz',
     title: 'IPO Whispers',
-    text: 'Bankers are circling. Go public now and the windfall is enormous — but loud.',
+    text: 'Bankers are circling. Go public now and the windfall is enormous  -  but loud.',
     icon: '🔔',
     options: [
       {
@@ -165,7 +165,7 @@ export const MAJOR_EVENTS: GameEvent[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// CRISIS EVENTS — defend-or-accept. The defend option costs real resources to
+// CRISIS EVENTS  -  defend-or-accept. The defend option costs real resources to
 // neutralize the threat (and usually grants a small upside). The accept option
 // is free but risky / lossy, with a sliver of compensation.
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 // ============================================================================
-// ResearchScreen — the R&D tree.
+// ResearchScreen  -  the R&D tree.
 // Branch filter tabs -> nodes as cards grouped by branch. Each node shows its
 // Insight cost, research time, and effect; locked when prereqs are unmet or the
 // node is already complete. The active research project shows a live countdown
@@ -199,7 +199,7 @@ function ResearchCard({
           </div>
         ) : status === 'active' ? (
           <div className="rounded-xl bg-[#0e1420] py-2 text-center text-[12px] font-semibold text-[var(--accent)]">
-            In progress — {formatCountdown(Math.max(0, (state.research.active?.endsAt ?? now) - now))}
+            In progress  -  {formatCountdown(Math.max(0, (state.research.active?.endsAt ?? now) - now))}
           </div>
         ) : (
           <button
@@ -334,7 +334,7 @@ export default function ResearchScreen() {
 
       {/* Branch blurb */}
       <p className="mt-3 text-[12px] text-[#8a94a8]">
-        <span className="text-[#e7ecf5]">{activeMeta.icon} {activeMeta.label}</span> — {activeMeta.blurb}
+        <span className="text-[#e7ecf5]">{activeMeta.icon} {activeMeta.label}</span>  -  {activeMeta.blurb}
       </p>
 
       {/* Nodes */}

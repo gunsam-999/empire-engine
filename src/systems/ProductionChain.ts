@@ -1,4 +1,4 @@
-// ProductionChain — Factorio-style tier feeding helpers. Pure.
+// ProductionChain  -  Factorio-style tier feeding helpers. Pure.
 
 import { chainBonus, getFacilities, prodPerSec, tierUnlocked } from './EconomyEngine';
 import type { GameState } from '../game/types';

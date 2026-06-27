@@ -1,29 +1,12 @@
-// ============================================================================
-// BottomNav — fixed 5-tab navigation pinned to the bottom of the app frame.
-// Tabs: Empire 🏭 · Marketing 📣 · Research 🔬 · Market 📈 · Prestige ♻️.
-// The active tab glows in the dynamic accent.
-//
-// Attention pulses:
-//   • Prestige pulses when a rebirth would more than double your banked Legacy
-//     Points (potentialLP > legacyPoints*2) — the classic "you should reset now".
-//   • Marketing pulses while a MUST-HAVE channel (social or content) is still at
-//     level 0 — the player hasn't started growth yet.
-//
-// Advisors lives in the TopBar overlay buttons now, NOT on the bottom nav.
-//
-// `TabId` is the canonical screen identifier for the whole app; App.tsx owns
-// the active-tab state and imports this type.
-// ============================================================================
-
 import { useGame, potentialLP, getChannel } from '../../game/GameContext';
 import TabButton from '../shared/TabButton';
 import { sfx } from '../../systems/AudioEngine';
 import { haptic } from '../../utils/haptics';
 
 /** Canonical screen identifiers used by the router/App. */
-export type TabId = 'empire' | 'marketing' | 'research' | 'market' | 'prestige';
+export type TabId = 'empire' | 'marketing' | 'research' | 'invest' | 'prestige';
 
-export const TAB_IDS: TabId[] = ['empire', 'marketing', 'research', 'market', 'prestige'];
+export const TAB_IDS: TabId[] = ['empire', 'marketing', 'research', 'invest', 'prestige'];
 
 interface TabMeta {
   id: TabId;
@@ -35,7 +18,7 @@ const TABS: TabMeta[] = [
   { id: 'empire', label: 'Empire', icon: '🏭' },
   { id: 'marketing', label: 'Marketing', icon: '📣' },
   { id: 'research', label: 'Research', icon: '🔬' },
-  { id: 'market', label: 'Market', icon: '📈' },
+  { id: 'invest', label: 'Invest', icon: '💎' },
   { id: 'prestige', label: 'Prestige', icon: '♻️' },
 ];
 
@@ -55,6 +38,9 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
   const needsMarketing =
     getChannel(state, 'social').level === 0 || getChannel(state, 'content').level === 0;
 
+  // Invest pulses when The Wiz has a pending offer.
+  const wizHasOffer = !!(state.investments?.pendingOffer);
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[480px] border-t border-[#232c3e]
@@ -70,7 +56,8 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
             active={active === tab.id}
             pulse={
               (tab.id === 'prestige' && prestigeReady && active !== 'prestige') ||
-              (tab.id === 'marketing' && needsMarketing && active !== 'marketing')
+              (tab.id === 'marketing' && needsMarketing && active !== 'marketing') ||
+              (tab.id === 'invest' && wizHasOffer && active !== 'invest')
             }
             onClick={() => {
               if (active !== tab.id) {

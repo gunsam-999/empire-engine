@@ -1,4 +1,4 @@
-// useGameLoop — start the rAF game loop bound to a dispatch. Optional hook;
+// useGameLoop  -  start the rAF game loop bound to a dispatch. Optional hook;
 // GameProvider already wires the loop internally, but UI/tests may use this.
 
 import { useEffect } from 'react';

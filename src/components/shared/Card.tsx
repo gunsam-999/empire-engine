@@ -1,4 +1,4 @@
-// Card — the standard premium panel used across the app.
+// Card  -  the standard premium panel used across the app.
 // Dark card surface, rounded-2xl, accent-aware hover/active states.
 
 import type { CSSProperties, ReactNode } from 'react';

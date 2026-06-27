@@ -1,8 +1,8 @@
 // ============================================================================
-// Empire Engine — Research tree.
+// Empire Engine  -  Research tree.
 // 5 branches (production, efficiency, innovation, market, legacy) across tiers 1..4.
 // Costs in Insight roughly double per tier (T1 ~100). timeSec doubles per tier
-// (T1 60). Prerequisite chains create real build diversity — you cannot rush a
+// (T1 60). Prerequisite chains create real build diversity  -  you cannot rush a
 // tier-4 node without first investing down its branch (and sometimes across).
 // ============================================================================
 
@@ -10,7 +10,7 @@ import type { ResearchNode } from '../game/types';
 
 export const RESEARCH_NODES: ResearchNode[] = [
   // ──────────────────────────────────────────────────────────────────────────
-  // PRODUCTION — raw output. The bread-and-butter line; numbers go up.
+  // PRODUCTION  -  raw output. The bread-and-butter line; numbers go up.
   // ──────────────────────────────────────────────────────────────────────────
   {
     id: 'prod-1',
@@ -58,7 +58,7 @@ export const RESEARCH_NODES: ResearchNode[] = [
   },
 
   // ──────────────────────────────────────────────────────────────────────────
-  // EFFICIENCY — cost reduction. Makes scaling affordable; pairs with production.
+  // EFFICIENCY  -  cost reduction. Makes scaling affordable; pairs with production.
   // ──────────────────────────────────────────────────────────────────────────
   {
     id: 'eff-1',
@@ -106,7 +106,7 @@ export const RESEARCH_NODES: ResearchNode[] = [
   },
 
   // ──────────────────────────────────────────────────────────────────────────
-  // INNOVATION — Insight generation + research speed. The "tech rush" line.
+  // INNOVATION  -  Insight generation + research speed. The "tech rush" line.
   // ──────────────────────────────────────────────────────────────────────────
   {
     id: 'innov-1',
@@ -154,7 +154,7 @@ export const RESEARCH_NODES: ResearchNode[] = [
   },
 
   // ──────────────────────────────────────────────────────────────────────────
-  // MARKET — sale price & demand. Multiplies every dollar your goods fetch.
+  // MARKET  -  sale price & demand. Multiplies every dollar your goods fetch.
   // ──────────────────────────────────────────────────────────────────────────
   {
     id: 'mkt-1',
@@ -202,7 +202,7 @@ export const RESEARCH_NODES: ResearchNode[] = [
   },
 
   // ──────────────────────────────────────────────────────────────────────────
-  // LEGACY — prestige scaling & offline gains. The long-game investment.
+  // LEGACY  -  prestige scaling & offline gains. The long-game investment.
   // ──────────────────────────────────────────────────────────────────────────
   {
     id: 'leg-1',
@@ -250,7 +250,7 @@ export const RESEARCH_NODES: ResearchNode[] = [
   },
 
   // ──────────────────────────────────────────────────────────────────────────
-  // CROSS-BRANCH CAPSTONES — tier-4 picks that demand investment in two lines.
+  // CROSS-BRANCH CAPSTONES  -  tier-4 picks that demand investment in two lines.
   // These are the "build identity" choices: you rarely afford all of them.
   // ──────────────────────────────────────────────────────────────────────────
   {

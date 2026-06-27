@@ -1,5 +1,5 @@
 // ============================================================================
-// PublicAffairsPanel (Session 5.5) — public confidence display + statement.
+// PublicAffairsPanel (Session 5.5)  -  public confidence display + statement.
 // Shows aggregate confidence, its key drivers, and the "Issue Statement"
 // action that players use to boost confidence at influence cost.
 // ============================================================================
@@ -44,7 +44,7 @@ export default function PublicAffairsPanel() {
       <div className="flex items-center justify-between text-[12px]">
         <span className="font-semibold text-[#8a94a8]">📢 Public Affairs</span>
         <span className="font-mono tabular-nums text-[10px]" style={{ color }}>
-          {label} — {Math.round(pa.confidence)}/100
+          {label}  -  {Math.round(pa.confidence)}/100
         </span>
       </div>
 
@@ -97,8 +97,8 @@ export default function PublicAffairsPanel() {
         {!canStatement
           ? `On cooldown (${cooldownMin}m remaining)`
           : !canAfford
-          ? `Issue Statement — 🎖️ ${STATEMENT_COST} influence needed`
-          : `Issue Statement — 🎖️ ${STATEMENT_COST} → +25 confidence`}
+          ? `Issue Statement  -  🎖️ ${STATEMENT_COST} influence needed`
+          : `Issue Statement  -  🎖️ ${STATEMENT_COST} → +25 confidence`}
       </button>
     </div>
   );

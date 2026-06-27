@@ -1,11 +1,11 @@
 // ============================================================================
-// palette — tiny color toolkit for the "visual soul" layer.
+// palette  -  tiny color toolkit for the "visual soul" layer.
 //
 // The whole app themes off a single `--accent` hex chosen at founding. Static
 // styling can lean on CSS color-mix(), but the canvas/SVG atmosphere and the FX
 // particles need real parsed RGB to build gradients and rgba() strings. This
 // module is that bridge: parse a hex, derive harmonious companion tones, and
-// produce alpha/blend strings — all pure, allocation-light, no dependencies.
+// produce alpha/blend strings  -  all pure, allocation-light, no dependencies.
 // ============================================================================
 
 export interface Rgb {
@@ -109,7 +109,7 @@ export function adjust(hex: string, deg: number, satMul = 1, lightMul = 1): stri
 export interface Palette {
   /** The chosen accent. */
   accent: string;
-  /** Analogous companion hue (+38°) — gives gradients a duotone richness. */
+  /** Analogous companion hue (+38°)  -  gives gradients a duotone richness. */
   secondary: string;
   /** Brighter, desaturated highlight for sparks/glints. */
   glow: string;

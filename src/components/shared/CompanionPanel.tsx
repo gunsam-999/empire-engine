@@ -1,4 +1,4 @@
-// Companion panel — compact trust-ladder display.
+// Companion panel  -  compact trust-ladder display.
 // Shows the player's inner circle at a glance.
 
 import { useGame } from '../../game/GameContext';

@@ -1,5 +1,5 @@
 // ============================================================================
-// AdvisorScreen — the advisor collection. A rarity-tiered grid of all 40
+// AdvisorScreen  -  the advisor collection. A rarity-tiered grid of all 40
 // advisors: owned cards are full-color and interactive (level up, assign to a
 // facility, activate legendaries); locked cards show a silhouette. Tapping an
 // owned advisor opens a detail sheet with the assign flow.
@@ -225,7 +225,7 @@ function AdvisorDetail({ advisorId, onClose }: { advisorId: string; onClose: () 
               style={{ background: cdRemain > 0 || boostActive ? '#232c3e' : '#fbbf24', color: cdRemain > 0 || boostActive ? '#8a94a8' : '#070b12' }}
             >
               {boostActive
-                ? `Active — ×${advisor.activeAbility.mult}!`
+                ? `Active  -  ×${advisor.activeAbility.mult}!`
                 : cdRemain > 0
                 ? `Cooldown ${formatCountdown(cdRemain)}`
                 : `Activate ×${advisor.activeAbility.mult}`}

@@ -1,4 +1,4 @@
-// ResearchSystem — prerequisite checks + research timing helpers. Pure.
+// ResearchSystem  -  prerequisite checks + research timing helpers. Pure.
 
 import { getResearchNode } from './EconomyEngine';
 import { RESEARCH_NODES } from '../data/research';

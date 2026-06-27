@@ -1,8 +1,8 @@
 // ============================================================================
-// AmbientFeed — Channel 1 of Session 4.4 two-channel story delivery.
+// AmbientFeed  -  Channel 1 of Session 4.4 two-channel story delivery.
 // Auto-generated dispatch entries from engine transitions (rival telegraphs,
 // companion rung changes, workforce mood shifts, aide loyalty, premise clauses,
-// director phase). No player interaction needed — events scroll in naturally.
+// director phase). No player interaction needed  -  events scroll in naturally.
 // ============================================================================
 
 import { useGame } from '../../game/GameContext';

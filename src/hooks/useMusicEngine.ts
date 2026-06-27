@@ -1,4 +1,4 @@
-// useMusicEngine — wires the game state into MusicEngine.
+// useMusicEngine  -  wires the game state into MusicEngine.
 //
 // Lifecycle:
 //   • Music starts on the first user gesture (click / touchstart) to satisfy
@@ -40,7 +40,7 @@ export function useMusicEngine(): void {
     const on = state.settings.music !== false; // default: true
     music.setEnabled(on);
     if (on && !started.current) {
-      // User re-enabled music via settings — start if we haven't yet
+      // User re-enabled music via settings  -  start if we haven't yet
       // (requires a prior gesture to have already unlocked the AudioContext,
       // which is guaranteed since the settings panel requires clicking into it).
       music.start();

@@ -1,5 +1,5 @@
 // ============================================================================
-// TerritoryScreen — expand the empire region by region. Each region grants a
+// TerritoryScreen  -  expand the empire region by region. Each region grants a
 // passive bonus and is contested by a named rival. Unlocking takes cash +
 // real time (a live countdown ProgressBar shows the in-progress expansion).
 // ============================================================================

@@ -1,5 +1,5 @@
 // ============================================================================
-// GuidanceSystem — evaluate co-founder coaching triggers during TICK.
+// GuidanceSystem  -  evaluate co-founder coaching triggers during TICK.
 // Returns ids of beats newly eligible to be queued (respects min interval).
 // Pure, side-effect free.
 // ============================================================================

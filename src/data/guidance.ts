@@ -1,5 +1,5 @@
 // ============================================================================
-// Empire Engine — GUIDANCE / COACHING BEATS
+// Empire Engine  -  GUIDANCE / COACHING BEATS
 // Short, punchy pop-up coaching spoken by your co-founder. Fired at the right
 // moments with real marketing tips. DISTINCT from the 5-act STORY arc.
 // Pure data. Trigger evaluation lives in systems/GuidanceSystem.ts.
@@ -32,7 +32,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'start' },
     emotion: 'hype',
     lines: [
-      "We're really doing this — partners, for real.",
+      "We're really doing this  -  partners, for real.",
       "I've got operations. You build the empire.",
     ],
     tip: 'Buy your first facility to get production flowing.',
@@ -49,7 +49,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'income', value: 25 },
     emotion: 'tip',
     lines: [
-      "We make a great product — but nobody buys what they can't find.",
+      "We make a great product  -  but nobody buys what they can't find.",
       'Open the Marketing tab. Let me show you reach.',
     ],
     tip: 'Reach turns into customers. Customers turn into revenue.',
@@ -59,14 +59,14 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'channel', channel: 'social' },
     emotion: 'hype',
     lines: ['Social is live! This is where a brand gets a personality.'],
-    tip: 'Post consistently before chasing virality — momentum compounds.',
+    tip: 'Post consistently before chasing virality  -  momentum compounds.',
   },
   {
     id: 'g-content-unlock',
     trigger: { type: 'channel', channel: 'content' },
     emotion: 'calm',
     lines: [
-      'Content is slow at first — then it snowballs and never stops.',
+      'Content is slow at first  -  then it snowballs and never stops.',
       "It's the most patient bet we'll make. I love it.",
     ],
     tip: 'SEO compounds: the work you publish today pays off for years.',
@@ -75,7 +75,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     id: 'g-synergy',
     trigger: { type: 'channel', channel: 'paid' },
     emotion: 'tip',
-    lines: ["Paid is a faucet — reach now, but it stops the second you stop paying."],
+    lines: ["Paid is a faucet  -  reach now, but it stops the second you stop paying."],
     tip: 'Use paid to test fast, then pour winners into organic.',
   },
   {
@@ -83,7 +83,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'reach', value: 1000 },
     emotion: 'proud',
     lines: ["A thousand people reached. A thousand! Remember when it was zero?"],
-    tip: 'Reach is the headline metric — keep the channels running.',
+    tip: 'Reach is the headline metric  -  keep the channels running.',
   },
   {
     id: 'g-reach-10k',
@@ -109,7 +109,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     id: 'g-first-audience',
     trigger: { type: 'audience', value: 100 },
     emotion: 'tip',
-    lines: ["Our first real audience — people who actually pay attention."],
+    lines: ["Our first real audience  -  people who actually pay attention."],
     tip: 'Audience boosts income. Reach is the top of the funnel; audience is the bottom.',
   },
   {
@@ -117,7 +117,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'audience', value: 1000 },
     emotion: 'proud',
     lines: ['A thousand-strong audience. That is a community, not a number.'],
-    tip: 'Email marketing keeps an audience loyal — retention beats acquisition.',
+    tip: 'Email marketing keeps an audience loyal  -  retention beats acquisition.',
   },
   {
     id: 'g-audience-10k',
@@ -131,13 +131,13 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'audience', value: 500 },
     emotion: 'urgent',
     lines: ["We've got an audience warmed up. Let's hit them with a campaign."],
-    tip: 'Campaigns multiply reach for a short burst — time them well.',
+    tip: 'Campaigns multiply reach for a short burst  -  time them well.',
   },
   {
     id: 'g-campaign-live',
     trigger: { type: 'campaign' },
     emotion: 'hype',
-    lines: ['Campaign is LIVE — reach is spiking! All hands, ride it!'],
+    lines: ['Campaign is LIVE  -  reach is spiking! All hands, ride it!'],
     tip: 'Keep every channel active during a campaign to maximize the multiplier.',
   },
   {
@@ -145,7 +145,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'income', value: 1000 },
     emotion: 'proud',
     lines: ['A thousand a second. The marketing is paying for itself many times over.'],
-    tip: 'Reinvest revenue into reach — growth funds more growth.',
+    tip: 'Reinvest revenue into reach  -  growth funds more growth.',
   },
   {
     id: 'g-income-100k',
@@ -157,7 +157,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     id: 'g-tier3',
     trigger: { type: 'tier', value: 3 },
     emotion: 'tip',
-    lines: ['New tier unlocked — bigger operations, bigger story to tell.'],
+    lines: ['New tier unlocked  -  bigger operations, bigger story to tell.'],
     tip: 'Scale your marketing alongside production so demand keeps up with supply.',
   },
   {
@@ -171,7 +171,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     id: 'g-brand',
     trigger: { type: 'reach', value: 500000 },
     emotion: 'proud',
-    lines: ['Our brand has real weight now — people trust the name before they try the product.'],
+    lines: ['Our brand has real weight now  -  people trust the name before they try the product.'],
     tip: 'A strong brand multiplies every channel. Protect it.',
   },
 ];

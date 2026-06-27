@@ -1,5 +1,5 @@
 // ============================================================================
-// TabButton — a single bottom-nav tab. Emoji glyph over a tiny label.
+// TabButton  -  a single bottom-nav tab. Emoji glyph over a tiny label.
 // Active tab lights up in the dynamic accent (text + soft glow + dot).
 // Optional `pulse` adds the accent ping ring to nudge the player (e.g. when
 // a prestige is newly worthwhile or story beats are queued).

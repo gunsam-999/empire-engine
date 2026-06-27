@@ -1,5 +1,5 @@
 // ============================================================================
-// NewspaperEngine (Session 5.3) — press coverage system.
+// NewspaperEngine (Session 5.3)  -  press coverage system.
 // Notable game transitions trigger headlines (echelon tier-up, coalition,
 // rival defeated, LE milestones, ethics extremes, premise breach). Negative
 // coverage accumulates a heat score that applies a light production debuff.

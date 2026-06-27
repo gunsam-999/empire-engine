@@ -1,5 +1,5 @@
 // ============================================================================
-// FxLayer — the "juice" host. A single mounted overlay that listens to a tiny
+// FxLayer  -  the "juice" host. A single mounted overlay that listens to a tiny
 // module-level event bus and paints transient feedback at screen coordinates:
 //
 //   fx.gain(x, y, '+$1.2K')        floating value that rises and fades
@@ -12,7 +12,7 @@
 // bursts/ripples and showing only a brief static gain label.
 //
 // Coordinates are viewport pixels (clientX/clientY or a getBoundingClientRect
-// center) — the layer is position:fixed so they map 1:1.
+// center)  -  the layer is position:fixed so they map 1:1.
 // ============================================================================
 
 import { useEffect, useState } from 'react';

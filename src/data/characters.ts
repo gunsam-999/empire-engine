@@ -1,5 +1,5 @@
 // ============================================================================
-// Empire Engine — CHARACTER DATA
+// Empire Engine  -  CHARACTER DATA
 // Your "left hand" co-founder: default config, avatar option tables, presets.
 // Pure data + light helpers. No React.
 // ============================================================================

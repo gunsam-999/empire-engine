@@ -1,4 +1,4 @@
-// IntelPanel — Intel Desk UI (Session 5.2).
+// IntelPanel  -  Intel Desk UI (Session 5.2).
 // Shows intel network level, active reports, and verified verdicts for rival
 // telegraphs. Commission button costs 50 influence with a 5-min cooldown.
 

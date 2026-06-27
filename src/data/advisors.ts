@@ -1,11 +1,11 @@
 // ============================================================================
-// Empire Engine — advisor roster. Exactly 40 advisors, 5 per industry.
+// Empire Engine  -  advisor roster. Exactly 40 advisors, 5 per industry.
 //
 // Per industry: 2 common, 1 rare, 1 epic, 1 legendary.
-//   common    — small single passive.
-//   rare      — stronger passive.
-//   epic      — strong passive.
-//   legendary — strongest passive PLUS an activeAbility (ADVISOR_ACTIVATE).
+//   common     -  small single passive.
+//   rare       -  stronger passive.
+//   epic       -  strong passive.
+//   legendary  -  strongest passive PLUS an activeAbility (ADVISOR_ACTIVATE).
 //
 // passiveBonus.value is a fraction (0.05 = +5%) interpreted per `kind`:
 //   production | cost | insight | influence | market.
@@ -73,7 +73,7 @@ export const ADVISORS: Advisor[] = [
     passiveBonus: { kind: 'production', value: 0.4 },
     activeAbility: {
       name: 'Overclock',
-      description: 'Push the whole stack past spec — output surges, briefly.',
+      description: 'Push the whole stack past spec  -  output surges, briefly.',
       cooldownSeconds: 600,
       mult: 5,
       durationSec: 30,

@@ -1,4 +1,4 @@
-// SaveSystem — localStorage persistence with version guard + base64 export/import.
+// SaveSystem  -  localStorage persistence with version guard + base64 export/import.
 
 import type { GameState } from './types';
 

@@ -1,4 +1,4 @@
-// AdvisorSystem — advisor leveling cost + activation helpers. Pure.
+// AdvisorSystem  -  advisor leveling cost + activation helpers. Pure.
 
 import { getAdvisor } from '../data/advisors';
 import type { GameState } from '../game/types';

@@ -1,5 +1,5 @@
 // ============================================================================
-// Empire Engine — Milestones.
+// Empire Engine  -  Milestones.
 // Permanent, one-time achievements. The TICK reducer evaluates each trigger
 // generically and, when newly met, pushes the id into state.milestones.unlocked
 // and applies the reward exactly once.
@@ -102,7 +102,7 @@ export const MILESTONES: {
   {
     id: 'ms-tier-3',
     name: 'Advanced Operations',
-    desc: 'Unlock a Tier 3 facility — Insight now flows passively.',
+    desc: 'Unlock a Tier 3 facility  -  Insight now flows passively.',
     icon: '🔬',
     trigger: { type: 'tier', value: 3 },
     reward: { insight: 200, influence: 15 },
@@ -118,7 +118,7 @@ export const MILESTONES: {
   {
     id: 'ms-tier-5',
     name: 'The Pinnacle',
-    desc: 'Unlock a Tier 5 facility — the apex of your industry.',
+    desc: 'Unlock a Tier 5 facility  -  the apex of your industry.',
     icon: '✨',
     trigger: { type: 'tier', value: 5 },
     reward: { influence: 150, insight: 2500 },

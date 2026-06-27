@@ -1,5 +1,5 @@
 // ============================================================================
-// PublicAffairsEngine (Session 5.5) — company confidence aggregator.
+// PublicAffairsEngine (Session 5.5)  -  company confidence aggregator.
 // Confidence (0–100) reflects how the outside world views your enterprise,
 // aggregating signals from echelon standing, press heat, rival pressure,
 // ethics score, and coalition activity. Players can issue a press statement

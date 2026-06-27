@@ -1,4 +1,4 @@
-// GoldenBubble — a rare floating reward that drifts up across the screen.
+// GoldenBubble  -  a rare floating reward that drifts up across the screen.
 // Tap it to bank a big short boost (x7 for 30s). App owns when this is mounted;
 // on tap (or when the drift finishes) it calls onDone so App can unmount it.
 

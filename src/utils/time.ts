@@ -1,6 +1,6 @@
 // Time formatting helpers.
 
-/** "2h 3m", "45s", "3d 4h" — coarse human duration from seconds. */
+/** "2h 3m", "45s", "3d 4h"  -  coarse human duration from seconds. */
 export function formatDuration(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds <= 0) return '0s';
   const s = Math.floor(seconds);

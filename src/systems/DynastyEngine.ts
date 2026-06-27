@@ -1,5 +1,5 @@
 // ============================================================================
-// DynastyEngine — prestige-chain logic.
+// DynastyEngine  -  prestige-chain logic.
 // Snapshots a run before prestige fires, earns a trait, and accumulates the
 // dynasty record. Also exposes the multiplier getter for EconomyEngine.
 // ============================================================================

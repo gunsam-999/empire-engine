@@ -1,5 +1,5 @@
 // ============================================================================
-// StoryScreen — the narrative log.
+// StoryScreen  -  the narrative log.
 // Act header + ethics meter at the top. Below it, every beat the player has
 // SEEN renders as chat-style dialogue bubbles, color-coded by speaker. When the
 // story queue holds a beat, a prominent "Continue the story" button opens that
@@ -46,11 +46,11 @@ const SPEAKERS: Record<Speaker, SpeakerMeta> = {
 
 const ACT_TITLES = [
   '',
-  'Act I — The Founding',
-  'Act II — The Climb',
-  'Act III — The Reckoning',
-  'Act IV — The Apex',
-  'Act V — The Legacy',
+  'Act I  -  The Founding',
+  'Act II  -  The Climb',
+  'Act III  -  The Reckoning',
+  'Act IV  -  The Apex',
+  'Act V  -  The Legacy',
 ];
 
 // ---- Reward chips -----------------------------------------------------------
@@ -423,7 +423,7 @@ export default function StoryScreen() {
         <ReputationMeter ethics={state.story.ethics} reputationHeldSec={state.reputationHeldSec ?? 0} />
       </div>
 
-      {/* Echelon — competitive ranking tier */}
+      {/* Echelon  -  competitive ranking tier */}
       {state.echelon && (
         <div className="mt-3">
           <EchelonBadge />
@@ -458,35 +458,35 @@ export default function StoryScreen() {
         </div>
       )}
 
-      {/* Dynasty — prestige chain, earned traits, heirlooms */}
+      {/* Dynasty  -  prestige chain, earned traits, heirlooms */}
       {(state.dynasty?.runs ?? []).length > 0 && (
         <div className="mt-3">
           <DynastyPanel />
         </div>
       )}
 
-      {/* Intel Desk — rival intelligence and feint verification */}
+      {/* Intel Desk  -  rival intelligence and feint verification */}
       {(state.rivals ?? []).length > 0 && (
         <div className="mt-3">
           <IntelPanel />
         </div>
       )}
 
-      {/* Newspaper — press coverage and heat score */}
+      {/* Newspaper  -  press coverage and heat score */}
       {(state.newspaper?.items ?? []).length > 0 && (
         <div className="mt-3">
           <NewspaperPanel />
         </div>
       )}
 
-      {/* Public Affairs — aggregate confidence from all external signals */}
+      {/* Public Affairs  -  aggregate confidence from all external signals */}
       {state.publicAffairs && (
         <div className="mt-3">
           <PublicAffairsPanel />
         </div>
       )}
 
-      {/* Dispatch Feed — ambient narrative channel */}
+      {/* Dispatch Feed  -  ambient narrative channel */}
       {(state.ambientFeed ?? []).length > 0 && (
         <div className="mt-3">
           <AmbientFeed />

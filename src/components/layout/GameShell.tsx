@@ -1,5 +1,5 @@
 // ============================================================================
-// GameShell — the persistent app frame for the playing experience.
+// GameShell  -  the persistent app frame for the playing experience.
 //
 //   ┌────────────────────────────┐  ← fixed TopBar (identity, cash, currencies)
 //   │  scrollable content (pb-24)│  ← the active screen, scrolls under the bars
@@ -40,7 +40,7 @@ export default function GameShell({
 
       <TopBar onOpenOverlay={onOpenOverlay} />
 
-      {/* Rival telegraphs — always visible, above scroll content. */}
+      {/* Rival telegraphs  -  always visible, above scroll content. */}
       <div className="fixed left-1/2 top-[148px] z-40 w-full max-w-[480px] -translate-x-1/2">
         <RivalAlert />
       </div>

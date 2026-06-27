@@ -1,4 +1,4 @@
-// WorkforcePanel — compact morale display for the named workforce (Session 4.1).
+// WorkforcePanel  -  compact morale display for the named workforce (Session 4.1).
 
 import { useGame } from '../../game/GameContext';
 import { moodFromMorale, getWorkforceMult } from '../../systems/WorkforceEngine';

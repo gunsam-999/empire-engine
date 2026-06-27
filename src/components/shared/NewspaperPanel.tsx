@@ -1,4 +1,4 @@
-// NewspaperPanel — Newspaper press coverage UI (Session 5.3).
+// NewspaperPanel  -  Newspaper press coverage UI (Session 5.3).
 // Shows recent headlines, heat score indicator, and "Respond" buttons for
 // negative coverage. Responding costs 200 influence and reduces heat by 30.
 
@@ -105,7 +105,7 @@ export default function NewspaperPanel() {
         <span className="text-[10px]">
           Heat:{' '}
           <span className="font-semibold" style={{ color: heatColor }}>
-            {Math.round(heatScore)} — {heatLabel}
+            {Math.round(heatScore)}  -  {heatLabel}
           </span>
         </span>
       </div>
@@ -127,7 +127,7 @@ export default function NewspaperPanel() {
           Negative coverage debuffs production by up to 18%. Respond to reduce heat.
           {heatScore > 0 && (
             <span className="ml-1 text-[#34d399]">
-              (Decaying — {formatNumber(heatScore)}pts)
+              (Decaying  -  {formatNumber(heatScore)}pts)
             </span>
           )}
         </div>

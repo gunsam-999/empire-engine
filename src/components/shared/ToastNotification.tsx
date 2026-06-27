@@ -1,4 +1,4 @@
-// ToastNotification — lightweight toast system with a module-level event bus.
+// ToastNotification  -  lightweight toast system with a module-level event bus.
 //
 //   import { toast, ToastHost } from './components/shared/ToastNotification';
 //   // mount <ToastHost /> once near the app root, then anywhere:

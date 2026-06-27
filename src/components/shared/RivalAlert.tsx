@@ -1,5 +1,5 @@
 // ============================================================================
-// RivalAlert — surfaces active rival telegraphs as urgent banners.
+// RivalAlert  -  surfaces active rival telegraphs as urgent banners.
 // Each telegraph shows who is attacking, what they're about to do, how much
 // time remains, and a counter button if one is available.
 // ============================================================================
@@ -15,7 +15,7 @@ import type { IntelState, RivalTelegraph } from '../../game/types';
 interface AlertProps {
   telegraph: RivalTelegraph;
   now: number;
-  /** True if this is a feint — shown as a subtle "unverified" label to hint the
+  /** True if this is a feint  -  shown as a subtle "unverified" label to hint the
    *  player should invest in the Intel Desk for confirmation. */
   isFeint: boolean;
   intel: IntelState;

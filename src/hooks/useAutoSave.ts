@@ -1,4 +1,4 @@
-// useAutoSave — periodic + on-hide save of game state. GameProvider wires this
+// useAutoSave  -  periodic + on-hide save of game state. GameProvider wires this
 // internally; exposed for components/tests that want explicit control.
 
 import { useEffect, useRef } from 'react';

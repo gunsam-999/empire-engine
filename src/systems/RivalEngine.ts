@@ -1,7 +1,7 @@
 // ============================================================================
-// RivalEngine — deterministic rival orchestration (Sessions 3.2 + 3.3).
+// RivalEngine  -  deterministic rival orchestration (Sessions 3.2 + 3.3).
 // All functions are pure: given state, return new state fragments.
-// No AI, no probability — every decision is a table lookup or threshold check.
+// No AI, no probability  -  every decision is a table lookup or threshold check.
 // ============================================================================
 
 import { RIVAL_CONFIGS, getRivalConfig, getRivalMove } from '../data/rivals';
@@ -110,7 +110,7 @@ export function syncRivalRoster(rivals: RivalState[], state: GameState, now: num
  * from moves that action counters effectively.
  *
  * Returns a [moveId, isFeint] pair. A feint fires a real-looking telegraph but
- * has no economic effect — it is designed to waste the player's counter.
+ * has no economic effect  -  it is designed to waste the player's counter.
  */
 function selectAdaptiveMove(
   rivalId: string,
@@ -144,7 +144,7 @@ function selectAdaptiveMove(
   const chosen = scored[0].m;
 
   // Feint logic: when the player has countered this move ≥2 times, fire a
-  // decoy telegraph 30% of the time — the actual move won't execute.
+  // decoy telegraph 30% of the time  -  the actual move won't execute.
   const counterKey = chosen.counteredBy ?? '__none__';
   const timesCountered = counterCounts[counterKey] ?? 0;
   // Use a deterministic "pseudo-random" based on defenseHistory length so the
@@ -348,7 +348,7 @@ export function tickRivals(
 
   const nextRivals: RivalState[] = [];
   for (let rival of rivals) {
-    // Execute an expired telegraph — but skip if it was a feint.
+    // Execute an expired telegraph  -  but skip if it was a feint.
     if (rival.telegraph && now >= rival.telegraph.executesAt) {
       if (!rival.telegraphIsFeint) {
         pressures = executeRivalMove(rival.id, rival.telegraph.moveId, pressures, now);
@@ -359,7 +359,7 @@ export function tickRivals(
     nextRivals.push(rival);
   }
 
-  // Coalition check — fires once when dominance is reached.
+  // Coalition check  -  fires once when dominance is reached.
   const afterCoalition = checkCoalition(nextRivals, state);
 
   // Coalition is "active" if any rival is in WAR and there are 2+ HOSTILE/WAR.

@@ -1,4 +1,4 @@
-// StoryEngine — evaluate which story beats are now eligible. Pure.
+// StoryEngine  -  evaluate which story beats are now eligible. Pure.
 
 import { STORY_BEATS } from '../data/story';
 import type { GameState, StoryBeat } from '../game/types';

@@ -1,5 +1,5 @@
 // ============================================================================
-// LiveEmpireView — a state-driven, animated SVG micro-world of the business
+// LiveEmpireView  -  a state-driven, animated SVG micro-world of the business
 // growing in real time. Buildings rise per tier as facilities are bought,
 // reach-waves ripple from HQ at a rate tied to reachPerSec, money particles
 // float up at a rate tied to incomePerSec, workers/customers move along paths,
@@ -9,7 +9,7 @@
 // Performance contract:
 //   • Everything animates via CSS keyframes (declared once in a <style> tag).
 //   • Element COUNTS are derived from state and memoized, so React only
-//     re-renders the SVG structure when those derived counts change — not every
+//     re-renders the SVG structure when those derived counts change  -  not every
 //     game tick. No per-frame setState. Total animated elements are capped
 //     (~40-60) regardless of empire size.
 // ============================================================================
@@ -203,7 +203,7 @@ export default function LiveEmpireView({ className = '' }: { className?: string 
         {/* Stars (only in normal/crash, subtle) */}
         {model.mood !== 'boom' && <Stars />}
 
-        {/* Prestige aura — a soft glow rising from the skyline when prestiged. */}
+        {/* Prestige aura  -  a soft glow rising from the skyline when prestiged. */}
         {model.prestige > 0 && (
           <ellipse
             cx={VB_W / 2}

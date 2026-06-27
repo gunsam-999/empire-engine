@@ -1,11 +1,11 @@
 // ============================================================================
-// DirectorEngine — hardcoded pacing / orchestration layer (Session 3.5).
+// DirectorEngine  -  hardcoded pacing / orchestration layer (Session 3.5).
 //
 // Reads signals from GameState, classifies the current phase, then returns
 // a DirectorDecision that the TICK handler applies BEFORE writing outputs.
 //
 // Nothing here is random. Given the same state, the director always makes
-// the same call. All logic is threshold tables — no AI, no probabilities.
+// the same call. All logic is threshold tables  -  no AI, no probabilities.
 // ============================================================================
 
 import { incomePerSec } from './EconomyEngine';
@@ -150,7 +150,7 @@ export function runDirector(state: GameState, now: number): DirectorDecision {
     signals.timeSinceLastEscalationMs > ESCALATION_COOLDOWN_MS &&
     phase !== 'BOOTSTRAPPING'
   ) {
-    // Long quiet period — apply gentle escalation pressure.
+    // Long quiet period  -  apply gentle escalation pressure.
     rivalAggModifier = 1.6;
   } else if (phase === 'TITAN') {
     // Always-on escalation in the endgame.
@@ -171,7 +171,7 @@ export function runDirector(state: GameState, now: number): DirectorDecision {
 
   if (canNudge) {
     if (signals.activeAttackCount > 0 && signals.companionTrustAvg < 40) {
-      // Player is under attack and companions are lukewarm — give a small boost.
+      // Player is under attack and companions are lukewarm  -  give a small boost.
       companionTrustNudge = { companionId: signals.mostTrustedCompanion!.id, delta: 2 };
     } else if (signals.rivalThreatLevel > 65 && signals.companionTrustAvg < 60) {
       // High threat; companions are present but not deep enough.
@@ -189,7 +189,7 @@ export function runDirector(state: GameState, now: number): DirectorDecision {
     // One beat pending; allow another only if enough time has passed.
     maxNewBeats = signals.timeSinceLastBeatMs >= BEAT_MIN_INTERVAL_MS * 2 ? 1 : 0;
   } else {
-    // Queue is empty — always allow one new beat.
+    // Queue is empty  -  always allow one new beat.
     maxNewBeats = 1;
   }
 

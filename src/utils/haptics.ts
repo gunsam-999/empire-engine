@@ -1,4 +1,4 @@
-// haptics — feather-light wrapper over the Vibration API.
+// haptics  -  feather-light wrapper over the Vibration API.
 //
 // Most desktop browsers and iOS Safari no-op navigator.vibrate, so this is a
 // progressive enhancement: it fires a short pattern on Android/Chrome and does
@@ -27,6 +27,6 @@ export function haptic(kind: HapticKind = 'tap'): void {
   try {
     navigator.vibrate(PATTERNS[kind]);
   } catch {
-    /* vibrate can throw if called without a user gesture — ignore. */
+    /* vibrate can throw if called without a user gesture  -  ignore. */
   }
 }

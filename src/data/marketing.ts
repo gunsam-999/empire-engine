@@ -1,5 +1,5 @@
 // ============================================================================
-// Empire Engine — MARKETING DATA
+// Empire Engine  -  MARKETING DATA
 // Real-world marketing channels with hard-wired, authentic step names.
 // Each channel = a ladder of real marketing actions the player unlocks.
 // Pure data + cost-curve helpers. No React, no game state mutation.
@@ -22,7 +22,7 @@ export interface MarketingChannel {
   tagline: string;
   mustHave?: boolean;
   costCurrency: 'cash' | 'influence';
-  /** 0..1 — how strongly this channel snowballs over time (SEO/social effect). */
+  /** 0..1  -  how strongly this channel snowballs over time (SEO/social effect). */
   compounding: number;
   /** Optional per-second cash upkeep (paid channels stop reaching if unpaid). */
   upkeepPerSec?: number;
@@ -41,7 +41,7 @@ export interface MarketingCampaign {
 }
 
 // ----------------------------------------------------------------------------
-// Cost curve — each step in a channel escalates. Step cost = base * mul^index.
+// Cost curve  -  each step in a channel escalates. Step cost = base * mul^index.
 // ----------------------------------------------------------------------------
 
 export const STEP_COST_BASE = 60;
@@ -53,11 +53,11 @@ export function defaultStepCost(index: number, base = STEP_COST_BASE): number {
 }
 
 // ----------------------------------------------------------------------------
-// Channels — names are REAL real-life marketing actions, hard-wired per step.
+// Channels  -  names are REAL real-life marketing actions, hard-wired per step.
 // ----------------------------------------------------------------------------
 
 export const MARKETING_CHANNELS: MarketingChannel[] = [
-  // 1. SOCIAL — followers snowball, virality.
+  // 1. SOCIAL  -  followers snowball, virality.
   {
     id: 'social',
     name: 'Social Media Marketing',
@@ -70,14 +70,14 @@ export const MARKETING_CHANNELS: MarketingChannel[] = [
     steps: [
       { name: 'Create Profiles', desc: 'Claim your handles across platforms.', cost: defaultStepCost(0), reachRate: 3, followerRate: 0.4 },
       { name: 'Post Consistently', desc: 'A steady content calendar keeps you visible.', cost: defaultStepCost(1), reachRate: 9, followerRate: 1.4 },
-      { name: 'Engage & Reply', desc: 'Talk to your audience — the algorithm loves it.', cost: defaultStepCost(2), reachRate: 22, followerRate: 3.2, audienceRate: 0.6 },
+      { name: 'Engage & Reply', desc: 'Talk to your audience  -  the algorithm loves it.', cost: defaultStepCost(2), reachRate: 22, followerRate: 3.2, audienceRate: 0.6 },
       { name: 'Run a Hashtag Campaign', desc: 'A branded hashtag spreads reach organically.', cost: defaultStepCost(3), reachRate: 55, followerRate: 7, audienceRate: 1.4 },
       { name: 'Go Viral', desc: 'One breakout post explodes your numbers.', cost: defaultStepCost(4), reachRate: 140, followerRate: 18, audienceRate: 3.5 },
       { name: 'Influencer Collabs', desc: 'Co-create with creators to borrow their audience.', cost: defaultStepCost(5), reachRate: 320, followerRate: 42, audienceRate: 8 },
     ],
   },
 
-  // 2. CONTENT — steady reach that compounds strongest over time (SEO).
+  // 2. CONTENT  -  steady reach that compounds strongest over time (SEO).
   {
     id: 'content',
     name: 'Content Marketing',
@@ -93,17 +93,17 @@ export const MARKETING_CHANNELS: MarketingChannel[] = [
       { name: 'Publish Weekly', desc: 'Volume + consistency compounds search traffic.', cost: defaultStepCost(2), reachRate: 18, audienceRate: 2.2 },
       { name: 'Build Backlinks / Authority', desc: 'Earned links lift every page you own.', cost: defaultStepCost(3), reachRate: 46, audienceRate: 5.5 },
       { name: 'Lead Magnets', desc: 'Trade value for emails and convert readers.', cost: defaultStepCost(4), reachRate: 100, audienceRate: 13 },
-      { name: 'Content Flywheel', desc: 'Repurpose everywhere — the engine self-sustains.', cost: defaultStepCost(5), reachRate: 240, audienceRate: 32 },
+      { name: 'Content Flywheel', desc: 'Repurpose everywhere  -  the engine self-sustains.', cost: defaultStepCost(5), reachRate: 240, audienceRate: 32 },
     ],
   },
 
-  // 3. PAID — big instant reach, no compounding, ongoing cash upkeep.
+  // 3. PAID  -  big instant reach, no compounding, ongoing cash upkeep.
   {
     id: 'paid',
     name: 'Paid Advertising',
     emoji: '💸',
     kind: 'paid',
-    tagline: 'Buy reach instantly — but you pay every second.',
+    tagline: 'Buy reach instantly  -  but you pay every second.',
     costCurrency: 'cash',
     compounding: 0,
     upkeepPerSec: 6,
@@ -115,7 +115,7 @@ export const MARKETING_CHANNELS: MarketingChannel[] = [
     ],
   },
 
-  // 4. EMAIL — converts audience to loyal, boosts retention/conversion.
+  // 4. EMAIL  -  converts audience to loyal, boosts retention/conversion.
   {
     id: 'email',
     name: 'Email Marketing',
@@ -128,11 +128,11 @@ export const MARKETING_CHANNELS: MarketingChannel[] = [
       { name: 'Collect Emails', desc: 'Build a list you actually own.', cost: defaultStepCost(0), reachRate: 4, audienceRate: 1 },
       { name: 'Newsletter', desc: 'Stay top-of-mind with regular value.', cost: defaultStepCost(1), reachRate: 12, audienceRate: 3 },
       { name: 'Automations', desc: 'Welcome + nurture flows convert on autopilot.', cost: defaultStepCost(2), reachRate: 28, audienceRate: 7 },
-      { name: 'Segmentation', desc: 'Right message, right person — retention soars.', cost: defaultStepCost(3), reachRate: 60, audienceRate: 16 },
+      { name: 'Segmentation', desc: 'Right message, right person  -  retention soars.', cost: defaultStepCost(3), reachRate: 60, audienceRate: 16 },
     ],
   },
 
-  // 5. INFLUENCER & PR — large reach bursts; later steps cost influence.
+  // 5. INFLUENCER & PR  -  large reach bursts; later steps cost influence.
   {
     id: 'influencer',
     name: 'Influencer & PR',
@@ -149,7 +149,7 @@ export const MARKETING_CHANNELS: MarketingChannel[] = [
     ],
   },
 
-  // 6. REFERRAL & COMMUNITY — viral coefficient, scales with existing audience.
+  // 6. REFERRAL & COMMUNITY  -  viral coefficient, scales with existing audience.
   {
     id: 'community',
     name: 'Referral & Community',
@@ -167,7 +167,7 @@ export const MARKETING_CHANNELS: MarketingChannel[] = [
 ];
 
 // ----------------------------------------------------------------------------
-// Launchable campaigns — temporary reach multipliers.
+// Launchable campaigns  -  temporary reach multipliers.
 // ----------------------------------------------------------------------------
 
 export const MARKETING_CAMPAIGNS: MarketingCampaign[] = [
@@ -199,7 +199,7 @@ export const MARKETING_CAMPAIGNS: MarketingCampaign[] = [
     costCurrency: 'influence',
     reachMult: 4,
     durationSec: 30,
-    desc: 'A bold publicity stunt — huge reach, short burst.',
+    desc: 'A bold publicity stunt  -  huge reach, short burst.',
   },
   {
     id: 'pr',

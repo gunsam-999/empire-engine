@@ -1,4 +1,4 @@
-// NumberFormatter — thin display wrapper over bigNumber formatters.
+// NumberFormatter  -  thin display wrapper over bigNumber formatters.
 // Renders a formatted number/money/percent in a monospace tabular span.
 
 import { formatMoney, formatNumber, formatPct } from '../../utils/bigNumber';

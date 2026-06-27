@@ -1,15 +1,15 @@
 // ============================================================================
-// Empire Engine — narrative arc. STORY_BEATS drives the campaign that plays out
+// Empire Engine  -  narrative arc. STORY_BEATS drives the campaign that plays out
 // over the whole prestige loop. Five acts, 4+ beats each, threaded with choices
 // that move the `ethics` axis and unlock the three Act-5 endings.
 //
 // Cast:
-//   mentor     — Dossier, the retiring legend who founded the original Engine.
-//   rival      — Cassara Voss, hungrier than you, plays to win at any cost.
-//   partner    — Theo, your co-founder; loyal, conscience of the company.
-//   consortium — The Quorum, a faceless shadow cartel that owns the markets.
-//   narrator   — the world commenting on your rise.
-//   player     — your own voice at the hinges of the story.
+//   mentor      -  Dossier, the retiring legend who founded the original Engine.
+//   rival       -  Cassara Voss, hungrier than you, plays to win at any cost.
+//   partner     -  Theo, your co-founder; loyal, conscience of the company.
+//   consortium  -  The Quorum, a faceless shadow cartel that owns the markets.
+//   narrator    -  the world commenting on your rise.
+//   player      -  your own voice at the hinges of the story.
 //
 // Triggers fire once when their condition is met (see TICK in the reducer):
 //   start | earnings(value) | tier(value 2..5) | prestige(value 1..3)
@@ -20,7 +20,7 @@ import type { StoryBeat } from '../game/types';
 
 export const STORY_BEATS: StoryBeat[] = [
   // ==========================================================================
-  // ACT I — THE FOUNDING. A garage, a debt, and one believer.
+  // ACT I  -  THE FOUNDING. A garage, a debt, and one believer.
   // ==========================================================================
   {
     id: 'a1c1_open',
@@ -31,7 +31,7 @@ export const STORY_BEATS: StoryBeat[] = [
     speaker: 'mentor',
     lines: [
       'So. You actually signed the lease.',
-      'Everyone told you the market was closed. They were right — for them.',
+      'Everyone told you the market was closed. They were right  -  for them.',
       'I built my empire on a desk smaller than this one. Then I burned it down.',
       'Build yours so it can survive me being wrong about you.',
     ],
@@ -103,7 +103,7 @@ export const STORY_BEATS: StoryBeat[] = [
     speaker: 'mentor',
     lines: [
       'You’ve outgrown the bench. Good. Most never do.',
-      'Tier two is where ego kills founders — they spend on mirrors, not engines.',
+      'Tier two is where ego kills founders  -  they spend on mirrors, not engines.',
       'Feed the line. Always feed the line.',
     ],
     reward: { insight: 10 },
@@ -124,7 +124,7 @@ export const STORY_BEATS: StoryBeat[] = [
   },
 
   // ==========================================================================
-  // ACT II — THE CLIMB. Growth has a price, and someone is keeping the tab.
+  // ACT II  -  THE CLIMB. Growth has a price, and someone is keeping the tab.
   // ==========================================================================
   {
     id: 'a2c1_research',
@@ -134,7 +134,7 @@ export const STORY_BEATS: StoryBeat[] = [
     trigger: { type: 'research' },
     speaker: 'partner',
     lines: [
-      'It works. The thing on the whiteboard — it actually works.',
+      'It works. The thing on the whiteboard  -  it actually works.',
       'We could open-source it. Help everyone in the trade come up with us.',
       'Or we patent-wall it and the whole sector pays our rent.',
     ],
@@ -229,7 +229,7 @@ export const STORY_BEATS: StoryBeat[] = [
   },
 
   // ==========================================================================
-  // ACT III — THE RECKONING. The first empire falls so a bigger one can rise.
+  // ACT III  -  THE RECKONING. The first empire falls so a bigger one can rise.
   // ==========================================================================
   {
     id: 'a3c1_prestige',
@@ -240,7 +240,7 @@ export const STORY_BEATS: StoryBeat[] = [
     speaker: 'player',
     lines: [
       'Everything I built. Folded into a single number called Legacy.',
-      'Dossier warned me this day would come — the day I outgrow my own foundations.',
+      'Dossier warned me this day would come  -  the day I outgrow my own foundations.',
       'So I dissolve the company to found a better one. Same name. Sharper teeth.',
     ],
     reward: { insight: 100 },
@@ -315,7 +315,7 @@ export const STORY_BEATS: StoryBeat[] = [
     trigger: { type: 'tier', value: 4 },
     speaker: 'rival',
     lines: [
-      'You won. I’m liquidating Monday. Funny — I’m almost relieved.',
+      'You won. I’m liquidating Monday. Funny  -  I’m almost relieved.',
       'I spent thirty years certain that ruthless was the same as smart.',
       'You were ruthless and something else. I never figured out what.',
       'Don’t let them turn the something else off.',
@@ -339,7 +339,7 @@ export const STORY_BEATS: StoryBeat[] = [
   },
 
   // ==========================================================================
-  // ACT IV — THE APEX. You are the weather. The question is what kind.
+  // ACT IV  -  THE APEX. You are the weather. The question is what kind.
   // ==========================================================================
   {
     id: 'a4c1_titan',
@@ -397,7 +397,7 @@ export const STORY_BEATS: StoryBeat[] = [
       'Choose. History is only ever written by those who showed up to sign it.',
     ],
     choice: {
-      prompt: 'The Quorum waits for your hand to rise — or to stay down.',
+      prompt: 'The Quorum waits for your hand to rise  -  or to stay down.',
       options: [
         {
           text: 'Vote to keep the markets open to all.',
@@ -421,7 +421,7 @@ export const STORY_BEATS: StoryBeat[] = [
     speaker: 'player',
     lines: [
       'One more dissolution. The deepest one. I can feel the floor of it.',
-      'After this there is no bigger company to build — only a different kind of one.',
+      'After this there is no bigger company to build  -  only a different kind of one.',
       'Dossier’s note is in my pocket. I finally understand the empty page.',
     ],
     reward: { lp: 25 },
@@ -442,7 +442,7 @@ export const STORY_BEATS: StoryBeat[] = [
   },
 
   // ==========================================================================
-  // ACT V — THE LEGACY. Three doors. Ethics decides which one is yours.
+  // ACT V  -  THE LEGACY. Three doors. Ethics decides which one is yours.
   // (UI compares story.ethics to choose the ending it reveals.)
   // ==========================================================================
   {
@@ -468,7 +468,7 @@ export const STORY_BEATS: StoryBeat[] = [
     trigger: { type: 'earnings', value: 3e14 },
     speaker: 'partner',
     lines: [
-      'You gave it away. Not all of it — but the part that mattered, you gave.',
+      'You gave it away. Not all of it  -  but the part that mattered, you gave.',
       'The Quorum couldn’t buy you because you’d already spent yourself on people.',
       'They’ll teach kids your name as a verb that means “to lift.”',
       'Theo came back for this. He’s smiling in the front row.',
@@ -556,7 +556,7 @@ export const STORY_BEATS: StoryBeat[] = [
     speaker: 'narrator',
     lines: [
       'Long after, a new founder signs a lease on a desk smaller than yours.',
-      'Everyone tells them the market is closed. They are right — for them.',
+      'Everyone tells them the market is closed. They are right  -  for them.',
       'On the wall hangs one line, no name beneath it: “Build yours so it survives you.”',
       'The engine turns. It was always going to be someone. This time it was you.',
     ],

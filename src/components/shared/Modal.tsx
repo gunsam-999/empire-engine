@@ -1,4 +1,4 @@
-// Modal — shared overlay primitive. Dark scrim, centered premium panel,
+// Modal  -  shared overlay primitive. Dark scrim, centered premium panel,
 // slide-up entrance, optional dismiss-on-backdrop, esc-to-close, scroll lock.
 // Mobile-first: sticks to the bottom of the screen on small viewports.
 

@@ -1,5 +1,5 @@
 // ============================================================================
-// Rival configs — anchor roster for Session 3.2.
+// Rival configs  -  anchor roster for Session 3.2.
 // Each rival has a spawn threshold, a personality, and a move set that
 // escalates through posture rungs.
 // ============================================================================
@@ -43,7 +43,7 @@ export interface RivalConfig {
 // ---- Anchor roster ----------------------------------------------------------
 
 export const RIVAL_CONFIGS: RivalConfig[] = [
-  // ---- Cassara Voss — personal nemesis, story-driven ----------------------
+  // ---- Cassara Voss  -  personal nemesis, story-driven ----------------------
   {
     id: 'cassara',
     name: 'Cassara Voss',
@@ -78,7 +78,7 @@ export const RIVAL_CONFIGS: RivalConfig[] = [
     ],
   },
 
-  // ---- Halcyon Trade Co. — commodity manipulator --------------------------
+  // ---- Halcyon Trade Co.  -  commodity manipulator --------------------------
   {
     id: 'halcyon',
     name: 'Halcyon Trade Co.',
@@ -113,7 +113,7 @@ export const RIVAL_CONFIGS: RivalConfig[] = [
     ],
   },
 
-  // ---- Meridian Holdings — power broker -----------------------------------
+  // ---- Meridian Holdings  -  power broker -----------------------------------
   {
     id: 'meridian',
     name: 'Meridian Holdings',
@@ -148,7 +148,7 @@ export const RIVAL_CONFIGS: RivalConfig[] = [
     ],
   },
 
-  // ---- Vanguard Syndicate — brute scaler ----------------------------------
+  // ---- Vanguard Syndicate  -  brute scaler ----------------------------------
   {
     id: 'vanguard',
     name: 'Vanguard Syndicate',
@@ -183,7 +183,7 @@ export const RIVAL_CONFIGS: RivalConfig[] = [
     ],
   },
 
-  // ---- Orient Combine — idea thief ----------------------------------------
+  // ---- Orient Combine  -  idea thief ----------------------------------------
   {
     id: 'orient',
     name: 'Orient Combine',
@@ -218,13 +218,13 @@ export const RIVAL_CONFIGS: RivalConfig[] = [
     ],
   },
 
-  // ---- Apex Consortium — endgame coalition --------------------------------
+  // ---- Apex Consortium  -  endgame coalition --------------------------------
   {
     id: 'apex',
     name: 'Apex Consortium',
     domain: 'Everything',
     tagline: 'The coalition you were never invited to join.',
-    spawnAt: 1_000_000_000_000, // 1T — titan phase only
+    spawnAt: 1_000_000_000_000, // 1T  -  titan phase only
     evalIntervalSec: 180,
     passiveAggPerEval: 5,
     moves: [

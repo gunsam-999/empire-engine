@@ -1,4 +1,4 @@
-// MarketSystem — random-walk price drift toward 1 with rare boom/crash. Pure.
+// MarketSystem  -  random-walk price drift toward 1 with rare boom/crash. Pure.
 
 import type { GameState } from '../game/types';
 

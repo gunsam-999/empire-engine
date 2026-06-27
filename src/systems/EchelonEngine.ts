@@ -1,5 +1,5 @@
 // ============================================================================
-// EchelonEngine (Session 5.1) — competitive ranking tier system.
+// EchelonEngine (Session 5.1)  -  competitive ranking tier system.
 // Tier advances automatically as lifetime earnings grow; each tier grants a
 // stacking production multiplier. Tier changes are detected in TICK for
 // ambient dispatch and notification push.

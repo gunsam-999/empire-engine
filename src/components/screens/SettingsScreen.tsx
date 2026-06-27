@@ -1,4 +1,4 @@
-// SettingsScreen — career stats + data management + preferences.
+// SettingsScreen  -  career stats + data management + preferences.
 //   Stats:       playtime, prestiges, lifetime earnings, collection %.
 //   Data:        Manual Save · Export (clipboard, base64) · Import (textarea).
 //   Danger:      Hard Reset behind a double confirmation.
@@ -54,9 +54,9 @@ export default function SettingsScreen() {
       await navigator.clipboard.writeText(code);
       flash('good', 'Save copied to clipboard.');
     } catch {
-      // Clipboard blocked — drop it in the import box so it can be copied manually.
+      // Clipboard blocked  -  drop it in the import box so it can be copied manually.
       setImportText(code);
-      flash('bad', 'Clipboard blocked — code placed below.');
+      flash('bad', 'Clipboard blocked  -  code placed below.');
     }
   };
 
@@ -90,7 +90,7 @@ export default function SettingsScreen() {
       ? 'Hard Reset'
       : confirmStage === 1
         ? 'Are you sure? Tap again'
-        : 'Last chance — erase everything';
+        : 'Last chance  -  erase everything';
 
   const stats: { icon: string; label: string; value: string }[] = [
     { icon: '⏱️', label: 'Playtime', value: formatDuration(state.stats.playSeconds) },
@@ -256,7 +256,7 @@ export default function SettingsScreen() {
             <div>
               <div className="text-sm font-medium text-[#e7ecf5]">Live Empire View</div>
               <div className="text-xs text-[#8a94a8]">
-                Watch your city grow — animated buildings, workers, and money.
+                Watch your city grow  -  animated buildings, workers, and money.
               </div>
             </div>
             <Toggle
@@ -328,7 +328,7 @@ export default function SettingsScreen() {
         <div className="rounded-2xl border border-[#f87171]/30 bg-[#f87171]/5 p-3.5">
           <div className="text-sm font-medium text-[#e7ecf5]">Hard reset</div>
           <p className="text-xs text-[#8a94a8] mb-3">
-            Permanently erase this empire — all progress, prestige, and advisors. This cannot be
+            Permanently erase this empire  -  all progress, prestige, and advisors. This cannot be
             undone.
           </p>
           <div className="flex items-center gap-2">

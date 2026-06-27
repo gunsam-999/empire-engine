@@ -1,4 +1,4 @@
-// GameLoop — requestAnimationFrame driver that dispatches TICK with real dt.
+// GameLoop  -  requestAnimationFrame driver that dispatches TICK with real dt.
 // Falls back to a 1s setInterval while the document is hidden.
 
 import type { Action } from './types';

@@ -1,5 +1,5 @@
 // ============================================================================
-// EconomyEngine — all economy selectors/formulas. Pure, side-effect free.
+// EconomyEngine  -  all economy selectors/formulas. Pure, side-effect free.
 // Robust to empty/partial data (data modules may not be populated yet).
 // ============================================================================
 

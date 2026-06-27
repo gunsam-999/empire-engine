@@ -1,5 +1,5 @@
 // ============================================================================
-// MarketingScreen — the marketing command center (major new hub).
+// MarketingScreen  -  the marketing command center (major new hub).
 //
 // Layout:
 //   • Sticky header: big animated Reach (📣) headline, audience + followers,
@@ -59,7 +59,7 @@ const KIND_TONE: Record<MarketingChannel['kind'], string> = {
 // ---- Currency formatting helper --------------------------------------------
 
 function costLabel(cost: number, currency: 'cash' | 'influence'): string {
-  if (!Number.isFinite(cost)) return '—';
+  if (!Number.isFinite(cost)) return ' - ';
   return currency === 'influence'
     ? `${formatNumber(cost)} 🤝`
     : formatMoney(cost, '$');
@@ -88,7 +88,7 @@ export default function MarketingScreen() {
   const upkeep = paidUpkeepPerSec(state);
   const synergy = hasSocialContentSynergy(state);
 
-  // "+X% sales from marketing" — mult is 1.0 at zero audience. Pass a FRACTION;
+  // "+X% sales from marketing"  -  mult is 1.0 at zero audience. Pass a FRACTION;
   // the AnimatedCounter's percent mode multiplies by 100 for display.
   const salesPct = Math.max(0, mult - 1);
 
@@ -127,7 +127,7 @@ export default function MarketingScreen() {
           <Metric label="Brand" icon="⭐" value={`×${(state.marketing.brand ?? 1).toFixed(2)}`} />
         </div>
 
-        {/* Marketing income multiplier — the payoff line. */}
+        {/* Marketing income multiplier  -  the payoff line. */}
         <div
           className="mt-2 flex items-center justify-between rounded-xl border px-3 py-1.5"
           style={{
@@ -161,7 +161,7 @@ export default function MarketingScreen() {
               <span className="font-semibold text-[var(--accent)]">Start here.</span>{' '}
               <span className="text-muted">
                 Get <span className="text-[#e7ecf5] font-medium">Social</span> and{' '}
-                <span className="text-[#e7ecf5] font-medium">Content</span> off the ground — they
+                <span className="text-[#e7ecf5] font-medium">Content</span> off the ground  -  they
                 snowball and unlock a powerful synergy together.
               </span>
             </div>
@@ -172,7 +172,7 @@ export default function MarketingScreen() {
         <section>
           <SectionHeader
             title="Campaigns"
-            hint="Temporary reach blitzes — spend to multiply every channel."
+            hint="Temporary reach blitzes  -  spend to multiply every channel."
           />
           <CampaignBar state={state} dispatch={dispatch} />
         </section>
@@ -204,7 +204,7 @@ export default function MarketingScreen() {
         </section>
 
         <p className="text-center text-[10px] text-muted mt-6 leading-snug">
-          📣 Reach → 👥 Audience → 💰 Sales. Audience compounds your income —
+          📣 Reach → 👥 Audience → 💰 Sales. Audience compounds your income  - 
           keep the flywheel spinning.
         </p>
       </div>
@@ -567,7 +567,7 @@ function ChannelCard({
         <div className="mt-2 text-[10px] text-muted leading-snug">
           💸 Costs{' '}
           <span className="font-mono text-warn">{formatMoney(ch.upkeepPerSec, '$')}/s</span> while
-          running — reach stops the moment you pause or run out of cash.
+          running  -  reach stops the moment you pause or run out of cash.
         </div>
       )}
     </div>

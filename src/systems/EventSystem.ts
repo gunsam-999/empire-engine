@@ -1,4 +1,4 @@
-// EventSystem — micro/major/crisis event selection + reward application. Pure.
+// EventSystem  -  micro/major/crisis event selection + reward application. Pure.
 
 import { MICRO_EVENTS, MAJOR_EVENTS, CRISIS_EVENTS } from '../data/events';
 import type { GameReward, GameState } from '../game/types';

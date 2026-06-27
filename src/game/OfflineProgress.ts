@@ -1,4 +1,4 @@
-// OfflineProgress — compute gains accrued while the game was closed.
+// OfflineProgress  -  compute gains accrued while the game was closed.
 
 import { incomePerSec, insightPerSec } from '../systems/EconomyEngine';
 import { tickMarketing } from '../systems/MarketingSystem';

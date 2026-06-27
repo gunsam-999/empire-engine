@@ -1,8 +1,8 @@
-// AnimatedCounter — smoothly counts the displayed number toward `value`.
+// AnimatedCounter  -  smoothly counts the displayed number toward `value`.
 //
 // Idle values change every game tick (~100ms). A single persistent rAF loop
 // eases the displayed value toward the latest target with exponential smoothing,
-// so numbers rise smoothly and monotonically — no per-tick tween restart / flash
+// so numbers rise smoothly and monotonically  -  no per-tick tween restart / flash
 // (which read as flicker). The displayed text lives in STATE (set from the loop),
 // and the target is tracked by a dedicated effect on `value`, so a counter that
 // starts at 0 and grows (e.g. Reach) animates up reliably. React bails out of the

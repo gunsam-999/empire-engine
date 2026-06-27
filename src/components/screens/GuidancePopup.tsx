@@ -1,5 +1,5 @@
 // ============================================================================
-// GuidancePopup — the co-founder's coaching pop-up. A polished lower-third card
+// GuidancePopup  -  the co-founder's coaching pop-up. A polished lower-third card
 // (NOT the heavy story modal): co-founder portrait + name, the beat's lines, an
 // optional marketing-tip chip, an emotion-colored accent, slide/fade-in, and a
 // "Got it" button. App decides WHICH beat shows and wires onDismiss; this just

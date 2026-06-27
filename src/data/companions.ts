@@ -1,5 +1,5 @@
 // ============================================================================
-// Companion configs — the player's inner circle.
+// Companion configs  -  the player's inner circle.
 // The co-founder is the anchor companion; named lieutenants join later.
 // Each companion has trust thresholds, a move set, and a signature ability.
 // ============================================================================

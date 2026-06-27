@@ -1,5 +1,5 @@
 // ============================================================================
-// ProgressBar — accent-filled track for countdowns / completion.
+// ProgressBar  -  accent-filled track for countdowns / completion.
 // `value` is a fraction in [0,1]. Optional label overlay + pulse on near-done.
 // ============================================================================
 

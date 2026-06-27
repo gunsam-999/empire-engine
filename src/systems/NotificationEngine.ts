@@ -1,5 +1,5 @@
 // ============================================================================
-// NotificationEngine (Session 5.4) — persistent prioritised alert log.
+// NotificationEngine (Session 5.4)  -  persistent prioritised alert log.
 // Detects notable state transitions in TICK, pushes them to a persistent
 // NotificationState (saved across sessions), and fires ephemeral toasts for
 // urgent/success events via the existing toast bus.
@@ -76,7 +76,7 @@ export function detectNotifications(
   if (next.coalitionActive && !prev.coalitionActive) {
     const body = 'Your rivals have united against you. Expect heightened aggression on all fronts.';
     ns = push(ns, 'urgent', '⚠️', 'Coalition Formed', body, now);
-    toast.bad('Coalition formed — rivals are coordinating against you.', {
+    toast.bad('Coalition formed  -  rivals are coordinating against you.', {
       icon: '⚠️',
       durationMs: 5_000,
     });
@@ -87,7 +87,7 @@ export function detectNotifications(
     const label = ECHELON_LABELS[next.echelon.tier] ?? next.echelon.tier;
     const body = `You've reached the ${label} echelon. The competitive landscape is shifting.`;
     ns = push(ns, 'success', '🏆', `Echelon: ${label}`, body, now);
-    toast.good(`Echelon advanced — ${label}!`, { icon: '🏆', durationMs: 3_500 });
+    toast.good(`Echelon advanced  -  ${label}!`, { icon: '🏆', durationMs: 3_500 });
   }
 
   // 4. Newspaper negative headline published
@@ -105,7 +105,7 @@ export function detectNotifications(
       if (cl.status === 'breached' && prevCl?.status === 'fulfilled') {
         const body = `Inheritance clause "${cl.id}" has been violated. Your reward is suspended.`;
         ns = push(ns, 'urgent', '📜', 'Clause Breached', body, now);
-        toast.warn("Old Master's clause breached — reward suspended.", {
+        toast.warn("Old Master's clause breached  -  reward suspended.", {
           icon: '📜',
           durationMs: 4_000,
         });
@@ -122,7 +122,7 @@ export function detectNotifications(
     if (nextAvg < 20 && prevAvg >= 20) {
       const body = 'Team morale has collapsed. Rally your people before productivity craters.';
       ns = push(ns, 'info', '👥', 'Team Crisis', body, now);
-      toast.warn('Workforce is burning out — rally them soon.', {
+      toast.warn('Workforce is burning out  -  rally them soon.', {
         icon: '👥',
         durationMs: 3_500,
       });
@@ -135,7 +135,7 @@ export function detectNotifications(
   if (nextConf < 20 && prevConf >= 20) {
     const body = 'Public confidence has reached crisis levels. Issue a statement before your production suffers.';
     ns = push(ns, 'urgent', '📢', 'Confidence Crisis', body, now);
-    toast.bad('Public confidence critical — issue a statement.', {
+    toast.bad('Public confidence critical  -  issue a statement.', {
       icon: '📢',
       durationMs: 4_000,
     });

@@ -1,4 +1,4 @@
-// PremisePanel — Old Master's Will (Session 4.3).
+// PremisePanel  -  Old Master's Will (Session 4.3).
 // Displays the 5 inheritance clauses: locked / progressing / fulfilled / breached.
 // Fulfilling each clause unlocks a permanent production or cost bonus.
 
@@ -109,7 +109,7 @@ export function PremisePanel() {
                     {cfg.description}
                   </p>
 
-                  {/* Progress bar — shown while progressing */}
+                  {/* Progress bar  -  shown while progressing */}
                   {isProgressing && cfg.fulfillRequireSec > 0 && (
                     <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-[#232c3e]">
                       <div
@@ -119,7 +119,7 @@ export function PremisePanel() {
                     </div>
                   )}
 
-                  {/* Grace-window warning bar — fulfilled but condition briefly broken */}
+                  {/* Grace-window warning bar  -  fulfilled but condition briefly broken */}
                   {inGrace && (
                     <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-[#232c3e]">
                       <div
@@ -142,7 +142,7 @@ export function PremisePanel() {
         })}
       </div>
 
-      {/* Footer — total bonus summary */}
+      {/* Footer  -  total bonus summary */}
       {fulfilledCount > 0 && (
         <div className="mt-3 border-t border-[#232c3e] pt-2.5 text-[10px] text-[#8a94a8]">
           {(() => {

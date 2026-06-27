@@ -1,5 +1,5 @@
 // ============================================================================
-// Dynasty configs — trait definitions, heirloom map, default state factory.
+// Dynasty configs  -  trait definitions, heirloom map, default state factory.
 // ============================================================================
 
 import type { DynastyRun, DynastyState, DynastyTrait } from '../game/types';

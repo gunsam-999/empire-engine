@@ -1,4 +1,4 @@
-// AidePanel — compact aide-cabinet display (Session 4.2).
+// AidePanel  -  compact aide-cabinet display (Session 4.2).
 // Shows each active aide's loyalty bar, Brief/Deploy buttons.
 
 import { useGame } from '../../game/GameContext';
@@ -16,9 +16,9 @@ const DOMAIN_ICON: Record<AideDomain, string> = {
 };
 
 const LOYALTY_COLOR = (loyalty: number): string => {
-  if (loyalty >= 75) return '#34d399'; // green — passive active
-  if (loyalty >= 50) return '#fbbf24'; // amber — deploy ready
-  return '#f87171';                     // red — needs attention
+  if (loyalty >= 75) return '#34d399'; // green  -  passive active
+  if (loyalty >= 50) return '#fbbf24'; // amber  -  deploy ready
+  return '#f87171';                     // red  -  needs attention
 };
 
 export function AidePanel() {

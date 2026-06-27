@@ -1,4 +1,4 @@
-// NotificationDrawer — persistent alert history (Session 5.4).
+// NotificationDrawer  -  persistent alert history (Session 5.4).
 // Shown as an overlay sheet from the TopBar bell icon. Lists all notifications
 // newest-first with priority-coded colours and a "Mark all read" button.
 

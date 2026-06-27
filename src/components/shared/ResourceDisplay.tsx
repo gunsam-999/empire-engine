@@ -1,4 +1,4 @@
-// ResourceDisplay — icon + formatted value, with optional per-second rate.
+// ResourceDisplay  -  icon + formatted value, with optional per-second rate.
 // Used for cash, insight, influence, resource counters in the HUD and panels.
 
 import type { ReactNode } from 'react';

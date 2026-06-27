@@ -1,4 +1,4 @@
-// PrestigeSystem — eligibility + LP calc helpers. Pure.
+// PrestigeSystem  -  eligibility + LP calc helpers. Pure.
 
 import { getFacilities, potentialLP } from './EconomyEngine';
 import type { GameState } from '../game/types';

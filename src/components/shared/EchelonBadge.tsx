@@ -1,4 +1,4 @@
-// EchelonBadge — compact tier chip + progress bar shown in StoryScreen.
+// EchelonBadge  -  compact tier chip + progress bar shown in StoryScreen.
 
 import { useGame } from '../../game/GameContext';
 import { ECHELON_LABELS } from '../../systems/EchelonEngine';
@@ -55,7 +55,7 @@ export default function EchelonBadge() {
 
       <div className="mt-1 flex justify-between text-[10px] text-[#8a94a8]">
         {isTitan ? (
-          <span>Peak echelon — maximum tier bonus active</span>
+          <span>Peak echelon  -  maximum tier bonus active</span>
         ) : (
           <>
             <span>{points}% to next tier</span>

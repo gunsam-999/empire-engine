@@ -1,7 +1,7 @@
 // ============================================================================
-// MusicEngine — adaptive procedural soundtrack for Empire Engine.
+// MusicEngine  -  adaptive procedural soundtrack for Empire Engine.
 //
-// All synthesis via Web Audio API — no audio files, no external deps.
+// All synthesis via Web Audio API  -  no audio files, no external deps.
 // Shares the AudioContext with AudioEngine (via getAudioCtx).
 //
 // Architecture:
@@ -34,13 +34,13 @@ const HZ = {
 interface ChordDef { bass: number; pad: number[]; arp: number[] }
 
 const CHORDS: ChordDef[] = [
-  // i7  Cm7 — dark home
+  // i7  Cm7  -  dark home
   { bass: HZ.C2,  pad: [HZ.C3, HZ.Eb3, HZ.G3,  HZ.Bb3], arp: [HZ.C5,  HZ.Eb5, HZ.G5,  HZ.Bb5] },
-  // iv7 Fm7 — searching, tension
+  // iv7 Fm7  -  searching, tension
   { bass: HZ.F2,  pad: [HZ.F3, HZ.Ab3, HZ.C4,  HZ.Eb4], arp: [HZ.F4,  HZ.Ab4, HZ.C5,  HZ.Eb5] },
-  // III7 Ebmaj7 — relief, dreaming
+  // III7 Ebmaj7  -  relief, dreaming
   { bass: HZ.Eb2, pad: [HZ.Eb3, HZ.G3,  HZ.Bb3, HZ.D4],  arp: [HZ.Eb5, HZ.G5,  HZ.Bb5, HZ.D5]  },
-  // V7  G7 — dominant pull (harmonic minor)
+  // V7  G7  -  dominant pull (harmonic minor)
   { bass: HZ.G2,  pad: [HZ.G3,  HZ.B3,  HZ.D4,  HZ.F4],  arp: [HZ.G4,  HZ.B4,  HZ.D5,  HZ.F5]  },
 ];
 
@@ -48,16 +48,16 @@ const CHORDS: ChordDef[] = [
 // null = rest. Pitches from C minor pentatonic + Ab blue note (fits Fm7).
 
 const MEL: (number | null)[] = [
-  // Bar 1 — Cm7
+  // Bar 1  -  Cm7
   HZ.G4,  null,  null,   null,  HZ.Eb4, null,  null,   null,
   HZ.G4,  null,  HZ.Bb4, null,  HZ.G4,  null,  null,   null,
-  // Bar 2 — Fm7
+  // Bar 2  -  Fm7
   HZ.F4,  null,  null,   null,  HZ.Ab4, null,  HZ.C5,  null,
   null,   null,  null,   null,  HZ.Bb4, null,  null,   null,
-  // Bar 3 — Ebmaj7
+  // Bar 3  -  Ebmaj7
   HZ.Bb4, null,  null,   null,  HZ.G4,  null,  null,   null,
   HZ.F4,  null,  null,   null,  HZ.Eb4, null,  null,   null,
-  // Bar 4 — G7
+  // Bar 4  -  G7
   HZ.G4,  null,  null,   null,  null,   null,  HZ.F4,  null,
   HZ.D4,  null,  null,   null,  HZ.G4,  null,  null,   null,
 ];
@@ -148,7 +148,7 @@ function startTensionLayer(ac: AudioContext) {
   filt.type = 'lowpass'; filt.frequency.value = 180; filt.Q.value = 4;
   filt.connect(dest);
 
-  // Slow LFO on filter cutoff — gives the drone a breathing, organic quality.
+  // Slow LFO on filter cutoff  -  gives the drone a breathing, organic quality.
   const lfo = ac.createOscillator();
   const lfoG = ac.createGain();
   lfo.frequency.value = 0.14; lfoG.gain.value = 32;
@@ -398,7 +398,7 @@ function playStinger(ac: AudioContext, kind: StingerKind) {
       break;
     }
     case 'threat': {
-      // Dissonant tritone stab — pure danger
+      // Dissonant tritone stab  -  pure danger
       synthTri(ac, dest, HZ.C4, t,        0.7, 0.55);
       synthTri(ac, dest, HZ.Fs2 * 8, t + 0.08, 0.52, 0.42); // F#5
       break;

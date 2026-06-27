@@ -1,5 +1,5 @@
 // ============================================================================
-// WorkforceEngine — named employees with collective morale (Session 4.1).
+// WorkforceEngine  -  named employees with collective morale (Session 4.1).
 //
 // Morale is a shared heartbeat:
 //   High ethics + strong companions → morale rises → output bonus
@@ -36,7 +36,7 @@ function targetWorkerCount(lifetimeEarnings: number): number {
 
 /**
  * Ensure the workforce has the right number of workers for the current era.
- * Workers are never fired here — departures come through story events.
+ * Workers are never fired here  -  departures come through story events.
  */
 export function syncWorkforceSize(
   workforce: WorkerState[],

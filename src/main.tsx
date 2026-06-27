@@ -9,7 +9,7 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   </React.StrictMode>
 );
 
-// Register the service worker — PRODUCTION ONLY.
+// Register the service worker  -  PRODUCTION ONLY.
 // In dev, a SW would cache Vite's module URLs and serve stale code (which breaks
 // HMR and, e.g., made an old SAVE_VERSION reject a migrated save). So we only run
 // it in prod, and proactively unregister any stale dev worker.

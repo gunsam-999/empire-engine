@@ -1,5 +1,5 @@
 // ============================================================================
-// Premise data — the Old Master's will: 5 clauses with conditions and rewards.
+// Premise data  -  the Old Master's will: 5 clauses with conditions and rewards.
 // Conditions are checked against live GameState each tick; never stored here.
 // ============================================================================
 

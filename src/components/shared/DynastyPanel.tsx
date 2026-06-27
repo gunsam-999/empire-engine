@@ -1,5 +1,5 @@
 // ============================================================================
-// DynastyPanel — shows the prestige dynasty chain: current generation, earned
+// DynastyPanel  -  shows the prestige dynasty chain: current generation, earned
 // traits, heirlooms, and a compact timeline of past runs.
 // Only rendered when dynasty.runs.length > 0 (player has prestiged at least once).
 // ============================================================================

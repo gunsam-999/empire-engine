@@ -1,5 +1,5 @@
 // ============================================================================
-// CompanionEngine — mirror system to the RivalEngine (Session 3.4).
+// CompanionEngine  -  mirror system to the RivalEngine (Session 3.4).
 // Where rivals have aggression that rises and strikes, companions have trust
 // that rises and gives. All functions are pure and deterministic.
 // ============================================================================
@@ -34,7 +34,7 @@ export function clampTrust(v: number): number {
   return Math.max(0, Math.min(100, v));
 }
 
-/** Natural trust decay per second — slow neglect penalty. */
+/** Natural trust decay per second  -  slow neglect penalty. */
 const TRUST_DECAY_PER_SEC = 0.5 / 60; // −0.5 per minute
 
 // ---- Spawn / roster sync ---------------------------------------------------

@@ -1,5 +1,5 @@
 // ============================================================================
-// PremiseEngine — tick clause evaluation, reveal logic, and economy getters.
+// PremiseEngine  -  tick clause evaluation, reveal logic, and economy getters.
 // Pure, no side effects. Called from the TICK reducer each frame.
 // ============================================================================
 

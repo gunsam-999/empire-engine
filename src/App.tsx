@@ -1,5 +1,5 @@
 // ============================================================================
-// App — the integrated root. Owns the top-level router for the playing
+// App  -  the integrated root. Owns the top-level router for the playing
 // experience and the transient overlays/drivers that float above it.
 //
 //   • No setup yet -> full-screen IndustrySelect (founding flow).
@@ -26,7 +26,7 @@ import EmpireScreen from './components/screens/EmpireScreen';
 import MarketingScreen from './components/screens/MarketingScreen';
 import ResearchScreen from './components/screens/ResearchScreen';
 import AdvisorScreen from './components/screens/AdvisorScreen';
-import MarketScreen from './components/screens/MarketScreen';
+import InvestmentScreen from './components/screens/InvestmentScreen';
 import PrestigeScreen from './components/screens/PrestigeScreen';
 import StoryScreen from './components/screens/StoryScreen';
 import TerritoryScreen from './components/screens/TerritoryScreen';
@@ -61,8 +61,8 @@ function ActiveScreen({ tab }: { tab: TabId }) {
       return <MarketingScreen />;
     case 'research':
       return <ResearchScreen />;
-    case 'market':
-      return <MarketScreen />;
+    case 'invest':
+      return <InvestmentScreen />;
     case 'prestige':
       return <PrestigeScreen />;
     default:
@@ -173,7 +173,7 @@ function Game() {
   // Watch for milestone / echelon / era / prestige moments and celebrate them.
   useCelebrations();
 
-  // Adaptive procedural music — starts on first gesture, tracks era/threat.
+  // Adaptive procedural music  -  starts on first gesture, tracks era/threat.
   useMusicEngine();
 
   // ---- Guidance (co-founder coaching) driver -------------------------------
@@ -230,7 +230,7 @@ function Game() {
 
       {golden.show && <GoldenBubble onDone={golden.done} lifespanSec={12} />}
 
-      {/* Co-founder coaching pop-up — keyed by id so each beat mounts fresh
+      {/* Co-founder coaching pop-up  -  keyed by id so each beat mounts fresh
           (re-runs its line-by-line reveal animation). */}
       {guidanceBeat && (
         <GuidancePopup

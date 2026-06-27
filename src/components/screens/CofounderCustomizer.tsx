@@ -1,5 +1,5 @@
 // ============================================================================
-// CofounderCustomizer — edit your "left hand" co-founder.
+// CofounderCustomizer  -  edit your "left hand" co-founder.
 //   · name (text input)
 //   · avatar features cycled with ◀ ▶ steppers (skin / hair style / hair color /
 //     outfit / accessory / expression) with a LIVE CharacterPortrait preview

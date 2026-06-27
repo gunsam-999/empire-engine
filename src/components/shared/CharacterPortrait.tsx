@@ -1,5 +1,5 @@
 // ============================================================================
-// CharacterPortrait — procedural SVG avatar rendered from an AvatarConfig.
+// CharacterPortrait  -  procedural SVG avatar rendered from an AvatarConfig.
 // Pure SVG, no external images. Designed to read cleanly at 40px and 96px.
 //   head + skin, hair (style + color), simple face with expression, shoulders /
 //   outfit, optional accessory (glasses / headset / cap / shades / earrings),
@@ -32,7 +32,7 @@ function resolveSize(size: CharacterPortraitProps['size']): number {
   return SIZE_PRESETS.md;
 }
 
-/** Darken a hex color by mixing toward black — used for hair shadow / shading. */
+/** Darken a hex color by mixing toward black  -  used for hair shadow / shading. */
 function shade(hex: string, amount: number): string {
   const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
   if (!m) return hex;
@@ -83,15 +83,15 @@ export default function CharacterPortrait({
   const eyeY = 41;
   const mouth = (() => {
     switch (palette.expression) {
-      case 1: // Confident — subtle smirk
+      case 1: // Confident  -  subtle smirk
         return 'M42 56 Q50 60 59 55';
-      case 2: // Focused — flat, determined
+      case 2: // Focused  -  flat, determined
         return 'M43 57 L57 57';
-      case 3: // Cheerful — big open smile
+      case 3: // Cheerful  -  big open smile
         return 'M41 54 Q50 64 59 54';
-      case 4: // Calm — gentle closed curve
+      case 4: // Calm  -  gentle closed curve
         return 'M43 56 Q50 59 57 56';
-      default: // 0 Smiling — friendly curve
+      default: // 0 Smiling  -  friendly curve
         return 'M42 55 Q50 61 58 55';
     }
   })();
@@ -181,7 +181,7 @@ export default function CharacterPortrait({
           {/* Eyes */}
           <g fill="#1f2430">
             {palette.expression === 4 ? (
-              // Calm — closed / content eyes
+              // Calm  -  closed / content eyes
               <>
                 <path d="M40 41 Q43.5 44 47 41" stroke="#1f2430" strokeWidth="2" fill="none" strokeLinecap="round" />
                 <path d="M53 41 Q56.5 44 60 41" stroke="#1f2430" strokeWidth="2" fill="none" strokeLinecap="round" />

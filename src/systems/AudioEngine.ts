@@ -1,12 +1,12 @@
 // ============================================================================
-// AudioEngine — fully procedural sound, zero audio files.
+// AudioEngine  -  fully procedural sound, zero audio files.
 //
 // Every effect is synthesized on the fly with the Web Audio API: oscillators +
 // gain envelopes + a touch of filtering. That keeps the bundle tiny, themes the
 // sound to the moment, and means there are no assets to ship or license.
 //
 // Design:
-//   • Lazy AudioContext — created on the first play() call, which is always
+//   • Lazy AudioContext  -  created on the first play() call, which is always
 //     downstream of a user gesture (a tap), so autoplay policy is satisfied.
 //   • One shared master gain kept low (gentle, never harsh) with a soft limiter
 //     via a DynamicsCompressor so stacked SFX during a buy-spree don't clip.
@@ -142,7 +142,7 @@ function render(ac: AudioContext, name: Sfx) {
       note(ac, N.G5, 0.3, 0.3, 'sine', 0.3);
       break;
     case 'prestige':
-      // Deep swell then rising shimmer — a "rebirth".
+      // Deep swell then rising shimmer  -  a "rebirth".
       note(ac, 110, 0, 0.5, 'sawtooth', 0.35, 220);
       [N.C4, N.G4, N.C5, N.E5, N.G5].forEach((f, i) =>
         note(ac, f, 0.12 + i * 0.08, 0.4, 'triangle', 0.32)
@@ -157,14 +157,14 @@ function render(ac: AudioContext, name: Sfx) {
       note(ac, 160, 0, 0.12, 'square', 0.3, 110);
       break;
     case 'tierUnlock':
-      // Dramatic ascent — unlock gates opening.
+      // Dramatic ascent  -  unlock gates opening.
       note(ac, N.G4, 0,    0.08, 'triangle', 0.45, N.G5);
       note(ac, N.C5, 0.06, 0.14, 'triangle', 0.50);
       note(ac, N.E5, 0.12, 0.18, 'sine',     0.45);
       note(ac, N.G5, 0.18, 0.32, 'sine',     0.38);
       break;
     case 'rivalAlert':
-      // Tense, dissonant — danger is near.
+      // Tense, dissonant  -  danger is near.
       note(ac, 185, 0,    0.09, 'square',   0.38, 130);
       note(ac, 245, 0.04, 0.12, 'sawtooth', 0.30, 190);
       break;
@@ -176,13 +176,13 @@ function render(ac: AudioContext, name: Sfx) {
       note(ac, N.C6, 0.24, 0.55, 'sine', 0.26);
       break;
     case 'companionUp':
-      // Warm and emotional — trust deepening.
+      // Warm and emotional  -  trust deepening.
       note(ac, N.E4, 0,    0.22, 'sine', 0.38);
       note(ac, N.G4, 0.07, 0.22, 'sine', 0.36);
       note(ac, N.C5, 0.14, 0.28, 'sine', 0.32);
       break;
     case 'fanfare':
-      // Full celebration — biggest possible moment.
+      // Full celebration  -  biggest possible moment.
       [N.C5, N.E5, N.G5, N.C6].forEach((f, i) =>
         note(ac, f, i * 0.07, 0.28, 'triangle', 0.50)
       );
@@ -216,7 +216,7 @@ export const sfx = {
     try {
       render(ac, name);
     } catch {
-      /* a closed/again-suspended context can throw — ignore. */
+      /* a closed/again-suspended context can throw  -  ignore. */
     }
   },
 };

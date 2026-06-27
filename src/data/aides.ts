@@ -1,5 +1,5 @@
 // ============================================================================
-// Aide configs — the player's domain specialists (Session 4.2).
+// Aide configs  -  the player's domain specialists (Session 4.2).
 // Six aides unlock progressively by lifetime-earnings tier. Each provides a
 // passive production bonus at loyalty ≥ 75 and a deployable boost on demand.
 // ============================================================================

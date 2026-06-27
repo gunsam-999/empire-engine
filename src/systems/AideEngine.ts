@@ -1,9 +1,9 @@
 // ============================================================================
-// AideEngine — domain specialist cabinet (Session 4.2).
+// AideEngine  -  domain specialist cabinet (Session 4.2).
 //
 // Aides provide passive production bonuses when loyal (≥ 75) and can be
 // deployed for a global boost. Loyalty drifts based on ethics, rival
-// pressure, and companion health — the same levers as workforce morale.
+// pressure, and companion health  -  the same levers as workforce morale.
 // ============================================================================
 
 import { AIDE_CONFIGS } from '../data/aides';

@@ -1,4 +1,4 @@
-// useReducedMotion — single source of truth for "should we calm the motion?".
+// useReducedMotion  -  single source of truth for "should we calm the motion?".
 //
 // Returns true when EITHER the player toggled "Reduce motion" in Settings OR the
 // OS-level prefers-reduced-motion media query is set. Components gate ambient

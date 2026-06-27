@@ -1,5 +1,5 @@
 // ============================================================================
-// Empire Engine — Prestige / rebirth tiers.
+// Empire Engine  -  Prestige / rebirth tiers.
 // Three escalating rebirths. Each trades a deeper reset for a permanent,
 // compounding payout. The reducer's PRESTIGE action grants Legacy Points;
 // these tiers are the design-doc framing the UI presents to the player.
@@ -22,7 +22,7 @@ export const PRESTIGE_TIERS: {
     tier: 1,
     key: 'restructure',
     name: 'Restructure',
-    desc: 'Wind down operations and re-incorporate leaner. Your cash, stock, and facilities go to zero — but the knowledge and people you gathered carry forward, and your name is now worth Legacy Points that boost everything you build next.',
+    desc: 'Wind down operations and re-incorporate leaner. Your cash, stock, and facilities go to zero  -  but the knowledge and people you gathered carry forward, and your name is now worth Legacy Points that boost everything you build next.',
     unlockReq: 'Reach $1,000,000 lifetime earnings (or own any Tier 3 facility).',
     resets: [
       'Cash & stockpiled resource',
@@ -46,7 +46,7 @@ export const PRESTIGE_TIERS: {
     tier: 2,
     key: 'ipo',
     name: 'IPO',
-    desc: 'Take the empire public. A far harder reset that wipes most progress — but going to market mints a Mastery Star, a meta-currency that supercharges every future Legacy Point and unlocks the upper research and advisor tiers.',
+    desc: 'Take the empire public. A far harder reset that wipes most progress  -  but going to market mints a Mastery Star, a meta-currency that supercharges every future Legacy Point and unlocks the upper research and advisor tiers.',
     unlockReq: 'Accumulate 500 Legacy Points across your Restructures.',
     resets: [
       'Everything a Restructure resets',
@@ -68,7 +68,7 @@ export const PRESTIGE_TIERS: {
     tier: 3,
     key: 'conglomerate',
     name: 'Conglomerate',
-    desc: 'Dissolve the public company and fold it into a multi-industry holding entity. The deepest rebirth in the game — almost nothing survives — but it forges a Transcend Shard, the apex meta-currency that reshapes the entire economy in your favor and opens new-industry expansion.',
+    desc: 'Dissolve the public company and fold it into a multi-industry holding entity. The deepest rebirth in the game  -  almost nothing survives  -  but it forges a Transcend Shard, the apex meta-currency that reshapes the entire economy in your favor and opens new-industry expansion.',
     unlockReq: 'Collect 50 Mastery Stars through repeated IPOs.',
     resets: [
       'Everything an IPO resets',

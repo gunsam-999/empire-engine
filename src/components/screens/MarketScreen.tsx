@@ -1,5 +1,5 @@
 // ============================================================================
-// MarketScreen — live commodity price, sparkline, stockpile toggle, and the
+// MarketScreen  -  live commodity price, sparkline, stockpile toggle, and the
 // buy-low / sell-high loop. Resource piles up while stockpiling; SELL dumps it
 // at the current price. Boom / crash states surface so the player can time it.
 // ============================================================================
@@ -130,19 +130,19 @@ export default function MarketScreen() {
       label: 'BOOM',
       tone: '#34d399',
       icon: '🚀',
-      hint: 'Prices are spiking — dump your stockpile NOW.',
+      hint: 'Prices are spiking  -  dump your stockpile NOW.',
     };
   } else if (price >= 1.2) {
-    band = { label: 'High', tone: '#34d399', icon: '📈', hint: 'Above par — a good time to sell.' };
+    band = { label: 'High', tone: '#34d399', icon: '📈', hint: 'Above par  -  a good time to sell.' };
   } else if (price <= 0.55) {
     band = {
       label: 'CRASH',
       tone: '#f87171',
       icon: '🪂',
-      hint: 'Market crashed — hold the line, stockpile instead.',
+      hint: 'Market crashed  -  hold the line, stockpile instead.',
     };
   } else if (price <= 0.85) {
-    band = { label: 'Low', tone: '#f87171', icon: '📉', hint: 'Below par — stockpile and wait it out.' };
+    band = { label: 'Low', tone: '#f87171', icon: '📉', hint: 'Below par  -  stockpile and wait it out.' };
   } else {
     band = { label: 'Stable', tone: '#8a94a8', icon: '⚖️', hint: 'Trading near par. Watch for a swing.' };
   }
@@ -204,7 +204,7 @@ export default function MarketScreen() {
             <p className="text-sm font-semibold text-[#e7ecf5]">Production Routing</p>
             <p className="text-[11px] text-[#8a94a8]">
               {stockpiling
-                ? 'Banking output as raw stock — no cash flowing in.'
+                ? 'Banking output as raw stock  -  no cash flowing in.'
                 : 'Auto-selling output at the live price.'}
             </p>
           </div>

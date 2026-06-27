@@ -1,5 +1,5 @@
 // ============================================================================
-// ShareCardModal — the viral hook. A procedurally-rendered "trading card" that
+// ShareCardModal  -  the viral hook. A procedurally-rendered "trading card" that
 // captures the state of the player's empire and can be shared, copied, or
 // downloaded as a PNG. Everything is drawn from inline SVG (no images, no
 // fonts to ship) and rasterized client-side at 2× for crisp social sharing.
@@ -75,7 +75,7 @@ function buildModel(state: GameState): CardModel {
     stats: [
       { label: 'Facilities', value: formatNumber(facilities) },
       { label: 'Advisors', value: String(advisors) },
-      { label: 'Research', value: String(research) },
+      { label: 'Portfolio', value: formatMoney(state.investments?.wealthPortfolio ?? 0, '') },
       { label: 'Rebirths', value: String(state.prestigeCount) },
     ],
   };
@@ -355,14 +355,14 @@ export default function ShareCardModal({ onClose }: { onClose: () => void }) {
         await nav.share({
           files: [file],
           title: 'My Empire',
-          text: `${model.company} — ${model.symbol}${model.netWorth} lifetime, ${model.tier}. Built in Empire Engine.`,
+          text: `${model.company}  -  ${model.symbol}${model.netWorth} lifetime, ${model.tier}. Built in Empire Engine.`,
         });
         sfx.play('sell');
       } catch {
-        /* user cancelled — no-op */
+        /* user cancelled  -  no-op */
       }
     } else {
-      flash('bad', 'Sharing not supported — try Copy or Download.');
+      flash('bad', 'Sharing not supported  -  try Copy or Download.');
     }
   }
 
@@ -378,10 +378,10 @@ export default function ShareCardModal({ onClose }: { onClose: () => void }) {
         sfx.play('toggle');
         flash('good', 'Card copied to clipboard.');
       } else {
-        flash('bad', 'Copy not supported — try Download.');
+        flash('bad', 'Copy not supported  -  try Download.');
       }
     } catch {
-      flash('bad', 'Clipboard blocked — try Download.');
+      flash('bad', 'Clipboard blocked  -  try Download.');
     } finally {
       setBusy(false);
     }

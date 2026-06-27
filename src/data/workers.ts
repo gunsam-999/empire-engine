@@ -1,5 +1,5 @@
 // ============================================================================
-// workers.ts — deterministic worker generator for Session 4.1.
+// workers.ts  -  deterministic worker generator for Session 4.1.
 // Given a global index + per-game seed, always produces the same name/role.
 // ============================================================================
 

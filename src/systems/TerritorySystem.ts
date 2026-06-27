@@ -1,4 +1,4 @@
-// TerritorySystem — region unlock + expansion timing helpers. Pure.
+// TerritorySystem  -  region unlock + expansion timing helpers. Pure.
 
 import { REGIONS } from '../data/regions';
 import type { GameState, RegionConfig } from '../game/types';

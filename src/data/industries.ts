@@ -1,5 +1,5 @@
 // ============================================================================
-// Empire Engine — INDUSTRIES DATA
+// Empire Engine  -  INDUSTRIES DATA
 // 8 industries, each with 50 facilities (10 per tier x 5 tiers).
 // Facilities are generated from themed name/icon tables via a helper so we
 // never hand-write 400 objects, but every name is genuinely on-brand.
@@ -70,7 +70,7 @@ function buildFacilities(id: IndustryType, tiers: IndustrySeed['tiers']): Facili
         id: `${id}-t${t}-${slot}`,
         tier: t,
         name: theme.names[slot],
-        desc: `Tier ${t} ${theme.names[slot]} — produces a steady stream of ${tiersResourceWord(id)}.`,
+        desc: `Tier ${t} ${theme.names[slot]}  -  produces a steady stream of ${tiersResourceWord(id)}.`,
         icon: theme.icons[slot],
         baseCost: Math.round(baseCost),
         costMul: tierCostMul(t, slot),
@@ -97,7 +97,7 @@ function tiersResourceWord(id: IndustryType): string {
 }
 
 // ----------------------------------------------------------------------------
-// 8 INDUSTRY SEEDS — themed names per tier (10 each), evocative & on-brand
+// 8 INDUSTRY SEEDS  -  themed names per tier (10 each), evocative & on-brand
 // ----------------------------------------------------------------------------
 
 const SEEDS: IndustrySeed[] = [
@@ -164,7 +164,7 @@ const SEEDS: IndustrySeed[] = [
   {
     id: 'space',
     name: 'Orbital Dynamics',
-    tagline: 'Per aspera ad astra — and to profit.',
+    tagline: 'Per aspera ad astra  -  and to profit.',
     emoji: '🚀',
     accent: '#38bdf8',
     resource: 'Delta-V',
@@ -606,7 +606,7 @@ export const INDUSTRIES: Record<IndustryType, IndustryConfig> =
   }, {} as Record<IndustryType, IndustryConfig>);
 
 // ----------------------------------------------------------------------------
-// PHILOSOPHIES — matches the Philosophy union, with bonus copy mirroring the
+// PHILOSOPHIES  -  matches the Philosophy union, with bonus copy mirroring the
 // economy formulas in the build contract.
 // ----------------------------------------------------------------------------
 
@@ -648,7 +648,7 @@ export const PHILOSOPHIES: {
 ];
 
 // ----------------------------------------------------------------------------
-// ACCENT_SWATCHES — 10 premium hex colors usable as --accent.
+// ACCENT_SWATCHES  -  10 premium hex colors usable as --accent.
 // ----------------------------------------------------------------------------
 
 export const ACCENT_SWATCHES: string[] = [
