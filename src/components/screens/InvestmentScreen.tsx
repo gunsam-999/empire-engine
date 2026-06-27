@@ -130,7 +130,7 @@ function BuyModal({
         style={{ borderColor: def.color }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4">
+        <div className="p-4" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}>
           <div className="flex items-center gap-3 mb-4">
             <span className="text-2xl">{def.emoji}</span>
             <div>
@@ -236,7 +236,7 @@ function SellModal({
         style={{ borderColor: def.color }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4">
+        <div className="p-4" style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))' }}>
           <div className="flex items-center gap-3 mb-4">
             <span className="text-2xl">{def.emoji}</span>
             <div>

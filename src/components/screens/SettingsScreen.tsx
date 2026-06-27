@@ -372,14 +372,33 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
       role="switch"
       aria-checked={on}
       onClick={onChange}
-      className={`relative h-7 w-12 rounded-full transition-colors active:scale-95 ${
-        on ? 'bg-[var(--accent)]' : 'bg-[#232c3e]'
-      }`}
+      className="relative shrink-0 active:scale-95"
+      style={{
+        width: '52px',
+        height: '30px',
+        borderRadius: '15px',
+        background: on ? 'var(--accent)' : '#232c3e',
+        transition: 'background 0.2s ease, transform 0.1s ease',
+        border: 'none',
+        outline: 'none',
+        cursor: 'pointer',
+        padding: 0,
+      }}
     >
       <span
-        className={`absolute top-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
-          on ? 'translate-x-[22px]' : 'translate-x-0.5'
-        }`}
+        style={{
+          position: 'absolute',
+          top: '3px',
+          left: 0,
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          background: '#ffffff',
+          boxShadow: '0 2px 5px rgba(0,0,0,0.40)',
+          transform: on ? 'translateX(25px)' : 'translateX(3px)',
+          transition: 'transform 0.2s cubic-bezier(0.4,0,0.2,1)',
+          display: 'block',
+        }}
       />
     </button>
   );

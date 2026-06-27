@@ -4,7 +4,7 @@
      falling back to cache when offline).
    - Hashed build assets  -> cache-first (immutable, instant, offline-capable).
    Bump CACHE on meaningful changes to force a clean refresh. */
-const CACHE = 'empire-engine-v3';
+const CACHE = 'empire-engine-v4';
 const SHELL = [
   './',
   './index.html',

@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useGame } from '../../game/GameContext';
 import { STORY_BEATS } from '../../data/story';
 import type { GameReward, Speaker, StoryBeat } from '../../game/types';
+import StoryBeatPresenter from '../shared/StoryBeatPresenter';
 import { formatNumber } from '../../utils/bigNumber';
 import { reputationMultipliers } from '../../systems/EconomyEngine';
 import { CompanionPanel } from '../shared/CompanionPanel';
@@ -531,8 +532,10 @@ export default function StoryScreen() {
         )}
       </div>
 
-      {/* Active beat modal */}
-      {openBeat && <BeatModal beat={openBeat} onClose={() => setOpenBeatId(null)} />}
+      {/* Active beat presenter (uses CharacterPresence / CinematicCutscene) */}
+      {openBeat && (
+        <StoryBeatPresenter beat={openBeat} onClose={() => setOpenBeatId(null)} />
+      )}
     </div>
   );
 }

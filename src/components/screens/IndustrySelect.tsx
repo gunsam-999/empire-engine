@@ -387,12 +387,12 @@ function AideCard({
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function IndustrySelect() {
+export default function IndustrySelect({ initialMode }: { initialMode?: GameMode } = {}) {
   const { state, dispatch } = useGame();
 
   const [name, setName] = useState('');
   const [industry, setIndustry] = useState<IndustryType | null>(null);
-  const [gameMode, setGameMode] = useState<GameMode>('inheritance');
+  const [gameMode, setGameMode] = useState<GameMode>(initialMode ?? 'inheritance');
   const [showOrigin, setShowOrigin] = useState(false);
   const [originSeen, setOriginSeen] = useState(false);
   const [chosenAideId, setChosenAideId] = useState<string>('marcus');
