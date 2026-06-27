@@ -4,6 +4,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useGame } from '../../game/GameContext';
+import { fx } from '../shared/FxLayer';
+import { sfx } from '../../systems/AudioEngine';
+import { haptic } from '../../utils/haptics';
 
 export interface GoldenBubbleProps {
   /** Called once the bubble is finished (tapped or drifted off-screen). */
@@ -36,10 +39,15 @@ export default function GoldenBubble({ onDone, lifespanSec = 9 }: GoldenBubblePr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lifespanSec]);
 
-  const onTap = () => {
+  const onTap = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (tapped) return;
     setTapped(true);
     dispatch({ type: 'SET_BOOST', mult: BOOST.mult, seconds: BOOST.seconds, source: BOOST.source });
+    // Golden burst + chime at the tap point.
+    fx.burst(e.clientX, e.clientY, { color: '#fbbf24', count: 16 });
+    fx.gain(e.clientX, e.clientY - 10, `×${BOOST.mult}!`, { color: '#fbbf24' });
+    sfx.play('milestone');
+    haptic('success');
     setToast(true);
     // Let the pop + toast play, then unmount.
     setTimeout(() => setToast(false), 1900);

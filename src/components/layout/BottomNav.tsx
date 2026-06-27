@@ -17,6 +17,8 @@
 
 import { useGame, potentialLP, getChannel } from '../../game/GameContext';
 import TabButton from '../shared/TabButton';
+import { sfx } from '../../systems/AudioEngine';
+import { haptic } from '../../utils/haptics';
 
 /** Canonical screen identifiers used by the router/App. */
 export type TabId = 'empire' | 'marketing' | 'research' | 'market' | 'prestige';
@@ -70,7 +72,13 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
               (tab.id === 'prestige' && prestigeReady && active !== 'prestige') ||
               (tab.id === 'marketing' && needsMarketing && active !== 'marketing')
             }
-            onClick={() => onChange(tab.id)}
+            onClick={() => {
+              if (active !== tab.id) {
+                sfx.play('tap');
+                haptic('tap');
+              }
+              onChange(tab.id);
+            }}
           />
         ))}
       </div>

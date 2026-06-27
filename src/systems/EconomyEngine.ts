@@ -15,6 +15,7 @@ import { getPremiseProdMult, getPremiseCostMult } from './PremiseEngine';
 import { getDynastyMults } from './DynastyEngine';
 import { getEchelonProdMult, defaultEchelonState } from './EchelonEngine';
 import { getNewspaperProdMult, defaultNewspaperState } from './NewspaperEngine';
+import { getPublicAffairsMult, defaultPublicAffairsState } from './PublicAffairsEngine';
 import type {
   FacilityConfig,
   GameState,
@@ -91,6 +92,8 @@ export interface Multipliers {
   echelonProd: number;
   // Newspaper heat debuff (Session 5.3). 0.82–1.00× based on press heat score.
   newspaperProd: number;
+  // Public Affairs confidence factor (Session 5.5). 0.80–1.30× from confidence score.
+  publicAffairsMult: number;
 }
 
 /**
@@ -242,11 +245,12 @@ export function getMultipliers(state: GameState): Multipliers {
   const dynastyMults = getDynastyMults(state.dynasty ?? { runs: [], traits: [], heirlooms: [] });
   const echelonProd = getEchelonProdMult(state.echelon ?? defaultEchelonState());
   const newspaperProd = getNewspaperProdMult(state.newspaper ?? defaultNewspaperState());
+  const publicAffairsMult = getPublicAffairsMult(state);
 
   const production =
     philosophyProd * prestige * researchProd * event * advisorProd * marketing *
     repMult.prod * rivalMult.production * companionMult * workforceMult * aideProd *
-    premiseProd * dynastyMults.prod * echelonProd * newspaperProd;
+    premiseProd * dynastyMults.prod * echelonProd * newspaperProd * publicAffairsMult;
   const cost = researchCostMul(state) * repMult.cost * premiseCost * dynastyMults.cost;
   const insight = researchInsight * advisorInsight;
 
@@ -272,6 +276,7 @@ export function getMultipliers(state: GameState): Multipliers {
     dynastyCost: dynastyMults.cost,
     echelonProd,
     newspaperProd,
+    publicAffairsMult,
   };
 }
 

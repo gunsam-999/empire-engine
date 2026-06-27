@@ -248,7 +248,15 @@ export interface GameState {
   marketing: MarketingState;
   cofounder: CofounderState;
   guidance: GuidanceState;
-  settings: { sound: boolean; buyQty: 1 | 10 | 100 | 'max'; liveView: boolean };
+  settings: {
+    sound: boolean;
+    buyQty: 1 | 10 | 100 | 'max';
+    liveView: boolean;
+    /** Quieten ambient motion, FX particles, and celebration bursts. */
+    reduceMotion: boolean;
+    /** Procedural haptic taps on supported devices. */
+    haptics: boolean;
+  };
   stats: { clicks: number; playSeconds: number; prestiges: number; created: number };
   // Accumulated seconds spent at a visionary reputation (ethics > 20).
   reputationHeldSec: number;
@@ -282,6 +290,8 @@ export interface GameState {
   newspaper: NewspaperState;
   // Notification Engine (Session 5.4) — persistent prioritised alert log.
   notifications: NotificationState;
+  // Public Affairs (Session 5.5) — aggregate confidence from all 5.x signals.
+  publicAffairs: PublicAffairsState;
   lastTick: number;
   lastSaved: number;
 }
@@ -560,6 +570,19 @@ export interface NewspaperState {
 }
 
 // ============================================================================
+// Public Affairs (Session 5.5) — company confidence aggregator.
+// Confidence (0–100) reflects how the outside world views the enterprise,
+// driven by echelon standing, press heat, ethics, rivals, and coalition.
+// ============================================================================
+
+export interface PublicAffairsState {
+  /** Aggregate public confidence: 0 (crisis) to 100 (dominant). */
+  confidence: number;
+  /** ms — gates "Issue Statement" action (600 s cooldown). */
+  lastStatementAt: number;
+}
+
+// ============================================================================
 // Notification Engine (Session 5.4) — persistent alert log.
 // Priority-ranked history of game events. Urgent alerts also fire toasts.
 // ============================================================================
@@ -650,6 +673,7 @@ export type Action =
   | { type: 'INTEL_COMMISSION'; rivalId?: string }
   | { type: 'NEWS_RESPOND'; itemId: string }
   | { type: 'NOTIFICATION_READ_ALL' }
+  | { type: 'PUBLIC_STATEMENT' }
   | { type: 'LOAD'; state: GameState }
   | { type: 'IMPORT'; state: GameState }
   | { type: 'HARD_RESET' };

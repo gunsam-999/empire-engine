@@ -18,6 +18,8 @@ import { RESEARCH_NODES } from '../../data/research';
 import type { GameState, ResearchBranch, ResearchNode } from '../../game/types';
 import { formatNumber } from '../../utils/bigNumber';
 import { formatDuration, formatCountdown } from '../../utils/time';
+import { sfx } from '../../systems/AudioEngine';
+import { haptic } from '../../utils/haptics';
 
 // ---- Branch presentation ----------------------------------------------------
 
@@ -203,7 +205,11 @@ function ResearchCard({
           <button
             type="button"
             disabled={!canStart}
-            onClick={() => dispatch({ type: 'START_RESEARCH', id: node.id })}
+            onClick={() => {
+              dispatch({ type: 'START_RESEARCH', id: node.id });
+              sfx.play('research');
+              haptic('buy');
+            }}
             className={[
               'w-full rounded-xl py-2 text-[13px] font-semibold transition-transform active:scale-95',
               canStart

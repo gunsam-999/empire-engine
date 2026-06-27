@@ -129,5 +129,17 @@ export function detectNotifications(
     }
   }
 
+  // 7. Public confidence dropped to Crisis level (< 20)
+  const prevConf = prev.publicAffairs?.confidence ?? 50;
+  const nextConf = next.publicAffairs?.confidence ?? 50;
+  if (nextConf < 20 && prevConf >= 20) {
+    const body = 'Public confidence has reached crisis levels. Issue a statement before your production suffers.';
+    ns = push(ns, 'urgent', '📢', 'Confidence Crisis', body, now);
+    toast.bad('Public confidence critical — issue a statement.', {
+      icon: '📢',
+      durationMs: 4_000,
+    });
+  }
+
   return ns;
 }

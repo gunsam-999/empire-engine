@@ -38,8 +38,14 @@ import EventModal from './components/screens/EventModal';
 import GuidancePopup from './components/screens/GuidancePopup';
 
 import { ToastHost } from './components/shared/ToastNotification';
+import { FxLayer } from './components/shared/FxLayer';
+import { CelebrationHost } from './components/shared/CelebrationHost';
 import Modal from './components/shared/Modal';
 import NotificationDrawer from './components/shared/NotificationDrawer';
+
+import { sfx } from './systems/AudioEngine';
+import { setHapticsEnabled } from './utils/haptics';
+import { useCelebrations } from './hooks/useCelebrations';
 
 import { MICRO_EVENTS, type GameEvent } from './data/events';
 import { pick } from './utils/random';
@@ -155,6 +161,17 @@ function Game() {
 
   const hasSetup = state.setup !== null;
 
+  // Keep the audio + haptic engines in sync with the player's preferences.
+  useEffect(() => {
+    sfx.setEnabled(state.settings.sound);
+  }, [state.settings.sound]);
+  useEffect(() => {
+    setHapticsEnabled(state.settings.haptics);
+  }, [state.settings.haptics]);
+
+  // Watch for milestone / echelon / era / prestige moments and celebrate them.
+  useCelebrations();
+
   // ---- Guidance (co-founder coaching) driver -------------------------------
   // The reducer queues eligible beat ids into state.guidance.queue (min-interval
   // gated). App decides WHEN to actually surface the head of the queue: only
@@ -185,6 +202,8 @@ function Game() {
       <>
         <IndustrySelect />
         <ToastHost />
+        <FxLayer />
+        <CelebrationHost />
       </>
     );
   }
@@ -218,6 +237,8 @@ function Game() {
       )}
 
       <ToastHost />
+      <FxLayer />
+      <CelebrationHost />
     </>
   );
 }

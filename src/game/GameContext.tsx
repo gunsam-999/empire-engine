@@ -87,6 +87,13 @@ import { tickEchelon, defaultEchelonState } from '../systems/EchelonEngine';
 import { tickIntel, defaultIntelState, commissionReport, canGatherIntel, INTEL_COMMISSION_COST } from '../systems/IntelEngine';
 import { tickNewspaper, defaultNewspaperState, respondToNews, canRespondToNews, NEWS_RESPOND_COST } from '../systems/NewspaperEngine';
 import { detectNotifications, defaultNotificationState, markAllRead } from '../systems/NotificationEngine';
+import {
+  tickPublicAffairs,
+  defaultPublicAffairsState,
+  issueStatement,
+  canIssueStatement,
+  STATEMENT_COST,
+} from '../systems/PublicAffairsEngine';
 
 // ---- Initial state ----------------------------------------------------------
 
@@ -114,7 +121,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
     marketing: defaultMarketing(),
     cofounder: { ...DEFAULT_COFOUNDER, avatar: { ...DEFAULT_COFOUNDER.avatar } },
     guidance: { seen: [], queue: [], dismissed: [], lastShownAt: 0 },
-    settings: { sound: true, buyQty: 1, liveView: false },
+    settings: { sound: true, buyQty: 1, liveView: false, reduceMotion: false, haptics: true },
     stats: { clicks: 0, playSeconds: 0, prestiges: 0, created: 0 },
     reputationHeldSec: 0,
     director: defaultDirectorState(now),
@@ -133,6 +140,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
     intel: defaultIntelState(),
     newspaper: defaultNewspaperState(),
     notifications: defaultNotificationState(),
+    publicAffairs: defaultPublicAffairsState(),
     lastTick: now,
     lastSaved: now,
   };
@@ -183,6 +191,8 @@ export function migrateSave(raw: GameState): GameState {
     sound: s.settings?.sound ?? true,
     buyQty: s.settings?.buyQty ?? 1,
     liveView: s.settings?.liveView ?? false,
+    reduceMotion: s.settings?.reduceMotion ?? false,
+    haptics: s.settings?.haptics ?? true,
   };
 
   return {
@@ -258,6 +268,12 @@ export function migrateSave(raw: GameState): GameState {
           lastSeenAt: s.notifications.lastSeenAt ?? 0,
         }
       : defaultNotificationState(),
+    publicAffairs: s.publicAffairs
+      ? {
+          confidence: s.publicAffairs.confidence ?? 50,
+          lastStatementAt: s.publicAffairs.lastStatementAt ?? 0,
+        }
+      : defaultPublicAffairsState(),
     version: SAVE_VERSION,
   };
 }
@@ -655,6 +671,13 @@ export function reducer(state: GameState, action: Action): GameState {
         next,
         next.notifications ?? defaultNotificationState(),
         now
+      );
+
+      // Public Affairs (5.5): drift confidence from aggregate world signals.
+      next.publicAffairs = tickPublicAffairs(
+        next.publicAffairs ?? defaultPublicAffairsState(),
+        next,
+        dt
       );
 
       next.stats = { ...next.stats, playSeconds: next.stats.playSeconds + dt };
@@ -1155,6 +1178,18 @@ export function reducer(state: GameState, action: Action): GameState {
         ...state,
         notifications: markAllRead(state.notifications ?? defaultNotificationState(), now),
       };
+
+    // ----- PUBLIC_STATEMENT -----
+    case 'PUBLIC_STATEMENT': {
+      const pa = state.publicAffairs ?? defaultPublicAffairsState();
+      if (!canIssueStatement(pa, now)) return state;
+      if (state.influence < STATEMENT_COST) return state;
+      return {
+        ...state,
+        influence: state.influence - STATEMENT_COST,
+        publicAffairs: issueStatement(pa, now),
+      };
+    }
 
     // ----- AIDE_BRIEF -----
     case 'AIDE_BRIEF':

@@ -13,9 +13,12 @@
 //     affordable, dim & disabled otherwise, with a juicy flash on purchase.
 // ============================================================================
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { useGame } from '../../game/GameContext';
+import { fx } from '../shared/FxLayer';
+import { sfx } from '../../systems/AudioEngine';
+import { haptic } from '../../utils/haptics';
 import {
   facilityCost,
   getIndustry,
@@ -357,12 +360,22 @@ function FacilityRow({
   const affordable = count > 0 && Number.isFinite(cost) && state.cash >= cost;
 
   const [flashing, setFlashing] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   function buy() {
     if (!affordable) return;
     dispatch({ type: 'BUY_FACILITY', id: cfg.id, qty: buyQty });
     setFlashing(true);
     window.setTimeout(() => setFlashing(false), 180);
+
+    // Juice: spark burst + floating count from the button, a confirm blip, a tap.
+    // A bulk/max buy earns the bigger flourish.
+    const big = count >= 10;
+    fx.fromElement(btnRef.current, `+${formatNumber(count)} ${cfg.icon}`, {
+      color: 'var(--accent)',
+    });
+    sfx.play(big ? 'buyBig' : 'buy');
+    haptic(big ? 'success' : 'buy');
   }
 
   const isOwned = owned > 0;
@@ -424,6 +437,7 @@ function FacilityRow({
 
         {/* Buy button */}
         <button
+          ref={btnRef}
           type="button"
           onClick={buy}
           disabled={!affordable}

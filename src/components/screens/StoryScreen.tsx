@@ -23,6 +23,7 @@ import { DynastyPanel } from '../shared/DynastyPanel';
 import EchelonBadge from '../shared/EchelonBadge';
 import IntelPanel from '../shared/IntelPanel';
 import NewspaperPanel from '../shared/NewspaperPanel';
+import PublicAffairsPanel from '../shared/PublicAffairsPanel';
 
 // ---- Speaker presentation ---------------------------------------------------
 
@@ -475,6 +476,13 @@ export default function StoryScreen() {
       {(state.newspaper?.items ?? []).length > 0 && (
         <div className="mt-3">
           <NewspaperPanel />
+        </div>
+      )}
+
+      {/* Public Affairs — aggregate confidence from all external signals */}
+      {state.publicAffairs && (
+        <div className="mt-3">
+          <PublicAffairsPanel />
         </div>
       )}
 

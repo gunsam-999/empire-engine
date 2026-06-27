@@ -9,9 +9,11 @@ import { useGame } from '../../game/GameContext';
 import { ADVISORS } from '../../data/advisors';
 import { MILESTONES } from '../../data/milestones';
 import { exportSave, importSave, saveGame } from '../../game/SaveSystem';
+import { sfx } from '../../systems/AudioEngine';
 import { formatMoney } from '../../utils/bigNumber';
 import { formatDuration } from '../../utils/time';
 import CofounderCustomizer from './CofounderCustomizer';
+import ShareCardModal from '../shared/ShareCardModal';
 
 const BUY_OPTIONS: (1 | 10 | 100 | 'max')[] = [1, 10, 100, 'max'];
 
@@ -22,6 +24,7 @@ export default function SettingsScreen() {
   const [banner, setBanner] = useState<Banner>(null);
   const [importText, setImportText] = useState('');
   const [confirmStage, setConfirmStage] = useState<0 | 1 | 2>(0);
+  const [showCard, setShowCard] = useState(false);
 
   const flash = (tone: 'good' | 'bad', text: string) => {
     setBanner({ tone, text });
@@ -132,7 +135,18 @@ export default function SettingsScreen() {
             </div>
           ))}
         </div>
+        <button
+          onClick={() => setShowCard(true)}
+          className="mt-2.5 w-full rounded-2xl border border-[var(--accent)]/45 py-3
+            text-sm font-bold text-[var(--accent)] active:scale-[0.98] transition-transform
+            hover:bg-[var(--accent)]/10"
+          style={{ background: 'color-mix(in srgb, var(--accent) 8%, transparent)' }}
+        >
+          📸 Share your empire
+        </button>
       </section>
+
+      {showCard && <ShareCardModal onClose={() => setShowCard(false)} />}
 
       {/* ---- Preferences ---- */}
       <section>
@@ -172,7 +186,50 @@ export default function SettingsScreen() {
             </div>
             <Toggle
               on={state.settings.sound}
-              onChange={() => dispatch({ type: 'SET_SETTINGS', payload: { sound: !state.settings.sound } })}
+              onChange={() => {
+                const next = !state.settings.sound;
+                // Enable the engine first so the confirming blip is audible.
+                if (next) {
+                  sfx.setEnabled(true);
+                  sfx.play('toggle');
+                }
+                dispatch({ type: 'SET_SETTINGS', payload: { sound: next } });
+              }}
+            />
+          </div>
+
+          {/* Haptics */}
+          <div className="flex items-center justify-between gap-3 p-3.5">
+            <div>
+              <div className="text-sm font-medium text-[#e7ecf5]">Haptics</div>
+              <div className="text-xs text-[#8a94a8]">Vibration feedback on supported devices.</div>
+            </div>
+            <Toggle
+              on={state.settings.haptics}
+              onChange={() => {
+                if (state.settings.sound) sfx.play('toggle');
+                dispatch({ type: 'SET_SETTINGS', payload: { haptics: !state.settings.haptics } });
+              }}
+            />
+          </div>
+
+          {/* Reduce motion */}
+          <div className="flex items-center justify-between gap-3 p-3.5">
+            <div>
+              <div className="text-sm font-medium text-[#e7ecf5]">Reduce motion</div>
+              <div className="text-xs text-[#8a94a8]">
+                Calm the ambient backdrop, particle bursts, and celebrations.
+              </div>
+            </div>
+            <Toggle
+              on={state.settings.reduceMotion}
+              onChange={() => {
+                if (state.settings.sound) sfx.play('toggle');
+                dispatch({
+                  type: 'SET_SETTINGS',
+                  payload: { reduceMotion: !state.settings.reduceMotion },
+                });
+              }}
             />
           </div>
 

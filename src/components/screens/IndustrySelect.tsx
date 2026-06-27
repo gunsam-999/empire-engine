@@ -21,6 +21,9 @@ import {
 import type { CompanySetup, IndustryType, Philosophy } from '../../game/types';
 import Card from '../shared/Card';
 import CofounderCustomizer from './CofounderCustomizer';
+import { sfx } from '../../systems/AudioEngine';
+import { haptic } from '../../utils/haptics';
+import { celebrate } from '../shared/CelebrationHost';
 
 export default function IndustrySelect() {
   const { state, dispatch } = useGame();
@@ -55,6 +58,17 @@ export default function IndustrySelect() {
 
   function found() {
     if (!ready || !industry || !philosophy) return;
+    // First gesture: this click satisfies autoplay policy, so the founding
+    // fanfare is audible. A celebration kicks off the journey.
+    sfx.play('milestone');
+    haptic('heavy');
+    celebrate({
+      kind: 'milestone',
+      icon: '🏛️',
+      title: trimmedName,
+      subtitle: 'Your empire begins. Build something legendary.',
+      color: accent,
+    });
     const setup: CompanySetup = {
       name: trimmedName,
       industry,
