@@ -234,6 +234,22 @@ export interface GameState {
   guidance: GuidanceState;
   settings: { sound: boolean; buyQty: 1 | 10 | 100 | 'max'; liveView: boolean };
   stats: { clicks: number; playSeconds: number; prestiges: number; created: number };
+  // Accumulated seconds spent at a visionary reputation (ethics > 20).
+  reputationHeldSec: number;
+  // Director system (Session 3.5).
+  director: DirectorState;
+  // Companion system (Session 3.4).
+  companions: CompanionState[];
+  /** Active companion boosts (counsel/rally/signature effects currently running). */
+  companionBoosts: Array<{ companionId: string; mult: number; endsAt: number }>;
+  // Rival system (Sessions 3.2–3.3).
+  rivals: RivalState[];
+  rivalPressures: RivalPressure[];
+  coalitionActive: boolean;
+  // Workforce system (Session 4.1).
+  workforce: WorkerState[];
+  // Aide system (Session 4.2).
+  aides: AideState[];
   lastTick: number;
   lastSaved: number;
 }
@@ -243,6 +259,155 @@ export interface OfflineSummary {
   cash: number;
   insight: number;
   events: string[];
+}
+
+// ============================================================================
+// Workforce system (Session 4.1) — named employees with morale.
+// Collective morale drives a production multiplier: happy team → more output.
+// ============================================================================
+
+export type WorkerMood = 'BURNT_OUT' | 'DISENGAGED' | 'NEUTRAL' | 'ENGAGED' | 'INSPIRED';
+
+export interface WorkerState {
+  id: string;
+  name: string;
+  role: string;
+  morale: number;      // 0–100
+  hiredAt: number;     // ms timestamp
+  lastEventAt: number; // ms timestamp — gates player-triggered morale boosts
+}
+
+// ============================================================================
+// Aide system (Session 4.2) — six domain specialists in the player's cabinet.
+// Loyalty (0–100) drifts based on ethics/rivals/companions; at ≥75 a passive
+// production bonus is active; player can Brief (+loyalty) or Deploy (boost).
+// ============================================================================
+
+export type AideDomain = 'legal' | 'pr' | 'finance' | 'tech' | 'logistics' | 'creative';
+
+export interface AideState {
+  id: string;
+  loyalty: number;             // 0–100
+  lastBriefAt: number;         // ms — gates Brief button (120 s cooldown)
+  deployCooldownUntil: number; // ms — gates Deploy button (600 s cooldown)
+}
+
+// ============================================================================
+// Companion system (Session 3.4) — mirror of the rival system.
+// Where rivals have aggression that rises and strikes, companions have trust
+// that rises and gives.
+// ============================================================================
+
+export type TrustRung =
+  | 'ACQUAINTANCE' // just joined — words and small help
+  | 'COLLEAGUE'    // reliable — steady passive benefit
+  | 'CONFIDANT'    // trusted — active counsel and warnings
+  | 'INNER_CIRCLE' // deeply loyal — signature ability, public defence
+  | 'LEGACY'       // terminal positive — survives prestige resets
+  | 'ESTRANGED';   // terminal negative — betrayed past recovery
+
+/** A supportive action the companion takes based on current need. */
+export interface CompanionMove {
+  kind:
+    | 'counsel'       // warns before a costly mistake
+    | 'cover'         // absorbs one rival hit
+    | 'boost'         // passive production multiplier
+    | 'rally'         // temporary surge in a crisis
+    | 'loyalty_save'  // refuses a rival's poach attempt
+    | 'signature';    // standout active power
+  message: string;
+  /** Multiplier applied (for boost/rally/signature). */
+  mult?: number;
+  /** Duration in seconds (for temporary effects). */
+  durationSec?: number;
+}
+
+export interface CompanionState {
+  id: string;
+  trust: number;     // 0–100
+  rung: TrustRung;
+  lastActionAt: number;
+  cooldownUntil: number;
+  pendingTrustDelta: number;
+  /** Accumulated seconds at Inner Circle+ (drives signature ability growth). */
+  loyaltyHeldSec: number;
+}
+
+// ============================================================================
+// Rival system (Session 3.2)
+// ============================================================================
+
+export type RivalPosture =
+  | 'DORMANT'
+  | 'WATCHING'
+  | 'PROVOKED'
+  | 'HOSTILE'
+  | 'WAR'
+  | 'DEFEATED'
+  | 'ALLIED';
+
+/** A move the rival has announced but not yet executed. Player has a window to counter. */
+export interface RivalTelegraph {
+  rivalId: string;
+  moveId: string;
+  message: string;
+  executesAt: number; // ms timestamp
+  /** Action type the player dispatches to counter, or null if uncounterable. */
+  counteredBy: string | null;
+  counterLabel: string | null;
+}
+
+/** A negative economic effect currently active from a rival strike. */
+export interface RivalPressure {
+  rivalId: string;
+  kind: 'price' | 'production' | 'brand';
+  /** Multiplicative modifier applied to the relevant multiplier (e.g. 0.75 = −25%). */
+  multiplier: number;
+  endsAt: number; // ms timestamp
+}
+
+export interface RivalState {
+  id: string;
+  aggression: number;    // 0–100
+  relationship: number;  // −100 (war) to +100 (allied)
+  posture: RivalPosture;
+  telegraph: RivalTelegraph | null;
+  lastMoveAt: number;    // ms timestamp
+  cooldownUntil: number; // ms timestamp
+  pendingAggDelta: number;
+  // Session 3.3 additions.
+  /** Last 5 move IDs the player countered, oldest first. Used for counter-adaptation. */
+  defenseHistory: string[];
+  /** True when this telegraph is a feint (no effect on execution). */
+  telegraphIsFeint: boolean;
+  /** How many times the player has directly attacked this rival. */
+  timesAttacked: number;
+}
+
+// ============================================================================
+// Director system (Session 3.5) — hardcoded pacing/orchestration layer.
+// ============================================================================
+
+/**
+ * Broad economic era the player is in. Used to tune rival aggression,
+ * companion support, and story pacing without changing the underlying numbers.
+ */
+export type DirectorPhase =
+  | 'BOOTSTRAPPING'   // < $1 000 lifetime
+  | 'GROWING'         // $1 000 – $100 000
+  | 'SCALING'         // $100 000 – $10 M
+  | 'ESTABLISHED'     // $10 M – $1 B
+  | 'TITAN';          // $1 B+
+
+export interface DirectorState {
+  /** Phase calculated at the last director run. */
+  currentPhase: DirectorPhase;
+  /** ms timestamp of the last story beat the player acknowledged. */
+  lastBeatAt: number;
+  /** ms timestamp of last director-triggered escalation. */
+  lastEscalationAt: number;
+  /** ms timestamp of last companion trust nudge. */
+  lastNudgeAt: number;
 }
 
 // ============================================================================
@@ -275,6 +440,14 @@ export type Action =
   | { type: 'GUIDANCE_SEEN'; id: string }
   | { type: 'GUIDANCE_DISMISS'; id: string }
   | { type: 'TOGGLE_LIVE_VIEW' }
+  | { type: 'COMPANION_TRUST'; companionId: string; delta: number }
+  | { type: 'COMPANION_ACTIVATE'; companionId: string }
+  | { type: 'RIVAL_AGGRESSION'; rivalId: string; delta: number }
+  | { type: 'RIVAL_COUNTER'; rivalId: string }
+  | { type: 'RIVAL_OFFENSE'; rivalId: string; offenseKind: 'leak_story' | 'fund_competitor' | 'undercut' }
+  | { type: 'WORKER_MORALE'; workerId: string; delta: number }
+  | { type: 'AIDE_BRIEF'; aideId: string }
+  | { type: 'AIDE_DEPLOY'; aideId: string }
   | { type: 'LOAD'; state: GameState }
   | { type: 'IMPORT'; state: GameState }
   | { type: 'HARD_RESET' };

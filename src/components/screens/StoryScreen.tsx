@@ -13,6 +13,10 @@ import { useGame } from '../../game/GameContext';
 import { STORY_BEATS } from '../../data/story';
 import type { GameReward, Speaker, StoryBeat } from '../../game/types';
 import { formatNumber } from '../../utils/bigNumber';
+import { reputationMultipliers } from '../../systems/EconomyEngine';
+import { CompanionPanel } from '../shared/CompanionPanel';
+import { WorkforcePanel } from '../shared/WorkforcePanel';
+import { AidePanel } from '../shared/AidePanel';
 
 // ---- Speaker presentation ---------------------------------------------------
 
@@ -56,10 +60,9 @@ function rewardChips(reward?: GameReward): string[] {
   return out;
 }
 
-// ---- Ethics meter -----------------------------------------------------------
+// ---- Reputation meter -------------------------------------------------------
 
-function EthicsMeter({ ethics }: { ethics: number }) {
-  // Clamp to a -100..100 display window; center is neutral.
+function ReputationMeter({ ethics, reputationHeldSec }: { ethics: number; reputationHeldSec: number }) {
   const clamped = Math.max(-100, Math.min(100, ethics));
   const pct = ((clamped + 100) / 200) * 100;
 
@@ -76,18 +79,35 @@ function EthicsMeter({ ethics }: { ethics: number }) {
 
   const color = ethics >= 12 ? '#34d399' : ethics <= -12 ? '#f87171' : '#fbbf24';
 
+  const rep = reputationMultipliers(ethics, reputationHeldSec);
+  const prodPct = Math.round((rep.prod - 1) * 100);
+  const costPct = Math.round((1 - rep.cost) * 100);
+
+  let effectLine: string | null = null;
+  if (rep.prod !== 1 && rep.cost !== 1) {
+    effectLine = `+${prodPct}% production, ${costPct}% cheaper facilities`;
+  } else if (rep.prod !== 1) {
+    effectLine = `+${prodPct}% production`;
+  } else if (rep.cost !== 1) {
+    effectLine = `${costPct}% cheaper facilities`;
+  }
+
+  // Show compounding visionary progress if on the visionary path
+  const showCompound = ethics > 20 && reputationHeldSec > 0;
+
   return (
     <div className="rounded-2xl border border-[#232c3e] bg-[#151c2b] p-3.5">
       <div className="flex items-center justify-between text-[12px]">
         <span className="text-[#8a94a8]">Reputation</span>
         <span className="font-semibold" style={{ color }}>
-          {label} <span className="font-mono tabular-nums text-[#8a94a8]">({ethics >= 0 ? '+' : ''}{ethics})</span>
+          {label}{' '}
+          <span className="font-mono tabular-nums text-[#8a94a8]">
+            ({ethics >= 0 ? '+' : ''}{ethics})
+          </span>
         </span>
       </div>
       <div className="relative mt-2 h-2.5 w-full overflow-hidden rounded-full bg-gradient-to-r from-[#f87171]/30 via-[#fbbf24]/25 to-[#34d399]/30">
-        {/* center tick */}
         <div className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-[#070b12]/60" />
-        {/* marker */}
         <div
           className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#070b12] transition-[left] duration-300"
           style={{ left: `${pct}%`, background: color, boxShadow: `0 0 8px ${color}` }}
@@ -97,6 +117,17 @@ function EthicsMeter({ ethics }: { ethics: number }) {
         <span>Ruthless</span>
         <span>Visionary</span>
       </div>
+      {effectLine && (
+        <div className="mt-2 text-[11px] font-semibold" style={{ color }}>
+          {effectLine}
+        </div>
+      )}
+      {showCompound && (
+        <div className="mt-1 text-[10px] text-[#8a94a8]">
+          Loyalty depth: {Math.round(reputationHeldSec)}s / 300s
+          {reputationHeldSec >= 300 && ' (max)'}
+        </div>
+      )}
     </div>
   );
 }
@@ -279,8 +310,7 @@ function BeatModal({ beat, onClose }: { beat: StoryBeat; onClose: () => void }) 
                             color: good ? '#34d399' : '#f87171',
                           }}
                         >
-                          {good ? '😇' : '😈'} {opt.ethicsShift > 0 ? '+' : ''}
-                          {opt.ethicsShift} ethics
+                          {good ? '+' : ''}{opt.ethicsShift} rep
                         </span>
                       )}
                       {chips.map((c, j) => (
@@ -351,10 +381,31 @@ export default function StoryScreen() {
         </div>
       </div>
 
-      {/* Ethics */}
+      {/* Reputation */}
       <div className="mt-3">
-        <EthicsMeter ethics={state.story.ethics} />
+        <ReputationMeter ethics={state.story.ethics} reputationHeldSec={state.reputationHeldSec ?? 0} />
       </div>
+
+      {/* Inner Circle */}
+      {(state.companions ?? []).length > 0 && (
+        <div className="mt-3">
+          <CompanionPanel />
+        </div>
+      )}
+
+      {/* Workforce */}
+      {(state.workforce ?? []).length > 0 && (
+        <div className="mt-3">
+          <WorkforcePanel />
+        </div>
+      )}
+
+      {/* Cabinet */}
+      {(state.aides ?? []).length > 0 && (
+        <div className="mt-3">
+          <AidePanel />
+        </div>
+      )}
 
       {/* Continue button */}
       {nextBeat && (

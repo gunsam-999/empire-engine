@@ -68,6 +68,12 @@ import { startGameLoop } from './GameLoop';
 import { loadGame, saveGame, SAVE_VERSION } from './SaveSystem';
 import { computeOffline } from './OfflineProgress';
 import { MILESTONES } from '../data/milestones';
+import { tickRivals, shiftRivalAggression, counterRivalMove, applyPlayerOffense } from '../systems/RivalEngine';
+import { tickCompanions, shiftCompanionTrust } from '../systems/CompanionEngine';
+import { runDirector, directorBeatSeen, defaultDirectorState } from '../systems/DirectorEngine';
+import { tickWorkforce, shiftWorkerMorale } from '../systems/WorkforceEngine';
+import { tickAides, briefAide, markDeployed, canDeploy } from '../systems/AideEngine';
+import { getAideConfig } from '../data/aides';
 
 // ---- Initial state ----------------------------------------------------------
 
@@ -97,6 +103,15 @@ export function freshInitialState(now: number = Date.now()): GameState {
     guidance: { seen: [], queue: [], dismissed: [], lastShownAt: 0 },
     settings: { sound: true, buyQty: 1, liveView: false },
     stats: { clicks: 0, playSeconds: 0, prestiges: 0, created: 0 },
+    reputationHeldSec: 0,
+    director: defaultDirectorState(now),
+    companions: [],
+    companionBoosts: [],
+    rivals: [],
+    rivalPressures: [],
+    coalitionActive: false,
+    workforce: [],
+    aides: [],
     lastTick: now,
     lastSaved: now,
   };
@@ -155,6 +170,30 @@ export function migrateSave(raw: GameState): GameState {
     cofounder,
     guidance,
     settings,
+    reputationHeldSec: s.reputationHeldSec ?? 0,
+    director: s.director ?? defaultDirectorState(Date.now()),
+    companions: (s.companions ?? []).map((c) => ({
+      ...c,
+      loyaltyHeldSec: c.loyaltyHeldSec ?? 0,
+      pendingTrustDelta: c.pendingTrustDelta ?? 0,
+    })),
+    companionBoosts: s.companionBoosts ?? [],
+    rivals: (s.rivals ?? []).map((r) => ({
+      ...r,
+      defenseHistory: r.defenseHistory ?? [],
+      telegraphIsFeint: r.telegraphIsFeint ?? false,
+      timesAttacked: r.timesAttacked ?? 0,
+    })),
+    rivalPressures: s.rivalPressures ?? [],
+    coalitionActive: s.coalitionActive ?? false,
+    workforce: (s.workforce ?? []).map((w) => ({
+      ...w,
+      lastEventAt: w.lastEventAt ?? w.hiredAt ?? 0,
+    })),
+    aides: (s.aides ?? []).map((a) => ({
+      ...a,
+      deployCooldownUntil: a.deployCooldownUntil ?? 0,
+    })),
     version: SAVE_VERSION,
   };
 }
@@ -262,12 +301,6 @@ export function reducer(state: GameState, action: Action): GameState {
       // Market drift.
       next.market = driftMarket(next.market, dt, now);
 
-      // Story triggers.
-      const eligible = newlyEligibleBeats(next);
-      if (eligible.length > 0) {
-        next.story = { ...next.story, queue: [...next.story.queue, ...eligible] };
-      }
-
       // Guidance (co-founder coaching) triggers — min-interval gated, one at a
       // time so it is never spammy.
       const eligibleGuidance = newlyEligibleGuidance(next, now);
@@ -289,6 +322,67 @@ export function reducer(state: GameState, action: Action): GameState {
           next = applyRewardLocal(next, m.reward, now);
         }
       }
+
+      // Reputation axis: accumulate visionary time, decay when not visionary.
+      const ethics = next.story.ethics;
+      const held = next.reputationHeldSec ?? 0;
+      if (ethics > 20) {
+        next.reputationHeldSec = Math.min(held + dt, 300);
+      } else {
+        next.reputationHeldSec = Math.max(0, held - dt / 3);
+      }
+
+      // Director: read signals, classify phase, produce decisions.
+      const dir = runDirector(next, now);
+      next.director = dir.nextDirectorState;
+
+      // Story pacing: limit how many new beats get enqueued this tick.
+      const eligible = newlyEligibleBeats(next);
+      const allowedBeats = eligible.slice(0, dir.maxNewBeats);
+      if (allowedBeats.length > 0) {
+        next.story = { ...next.story, queue: [...next.story.queue, ...allowedBeats] };
+      }
+
+      // Golden bubble nudge: director may schedule a micro-event.
+      if (dir.nudgeGoldenBubble && next.events.bubbleAt <= now) {
+        next.events = { ...next.events, bubbleAt: now + 5_000, lastMicroAt: now };
+      }
+
+      // Rival engine: sync roster, evaluate, execute telegraphs, expire pressures, coalition.
+      // Apply the director's rival modifier by temporarily boosting passive agg on rivals
+      // that are below the escalation threshold.
+      const rivalResult = tickRivals(next, now);
+      // Post-process: apply the agg modifier to non-terminal rivals.
+      const modifiedRivals = rivalResult.rivals.map((r) => {
+        if (r.posture === 'DEFEATED' || r.posture === 'ALLIED') return r;
+        if (dir.rivalAggModifier === 1) return r;
+        // Scale pending aggression delta relative to modifier.
+        const mod = dir.rivalAggModifier - 1; // how much extra to add (can be negative)
+        const newAgg = Math.max(0, Math.min(100, r.aggression + mod * 3 * dt));
+        return { ...r, aggression: newAgg };
+      });
+      next.rivals = modifiedRivals;
+      next.rivalPressures = rivalResult.rivalPressures;
+      next.coalitionActive = rivalResult.coalitionActive;
+
+      // Companion engine: sync roster, evaluate trust, fire supportive moves.
+      // Apply director companion nudge first so the tick can act on it.
+      if (dir.companionTrustNudge) {
+        next.companions = shiftCompanionTrust(
+          next.companions ?? [],
+          dir.companionTrustNudge.companionId,
+          dir.companionTrustNudge.delta
+        );
+      }
+      const companionResult = tickCompanions(next, now);
+      next.companions = companionResult.companions;
+      next.companionBoosts = companionResult.companionBoosts;
+
+      // Workforce engine: sync roster size, drift morale from ethics/rivals/companions.
+      next.workforce = tickWorkforce(next, dt, now);
+
+      // Aide engine: sync roster, drift loyalty.
+      next.aides = tickAides(next, dt, now);
 
       next.stats = { ...next.stats, playSeconds: next.stats.playSeconds + dt };
       next.lastTick = now;
@@ -441,7 +535,11 @@ export function reducer(state: GameState, action: Action): GameState {
       const seen = state.story.seen.includes(action.id)
         ? state.story.seen
         : [...state.story.seen, action.id];
-      let next: GameState = { ...state, story: { ...state.story, queue, seen } };
+      let next: GameState = {
+        ...state,
+        story: { ...state.story, queue, seen },
+        director: directorBeatSeen(state.director, now),
+      };
       // advance act if all beats of current act are seen
       if (actComplete(next, next.story.act)) {
         next = { ...next, story: { ...next.story, act: next.story.act + 1 } };
@@ -666,6 +764,98 @@ export function reducer(state: GameState, action: Action): GameState {
         ...state,
         settings: { ...state.settings, liveView: !state.settings.liveView },
       };
+
+    // ----- COMPANION_TRUST -----
+    case 'COMPANION_TRUST':
+      return {
+        ...state,
+        companions: shiftCompanionTrust(state.companions ?? [], action.companionId, action.delta),
+      };
+
+    // ----- COMPANION_ACTIVATE -----
+    case 'COMPANION_ACTIVATE': {
+      const companion = (state.companions ?? []).find((c) => c.id === action.companionId);
+      if (!companion || companion.cooldownUntil > now) return state;
+      if (
+        companion.rung !== 'INNER_CIRCLE' &&
+        companion.rung !== 'LEGACY' &&
+        companion.rung !== 'CONFIDANT'
+      ) return state;
+      // Queue a trust gain for initiating the activation.
+      return {
+        ...state,
+        companions: shiftCompanionTrust(state.companions ?? [], action.companionId, 5),
+      };
+    }
+
+    // ----- RIVAL_AGGRESSION -----
+    case 'RIVAL_AGGRESSION':
+      return {
+        ...state,
+        rivals: shiftRivalAggression(state.rivals ?? [], action.rivalId, action.delta),
+      };
+
+    // ----- RIVAL_COUNTER -----
+    case 'RIVAL_COUNTER': {
+      const rival = (state.rivals ?? []).find((r) => r.id === action.rivalId);
+      if (!rival?.telegraph) return state;
+      return {
+        ...state,
+        rivals: counterRivalMove(state.rivals ?? [], action.rivalId),
+      };
+    }
+
+    // ----- RIVAL_OFFENSE -----
+    case 'RIVAL_OFFENSE': {
+      const costs: Record<string, { cash: number; influence: number }> = {
+        leak_story: { cash: 0, influence: 500 },
+        fund_competitor: { cash: 10_000, influence: 0 },
+        undercut: { cash: 5_000, influence: 0 },
+      };
+      const cost = costs[action.offenseKind];
+      if (!cost) return state;
+      if (state.cash < cost.cash || state.influence < cost.influence) return state;
+      return {
+        ...state,
+        cash: state.cash - cost.cash,
+        influence: state.influence - cost.influence,
+        rivals: applyPlayerOffense(state.rivals ?? [], action.rivalId, action.offenseKind),
+      };
+    }
+
+    // ----- WORKER_MORALE -----
+    case 'WORKER_MORALE':
+      return {
+        ...state,
+        workforce: shiftWorkerMorale(state.workforce ?? [], action.workerId, action.delta, now),
+      };
+
+    // ----- AIDE_BRIEF -----
+    case 'AIDE_BRIEF':
+      return {
+        ...state,
+        aides: briefAide(state.aides ?? [], action.aideId, now),
+      };
+
+    // ----- AIDE_DEPLOY -----
+    case 'AIDE_DEPLOY': {
+      const aide = (state.aides ?? []).find((a) => a.id === action.aideId);
+      if (!aide || !canDeploy(aide, now)) return state;
+      const cfg = getAideConfig(action.aideId);
+      if (!cfg) return state;
+      return {
+        ...state,
+        aides: markDeployed(state.aides ?? [], action.aideId, now),
+        events: {
+          ...state.events,
+          boost: {
+            mult: cfg.deployMult,
+            endsAt: now + cfg.deployDurationSec * 1000,
+            source: `${cfg.name} — ${cfg.deployLabel}`,
+          },
+        },
+      };
+    }
 
     // ----- LOAD / IMPORT -----
     case 'LOAD':

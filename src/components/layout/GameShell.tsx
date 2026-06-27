@@ -13,6 +13,7 @@
 import type { ReactNode } from 'react';
 import TopBar, { type OverlayId } from './TopBar';
 import BottomNav, { type TabId } from './BottomNav';
+import RivalAlert from '../shared/RivalAlert';
 
 export interface GameShellProps {
   /** Currently selected bottom-nav tab (for highlight + scroll reset). */
@@ -35,8 +36,13 @@ export default function GameShell({
     <div className="relative mx-auto min-h-screen max-w-[480px] bg-[#070b12]">
       <TopBar onOpenOverlay={onOpenOverlay} />
 
-      {/* Scrollable content. pt clears the (3-row) TopBar, pb-24 clears the nav.
-          Re-keyed per tab so each screen fades/slides in fresh. */}
+      {/* Rival telegraphs — always visible, above scroll content. */}
+      <div className="fixed left-1/2 top-[148px] z-40 w-full max-w-[480px] -translate-x-1/2">
+        <RivalAlert />
+      </div>
+
+      {/* Scrollable content. pt clears the (3-row) TopBar + any rival banners,
+          pb-24 clears the nav. Re-keyed per tab so each screen fades/slides in fresh. */}
       <main
         key={activeTab}
         className="no-scrollbar animate-fade-in min-h-screen px-3 pt-[148px] pb-24"

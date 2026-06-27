@@ -7,6 +7,10 @@ import { INDUSTRIES } from '../data/industries';
 import { RESEARCH_NODES } from '../data/research';
 import { getAdvisor } from '../data/advisors';
 import { getMarketingMult } from './MarketingSystem';
+import { getRivalPressureMults } from './RivalEngine';
+import { getCompanionBoostMult } from './CompanionEngine';
+import { getWorkforceMult } from './WorkforceEngine';
+import { getAidePassiveMult } from './AideEngine';
 import type {
   FacilityConfig,
   GameState,
@@ -61,6 +65,52 @@ export interface Multipliers {
   advisor: number;
   market: number;
   marketing: number;
+  // Reputation axis factors (Session 3.1).
+  reputationProd: number;
+  reputationCost: number;
+  // Rival pressure factors (Session 3.2). Values < 1 indicate active attacks.
+  rivalPrice: number;
+  rivalProduction: number;
+  // Companion boost factor (Session 3.4). Values > 1 when companions are helping.
+  companionProd: number;
+  // Workforce morale factor (Session 4.1). 0.65–1.40 based on average morale.
+  workforceMorale: number;
+  // Aide cabinet passive factor (Session 4.2). Bonus from loyal aides.
+  aideProd: number;
+}
+
+/**
+ * Reputation multipliers derived from the ethics axis and the compounding
+ * visionary timer. Called inside getMultipliers; exported for UI display.
+ *
+ * - Ruthless (ethics < -20): higher immediate output, lower facility cost.
+ * - Pragmatic (±20): no bonus, maximum flexibility.
+ * - Visionary (ethics > +20): compounding loyalty bonus that grows the longer
+ *   the player holds the visionary path.
+ */
+export function reputationMultipliers(
+  ethics: number,
+  reputationHeldSec: number
+): { prod: number; cost: number } {
+  const rep = clamp(ethics, -100, 100);
+
+  if (rep < -20) {
+    const depth = -rep; // 1–100
+    return {
+      prod: 1 + 0.003 * depth, // up to 1.3× at -100
+      cost: 1 - 0.002 * depth, // down to 0.8× at -100
+    };
+  }
+
+  if (rep > 20) {
+    const depth = rep; // 21–100
+    const base = 1 + 0.002 * depth; // 1.04–1.2×
+    // Compound grows over time, capped at 5 minutes of sustained visionary play.
+    const compound = 1 + 0.001 * Math.min(reputationHeldSec, 300); // up to 1.3×
+    return { prod: base * compound, cost: 1 };
+  }
+
+  return { prod: 1, cost: 1 }; // pragmatic
 }
 
 function researchProduct(
@@ -152,7 +202,6 @@ export function getMultipliers(state: GameState): Multipliers {
       ? state.events.boost.mult
       : 1;
   const researchProd = researchProduct(state, 'production', 1);
-  const cost = researchCostMul(state);
   const researchInsight = researchProduct(state, 'insight', 1);
   const philosophyProd = state.setup?.philosophy === 'efficiency' ? 1.15 : 1;
   const advisorProd = advisorProduction(state);
@@ -160,8 +209,25 @@ export function getMultipliers(state: GameState): Multipliers {
   const advisorMarket = advisorScalar(state, 'market');
   const marketing = getMarketingMult(state);
 
+  const repMult = reputationMultipliers(
+    state.story?.ethics ?? 0,
+    state.reputationHeldSec ?? 0
+  );
+
+  const now = Date.now();
+  const rivalMult = getRivalPressureMults(state.rivalPressures ?? [], now);
+  const companionMult = getCompanionBoostMult(
+    state.companions ?? [],
+    now,
+    state.companionBoosts ?? []
+  );
+  const workforceMult = getWorkforceMult(state.workforce ?? []);
+  const aideProd = getAidePassiveMult(state.aides ?? []);
+
   const production =
-    philosophyProd * prestige * researchProd * event * advisorProd * marketing;
+    philosophyProd * prestige * researchProd * event * advisorProd * marketing *
+    repMult.prod * rivalMult.production * companionMult * workforceMult * aideProd;
+  const cost = researchCostMul(state) * repMult.cost;
   const insight = researchInsight * advisorInsight;
 
   return {
@@ -171,8 +237,15 @@ export function getMultipliers(state: GameState): Multipliers {
     prestige,
     event,
     advisor: advisorProd,
-    market: advisorMarket,
-    marketing,
+    market: advisorMarket * rivalMult.price,
+    marketing: marketing * rivalMult.brand,
+    reputationProd: repMult.prod,
+    reputationCost: repMult.cost,
+    rivalPrice: rivalMult.price,
+    rivalProduction: rivalMult.production,
+    companionProd: companionMult,
+    workforceMorale: workforceMult,
+    aideProd,
   };
 }
 
