@@ -19,6 +19,7 @@ import { formatMoney, formatNumber } from '../../utils/bigNumber';
 import { formatDuration } from '../../utils/time';
 import { ECHELON_LABELS } from '../../systems/EchelonEngine';
 import { sfx } from '../../systems/AudioEngine';
+import { getRivalConfig } from '../../data/rivals';
 import type { GameState } from '../../game/types';
 
 const ERA_LABEL: Record<string, string> = {
@@ -49,14 +50,40 @@ interface CardModel {
   era: string;
   tenure: string;
   philosophy: string;
+  caption: string;
   stats: { label: string; value: string }[];
+}
+
+function generateCaption(state: GameState): string {
+  const industry = getIndustry(state);
+  const le = state.lifetimeEarnings;
+  const rebirths = state.prestigeCount;
+  const reach = state.marketing?.reach ?? 0;
+  const rivals = state.rivals ?? [];
+  const allies = rivals.filter(r => r.relationship > 50);
+  const nemesis = rivals.reduce(
+    (worst, r) => (r.relationship < (worst?.relationship ?? 0) ? r : worst),
+    null as (typeof rivals)[0] | null
+  );
+
+  if (rebirths >= 5) return `${rebirths} rebirths. Every fall made us sharper.`;
+  if (le >= 1e12) return `Trillion-dollar empire. We built the impossible.`;
+  if (le >= 1e9) return `From nothing to a billion. This is the empire.`;
+  if (nemesis && nemesis.relationship < -60) {
+    const cfg = getRivalConfig(nemesis.id);
+    return cfg ? `${cfg.name} tried to stop us. The empire grows anyway.` : 'They tried to stop us. The empire grows anyway.';
+  }
+  if (allies.length >= 2) return `Built on alliances, built to last.`;
+  if (reach >= 1_000_000) return `A million reached. This is what reach looks like.`;
+  if (reach >= 100_000) return `100k reached. The flywheel is spinning.`;
+  return `The ${industry?.name ?? ''} empire is just getting started.`;
 }
 
 function buildModel(state: GameState): CardModel {
   const industry = getIndustry(state);
   const facilities = Object.values(state.facilities).reduce((s, n) => s + n, 0);
   const advisors = Object.keys(state.advisors.owned).length;
-  const research = state.research.completed.length;
+  const reach = state.marketing?.reach ?? 0;
   const tenureSec =
     state.setup?.foundedAt && state.setup.foundedAt > 0
       ? (Date.now() - state.setup.foundedAt) / 1000
@@ -72,11 +99,12 @@ function buildModel(state: GameState): CardModel {
     era: ERA_LABEL[state.director?.currentPhase ?? 'BOOTSTRAPPING'] ?? 'Bootstrapping',
     tenure: formatDuration(tenureSec),
     philosophy: PHILOSOPHY_LABEL[state.setup?.philosophy ?? 'efficiency'] ?? '',
+    caption: generateCaption(state),
     stats: [
       { label: 'Facilities', value: formatNumber(facilities) },
-      { label: 'Advisors', value: String(advisors) },
-      { label: 'Portfolio', value: formatMoney(state.investments?.wealthPortfolio ?? 0, '') },
-      { label: 'Rebirths', value: String(state.prestigeCount) },
+      { label: 'Advisors',   value: String(advisors) },
+      { label: 'Reach',      value: reach >= 1000 ? formatNumber(reach) : String(reach) },
+      { label: 'Rebirths',   value: String(state.prestigeCount) },
     ],
   };
 }
@@ -171,8 +199,12 @@ function CardSvg({
       <text x="164" y="150" fontFamily={font} fontSize="34" fontWeight="800" fill="#f2f5fb">
         {clip(m.company, 16)}
       </text>
-      <text x="166" y="184" fontFamily={font} fontSize="17" fill={pal.glow} fontWeight="600">
+      <text x="166" y="178" fontFamily={font} fontSize="15" fill={pal.glow} fontWeight="600">
         {m.philosophy}
+      </text>
+      {/* Dynamic caption line */}
+      <text x="166" y="200" fontFamily={font} fontSize="12" fill="#8a94a8" fontStyle="italic">
+        {clip(m.caption, 52)}
       </text>
 
       {/* Net worth hero */}
@@ -355,7 +387,7 @@ export default function ShareCardModal({ onClose }: { onClose: () => void }) {
         await nav.share({
           files: [file],
           title: 'My Empire',
-          text: `${model.company}  -  ${model.symbol}${model.netWorth} lifetime, ${model.tier}. Built in Empire Engine.`,
+          text: `${model.company}  -  ${model.symbol}${model.netWorth} lifetime, ${model.tier}. ${model.caption} Built in Empire Engine.`,
         });
         sfx.play('sell');
       } catch {

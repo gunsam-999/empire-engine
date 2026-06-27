@@ -17,9 +17,11 @@ export interface GuidanceBeat {
       | 'tier'
       | 'idle'
       | 'firstBuy'
-      | 'campaign';
+      | 'campaign'
+      | 'ui';         // fired explicitly by UI screens on first visit
     value?: number;
     channel?: string;
+    uiKey?: string;
   };
   emotion: 'hype' | 'proud' | 'calm' | 'urgent' | 'tip';
   lines: string[];
@@ -173,6 +175,50 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     emotion: 'proud',
     lines: ['Our brand has real weight now  -  people trust the name before they try the product.'],
     tip: 'A strong brand multiplies every channel. Protect it.',
+  },
+
+  // ---- UI first-visit mentor beats (queued by useFirstVisit hook) ----
+  {
+    id: 'hint-research-first',
+    trigger: { type: 'ui', uiKey: 'research_tab' },
+    emotion: 'calm',
+    lines: ["Research is how we build advantages the market can't copy."],
+    tip: "Pick your branch early — some nodes compound for the entire run.",
+  },
+  {
+    id: 'hint-market-first',
+    trigger: { type: 'ui', uiKey: 'market_tab' },
+    emotion: 'tip',
+    lines: ["The market moves in waves. Stockpile when it dips. Sell when it peaks."],
+    tip: 'Trends compound. Riding a wave can double your returns.',
+  },
+  {
+    id: 'hint-intel-first',
+    trigger: { type: 'ui', uiKey: 'intel_tab' },
+    emotion: 'calm',
+    lines: ["Intelligence is leverage. The more we know, the fewer surprises land."],
+    tip: 'The War Room shows rival telegraphs before they strike — act first.',
+  },
+  {
+    id: 'hint-prestige-first',
+    trigger: { type: 'ui', uiKey: 'prestige_tab' },
+    emotion: 'urgent',
+    lines: ["Rebirth means losing progress but keeping wisdom. It's the long game."],
+    tip: 'Legacy Points carry over. Each prestige compounds the next run.',
+  },
+  {
+    id: 'hint-rival-appeared',
+    trigger: { type: 'ui', uiKey: 'rival_appeared' },
+    emotion: 'urgent',
+    lines: ["Our first real rival. Means we're big enough to threaten someone."],
+    tip: 'Watch their posture — HOSTILE escalates quickly if you ignore it.',
+  },
+  {
+    id: 'hint-invest-first',
+    trigger: { type: 'ui', uiKey: 'invest_tab' },
+    emotion: 'tip',
+    lines: ["The portfolio is where idle cash becomes compounding wealth."],
+    tip: 'Diversify early — The Wiz signals when to rotate positions.',
   },
 ];
 

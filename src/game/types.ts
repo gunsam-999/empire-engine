@@ -866,6 +866,7 @@ export type Action =
   | { type: 'CHARACTER_CUSTOMIZE'; payload: Partial<CofounderState> }
   | { type: 'GUIDANCE_SEEN'; id: string }
   | { type: 'GUIDANCE_DISMISS'; id: string }
+  | { type: 'GUIDANCE_QUEUE'; id: string }
   | { type: 'TOGGLE_LIVE_VIEW' }
   | { type: 'COMPANION_TRUST'; companionId: string; delta: number }
   | { type: 'COMPANION_ACTIVATE'; companionId: string }

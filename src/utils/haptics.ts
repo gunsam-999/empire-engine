@@ -5,13 +5,17 @@
 // nothing (silently) everywhere else. Callers pass a semantic intensity; the
 // module owns the actual millisecond patterns so they stay consistent.
 
-export type HapticKind = 'tap' | 'buy' | 'success' | 'heavy';
+export type HapticKind = 'tap' | 'buy' | 'success' | 'heavy' | 'dollar' | 'hire' | 'construct' | 'rival';
 
 const PATTERNS: Record<HapticKind, number | number[]> = {
-  tap: 8,
-  buy: 12,
-  success: [10, 40, 18],
-  heavy: [16, 30, 16, 30, 28],
+  tap:       8,
+  buy:       12,
+  success:   [10, 40, 18],
+  heavy:     [16, 30, 16, 30, 28],
+  dollar:    [4, 30, 8],              // quiet double-tap — first earnings (small, understated)
+  hire:      [6, 22, 6, 22, 18],     // heartbeat pair — welcoming a person
+  construct: [10, 14, 14, 14, 22],   // rising build cadence — each pulse stronger
+  rival:     [6, 110, 50],           // warning blip, dramatic pause, heavy thud
 };
 
 let enabled = true;

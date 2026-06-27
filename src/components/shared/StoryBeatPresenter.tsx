@@ -8,6 +8,7 @@
 // they are recognisable across all beats without requiring external assets.
 // ============================================================================
 
+import { useCallback } from 'react';
 import type { AvatarConfig } from '../../game/types';
 import type { Speaker, StoryBeat } from '../../game/types';
 import { useGame } from '../../game/GameContext';
@@ -92,15 +93,15 @@ export default function StoryBeatPresenter({ beat, onClose }: StoryBeatPresenter
   const { dispatch } = useGame();
   const meta = SPEAKER_META[beat.speaker] ?? SPEAKER_META.narrator;
 
-  function handleComplete() {
+  const handleComplete = useCallback(() => {
     dispatch({ type: 'STORY_SEEN', id: beat.id });
     onClose();
-  }
+  }, [dispatch, beat.id, onClose]);
 
-  function handleChoice(choiceId: string) {
+  const handleChoice = useCallback((choiceId: string) => {
     dispatch({ type: 'STORY_CHOICE', beatId: beat.id, optionIndex: Number(choiceId) });
     onClose();
-  }
+  }, [dispatch, beat.id, onClose]);
 
   const choices = beat.choice?.options.map((opt, i) => ({
     id: String(i),

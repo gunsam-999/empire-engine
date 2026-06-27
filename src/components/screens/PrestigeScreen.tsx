@@ -9,6 +9,7 @@
 // ============================================================================
 
 import { useEffect, useState } from 'react';
+import { useFirstVisit } from '../../hooks/useFirstVisit';
 
 import { useGame, getIndustry, potentialLP } from '../../game/GameContext';
 import { PRESTIGE_TIERS } from '../../data/prestige';
@@ -337,6 +338,7 @@ function LockedTierCard({ index }: { index: 1 | 2 }) {
 // ---- Screen -----------------------------------------------------------------
 
 export default function PrestigeScreen() {
+  useFirstVisit('hint-prestige-first');
   const { state } = useGame();
 
   return (

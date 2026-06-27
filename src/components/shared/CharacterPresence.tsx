@@ -57,6 +57,10 @@ export interface CharacterPresenceConfig {
   onChoice?: (choiceId: string) => void;
 }
 
+// Stable empty object for the emotes default — avoids a new {} reference each
+// render which would cause useTextReveal's effect to reset on every tick.
+const EMPTY_EMOTES: Record<number, EmoteKind> = {};
+
 // ---- Emote bubble glyphs & colors -------------------------------------------
 const EMOTE_GLYPH: Record<EmoteKind['kind'], string> = {
   anger:    '💢',
@@ -78,13 +82,16 @@ function useTextReveal(
   const [isDone, setIsDone]       = useState(false);
   const intervalRef               = useRef<ReturnType<typeof setInterval> | null>(null);
   const indexRef                  = useRef(0);
+  // Keep a ref to onComplete so changing it never restarts the reveal interval.
+  const onCompleteRef             = useRef(onComplete);
+  useEffect(() => { onCompleteRef.current = onComplete; });
 
   const skip = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     setDisplayed(text);
     setIsDone(true);
-    onComplete?.();
-  }, [text, onComplete]);
+    onCompleteRef.current?.();
+  }, [text]);
 
   useEffect(() => {
     setDisplayed('');
@@ -100,14 +107,14 @@ function useTextReveal(
       if (indexRef.current >= text.length) {
         if (intervalRef.current) clearInterval(intervalRef.current);
         setIsDone(true);
-        onComplete?.();
+        onCompleteRef.current?.();
       }
     }, msPerChar);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [text, revealRate, onComplete]);
+  }, [text, revealRate]); // onComplete intentionally excluded — tracked via ref
 
   return { displayed, isDone, skip };
 }
@@ -177,7 +184,7 @@ export default function CharacterPresence({
   role,
   side,
   lines,
-  emotes = {},
+  emotes = EMPTY_EMOTES,
   choices,
   revealRate = 40,
   onComplete,

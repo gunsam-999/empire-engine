@@ -1283,6 +1283,17 @@ export function reducer(state: GameState, action: Action): GameState {
       };
     }
 
+    // ----- GUIDANCE_QUEUE -----
+    case 'GUIDANCE_QUEUE': {
+      const g = state.guidance;
+      if (
+        g.seen.includes(action.id) ||
+        g.queue.includes(action.id) ||
+        g.dismissed.includes(action.id)
+      ) return state;
+      return { ...state, guidance: { ...g, queue: [...g.queue, action.id] } };
+    }
+
     // ----- TOGGLE_LIVE_VIEW -----
     case 'TOGGLE_LIVE_VIEW':
       return {

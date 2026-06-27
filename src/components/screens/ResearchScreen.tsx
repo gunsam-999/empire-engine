@@ -7,6 +7,7 @@
 // ============================================================================
 
 import { useEffect, useMemo, useState } from 'react';
+import { useFirstVisit } from '../../hooks/useFirstVisit';
 
 import {
   useGame,
@@ -236,6 +237,7 @@ function ResearchCard({
 // ---- Screen -----------------------------------------------------------------
 
 export default function ResearchScreen() {
+  useFirstVisit('hint-research-first');
   const { state } = useGame();
   const now = useNow(120);
   const [branch, setBranch] = useState<ResearchBranch>('production');

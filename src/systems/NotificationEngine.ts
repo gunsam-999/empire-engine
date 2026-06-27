@@ -13,6 +13,9 @@ import type {
 } from '../game/types';
 import { toast } from '../components/shared/ToastNotification';
 import { ECHELON_LABELS } from './EchelonEngine';
+import { getRivalConfig } from '../data/rivals';
+import { getCompanionConfig } from '../data/companions';
+import { getPantheonConfig } from '../data/pantheon';
 
 export function defaultNotificationState(): NotificationState {
   return { items: [], lastSeenAt: 0 };
@@ -66,15 +69,24 @@ export function detectNotifications(
       r.telegraph &&
       (!prevR?.telegraph || prevR.telegraph.moveId !== r.telegraph.moveId)
     ) {
+      const rivalName = getRivalConfig(r.id)?.name ?? 'A rival';
       const msg = r.telegraph.message;
-      ns = push(ns, 'urgent', '⚔️', 'Rival Strike Incoming', msg, now);
-      toast.bad(msg, { icon: '⚔️', durationMs: 4_000 });
+      ns = push(ns, 'urgent', '⚔️', `${rivalName}: Strike Incoming`, msg, now);
+      toast.bad(`${rivalName}: ${msg}`, { icon: '⚔️', durationMs: 4_000 });
     }
   }
 
   // 2. Coalition activated
   if (next.coalitionActive && !prev.coalitionActive) {
-    const body = 'Your rivals have united against you. Expect heightened aggression on all fronts.';
+    const coalitionNames = (next.rivals ?? [])
+      .filter(r => (r as { posture?: string }).posture === 'WAR' || (r as { posture?: string }).posture === 'HOSTILE')
+      .map(r => getRivalConfig(r.id)?.name)
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(', ');
+    const body = coalitionNames
+      ? `${coalitionNames} — and others — have united against you. Expect a coordinated assault.`
+      : 'Your rivals have united against you. Expect heightened aggression on all fronts.';
     ns = push(ns, 'urgent', '⚠️', 'Coalition Formed', body, now);
     toast.bad('Coalition formed  -  rivals are coordinating against you.', {
       icon: '⚠️',
@@ -85,7 +97,8 @@ export function detectNotifications(
   // 3. Echelon tier advanced
   if (next.echelon?.tier && next.echelon.tier !== prev.echelon?.tier) {
     const label = ECHELON_LABELS[next.echelon.tier] ?? next.echelon.tier;
-    const body = `You've reached the ${label} echelon. The competitive landscape is shifting.`;
+    const prevLabel = ECHELON_LABELS[prev.echelon?.tier ?? ''] ?? 'lower';
+    const body = `You've ascended from ${prevLabel} to ${label}. The competitive landscape is shifting — new rivals take notice.`;
     ns = push(ns, 'success', '🏆', `Echelon: ${label}`, body, now);
     toast.good(`Echelon advanced  -  ${label}!`, { icon: '🏆', durationMs: 3_500 });
   }
@@ -103,9 +116,10 @@ export function detectNotifications(
     for (const cl of next.premise.clauses) {
       const prevCl = prev.premise.clauses.find((p) => p.id === cl.id);
       if (cl.status === 'breached' && prevCl?.status === 'fulfilled') {
-        const body = `Inheritance clause "${cl.id}" has been violated. Your reward is suspended.`;
+        const clauseName = cl.id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        const body = `The "${clauseName}" clause has been violated. The Old Master's reward is suspended until you restore it.`;
         ns = push(ns, 'urgent', '📜', 'Clause Breached', body, now);
-        toast.warn("Old Master's clause breached  -  reward suspended.", {
+        toast.warn(`"${clauseName}" clause breached  -  reward suspended.`, {
           icon: '📜',
           durationMs: 4_000,
         });
@@ -133,7 +147,12 @@ export function detectNotifications(
   const prevConf = prev.publicAffairs?.confidence ?? 50;
   const nextConf = next.publicAffairs?.confidence ?? 50;
   if (nextConf < 20 && prevConf >= 20) {
-    const body = 'Public confidence has reached crisis levels. Issue a statement before your production suffers.';
+    // Check if Intel Desk has a vendetta that could explain the PR crisis
+    const knownAgitator = (next.intel?.vendettas ?? [])[0];
+    const agitatorName = knownAgitator ? getRivalConfig(knownAgitator.rivalId)?.name : undefined;
+    const body = agitatorName
+      ? `Public confidence at crisis level. Intel links this to ${agitatorName}'s recent campaign against you. Issue a statement now.`
+      : 'Public confidence has reached crisis levels. Issue a statement before your production suffers.';
     ns = push(ns, 'urgent', '📢', 'Confidence Crisis', body, now);
     toast.bad('Public confidence critical  -  issue a statement.', {
       icon: '📢',
@@ -145,9 +164,10 @@ export function detectNotifications(
   for (const t of next.pantheon?.titans ?? []) {
     const prevT = (prev.pantheon?.titans ?? []).find((p) => p.id === t.id);
     if (t.hasNoticedPlayer && !prevT?.hasNoticedPlayer) {
-      const body = `A Pantheon titan has taken notice of your empire. Check The Ledger and the Pantheon standings.`;
-      ns = push(ns, 'success', '🌐', 'Pantheon Noticed You', body, now);
-      toast.good('A Pantheon titan is watching you.', { icon: '🌐', durationMs: 4_000 });
+      const titanName = getPantheonConfig(t.id)?.name ?? 'A Pantheon titan';
+      const body = `${titanName} has taken notice of your empire. A Pantheon titan is watching — check the Pantheon standings.`;
+      ns = push(ns, 'success', '🌐', `${titanName} Noticed You`, body, now);
+      toast.good(`${titanName} is watching your empire.`, { icon: '🌐', durationMs: 4_000 });
     }
   }
 
@@ -156,9 +176,10 @@ export function detectNotifications(
   const nextLE = next.lifetimeEarnings ?? 0;
   for (const t of next.pantheon?.titans ?? []) {
     if (nextLE >= t.estimatedValuation && prevLE < t.estimatedValuation) {
-      const body = `Your empire has surpassed a Pantheon titan in estimated valuation. The world is watching.`;
-      ns = push(ns, 'success', '👑', 'Titan Surpassed!', body, now);
-      toast.good('You have surpassed a Pantheon titan!', { icon: '👑', durationMs: 5_000 });
+      const titanName = getPantheonConfig(t.id)?.name ?? 'A Pantheon titan';
+      const body = `Your empire has surpassed ${titanName} in estimated valuation. The Pantheon cannot ignore you now.`;
+      ns = push(ns, 'success', '👑', `Surpassed ${titanName}!`, body, now);
+      toast.good(`You have surpassed ${titanName}!`, { icon: '👑', durationMs: 5_000 });
     }
   }
 
@@ -166,9 +187,31 @@ export function detectNotifications(
   for (const v of next.intel?.vendettas ?? []) {
     const prevV = (prev.intel?.vendettas ?? []).find((pv) => pv.rivalId === v.rivalId);
     if (!prevV) {
-      const body = `A rival has declared a personal vendetta. Their attacks will intensify. Check the War Room.`;
-      ns = push(ns, 'urgent', '🔥', 'Vendetta Declared', body, now);
-      toast.bad('Vendetta declared  -  this just got personal.', { icon: '🔥', durationMs: 4_500 });
+      const rivalName = getRivalConfig(v.rivalId)?.name ?? 'A rival';
+      const body = `${rivalName} has declared a personal vendetta against you. Their attacks will intensify and target your weakest fronts. Check the War Room.`;
+      ns = push(ns, 'urgent', '🔥', `${rivalName}: Vendetta`, body, now);
+      toast.bad(`${rivalName} declared vendetta  -  this just got personal.`, { icon: '🔥', durationMs: 4_500 });
+    }
+  }
+
+  // 12. Companion trust milestone (25 / 50 / 75 / 100).
+  const TRUST_MILESTONES = [25, 50, 75, 100];
+  for (const comp of next.companions ?? []) {
+    const prevComp = (prev.companions ?? []).find(c => c.id === comp.id);
+    if (!prevComp) continue;
+    for (const milestone of TRUST_MILESTONES) {
+      if (comp.trust >= milestone && prevComp.trust < milestone) {
+        const cfg = getCompanionConfig(comp.id);
+        const cName = cfg?.name ?? 'Your companion';
+        const milestoneLabel =
+          milestone <= 25 ? 'opened up to you' :
+          milestone <= 50 ? 'trusts you as a partner' :
+          milestone <= 75 ? 'considers this a real alliance' :
+          'is fully committed  -  their loyalty is absolute';
+        const body = `${cName} ${milestoneLabel}. Their strongest abilities are now available to you.`;
+        ns = push(ns, 'success', '🤝', `${cName}: Trust Milestone`, body, now);
+        toast.good(`${cName} trust milestone reached.`, { icon: '🤝', durationMs: 3_500 });
+      }
     }
   }
 

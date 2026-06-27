@@ -5,6 +5,7 @@
 // ============================================================================
 
 import { useEffect, useState } from 'react';
+import { useFirstVisit } from '../../hooks/useFirstVisit';
 
 import {
   useGame,
@@ -96,6 +97,7 @@ function Sparkline({
 // ---- Screen -----------------------------------------------------------------
 
 export default function MarketScreen() {
+  useFirstVisit('hint-market-first');
   const { state, dispatch } = useGame();
 
   // Re-render on a light interval so the live numbers feel alive between ticks.

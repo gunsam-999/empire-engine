@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useFirstVisit } from '../../hooks/useFirstVisit';
 
 import {
   useGame,
@@ -362,6 +363,7 @@ function CommodityPanel() {
 // ---- Main screen ------------------------------------------------------------
 
 export default function InvestmentScreen() {
+  useFirstVisit('hint-invest-first');
   const { state, dispatch } = useGame();
   const [, force] = useState(0);
   const [showWizModal, setShowWizModal] = useState(false);

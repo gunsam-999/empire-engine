@@ -23,6 +23,7 @@ import type { CompanySetup, GameMode, IndustryType, Philosophy } from '../../gam
 import Card from '../shared/Card';
 import CofounderCustomizer from './CofounderCustomizer';
 import OldMasterOriginModal from './OldMasterOriginModal';
+import FoundingRitualModal from './FoundingRitualModal';
 import { getOldMaster } from '../../data/oldMasters';
 import { sfx } from '../../systems/AudioEngine';
 import { haptic } from '../../utils/haptics';
@@ -399,6 +400,7 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
   const [philosophy, setPhilosophy] = useState<Philosophy | null>(null);
   const [accentTouched, setAccentTouched] = useState(false);
   const [accent, setAccent] = useState<string>(ACCENT_SWATCHES[0]);
+  const [pendingSetup, setPendingSetup] = useState<CompanySetup | null>(null);
 
   const selectedIndustry = useMemo(
     () => INDUSTRY_LIST.find((i) => i.id === industry) ?? null,
@@ -444,13 +446,6 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
     if (!ready || !industry || !philosophy) return;
     sfx.play('milestone');
     haptic('heavy');
-    celebrate({
-      kind: 'milestone',
-      icon: '🏛️',
-      title: trimmedName,
-      subtitle: 'Your empire begins. Build something legendary.',
-      color: accent,
-    });
     const setup: CompanySetup = {
       name: trimmedName,
       industry,
@@ -460,16 +455,41 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
       gameMode,
       chosenAideId,
     };
+    setPendingSetup(setup);
+  }
+
+  function completeSetup() {
+    if (!pendingSetup) return;
     const customized = state.cofounder;
-    dispatch({ type: 'SETUP', payload: setup });
+    dispatch({ type: 'SETUP', payload: pendingSetup });
     dispatch({
       type: 'CHARACTER_CUSTOMIZE',
       payload: {
         name: customized.name,
         role: customized.role,
-        avatar: { ...customized.avatar, accent },
+        avatar: { ...customized.avatar, accent: pendingSetup.accent },
       },
     });
+    celebrate({
+      kind: 'milestone',
+      icon: '🏛️',
+      title: pendingSetup.name,
+      subtitle: 'Your empire begins. Build something legendary.',
+      color: pendingSetup.accent,
+    });
+  }
+
+  // Founding ritual modal
+  if (pendingSetup && industry) {
+    return (
+      <FoundingRitualModal
+        companyName={pendingSetup.name}
+        industry={industry}
+        accent={accent}
+        cofounder={state.cofounder}
+        onComplete={completeSetup}
+      />
+    );
   }
 
   // Show Old Master origin modal
