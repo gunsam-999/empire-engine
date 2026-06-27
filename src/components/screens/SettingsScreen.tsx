@@ -10,6 +10,7 @@ import { ADVISORS } from '../../data/advisors';
 import { MILESTONES } from '../../data/milestones';
 import { exportSave, importSave, saveGame } from '../../game/SaveSystem';
 import { sfx } from '../../systems/AudioEngine';
+import { music } from '../../systems/MusicEngine';
 import { formatMoney } from '../../utils/bigNumber';
 import { formatDuration } from '../../utils/time';
 import CofounderCustomizer from './CofounderCustomizer';
@@ -194,6 +195,23 @@ export default function SettingsScreen() {
                   sfx.play('toggle');
                 }
                 dispatch({ type: 'SET_SETTINGS', payload: { sound: next } });
+              }}
+            />
+          </div>
+
+          {/* Music */}
+          <div className="flex items-center justify-between gap-3 p-3.5">
+            <div>
+              <div className="text-sm font-medium text-[#e7ecf5]">Music</div>
+              <div className="text-xs text-[#8a94a8]">Adaptive procedural soundtrack.</div>
+            </div>
+            <Toggle
+              on={state.settings.music !== false}
+              onChange={() => {
+                const next = !(state.settings.music !== false);
+                if (state.settings.sound) sfx.play('toggle');
+                music.setEnabled(next);
+                dispatch({ type: 'SET_SETTINGS', payload: { music: next } });
               }}
             />
           </div>

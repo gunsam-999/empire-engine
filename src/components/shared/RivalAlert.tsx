@@ -4,9 +4,12 @@
 // time remains, and a counter button if one is available.
 // ============================================================================
 
+import { useEffect, useRef } from 'react';
 import { useGame } from '../../game/GameContext';
 import { getRivalConfig } from '../../data/rivals';
 import { getIntelVerdict } from '../../systems/IntelEngine';
+import { sfx } from '../../systems/AudioEngine';
+import { music } from '../../systems/MusicEngine';
 import type { IntelState, RivalTelegraph } from '../../game/types';
 
 interface AlertProps {
@@ -96,6 +99,18 @@ export default function RivalAlert() {
     .map((r) => ({ telegraph: r.telegraph!, isFeint: r.telegraphIsFeint }));
 
   const showCoalition = state.coalitionActive;
+
+  // Fire alert SFX + threat sting whenever a new telegraph key appears.
+  const seenKeys = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const current = new Set(activeTelegraphs.map(({ telegraph: t }) => `${t.rivalId}-${t.moveId}`));
+    const hasNew = [...current].some((k) => !seenKeys.current.has(k));
+    if (hasNew) {
+      sfx.play('rivalAlert');
+      music.sting('threat');
+    }
+    seenKeys.current = current;
+  }, [activeTelegraphs]);
 
   if (activeTelegraphs.length === 0 && !showCoalition) return null;
 

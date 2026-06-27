@@ -121,7 +121,7 @@ export function freshInitialState(now: number = Date.now()): GameState {
     marketing: defaultMarketing(),
     cofounder: { ...DEFAULT_COFOUNDER, avatar: { ...DEFAULT_COFOUNDER.avatar } },
     guidance: { seen: [], queue: [], dismissed: [], lastShownAt: 0 },
-    settings: { sound: true, buyQty: 1, liveView: false, reduceMotion: false, haptics: true },
+    settings: { sound: true, music: true, buyQty: 1, liveView: false, reduceMotion: false, haptics: true },
     stats: { clicks: 0, playSeconds: 0, prestiges: 0, created: 0 },
     reputationHeldSec: 0,
     director: defaultDirectorState(now),
@@ -189,6 +189,7 @@ export function migrateSave(raw: GameState): GameState {
 
   const settings = {
     sound: s.settings?.sound ?? true,
+    music: s.settings?.music ?? true,
     buyQty: s.settings?.buyQty ?? 1,
     liveView: s.settings?.liveView ?? false,
     reduceMotion: s.settings?.reduceMotion ?? false,

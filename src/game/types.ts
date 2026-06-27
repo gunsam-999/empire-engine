@@ -250,6 +250,8 @@ export interface GameState {
   guidance: GuidanceState;
   settings: {
     sound: boolean;
+    /** Adaptive procedural music engine. */
+    music: boolean;
     buyQty: 1 | 10 | 100 | 'max';
     liveView: boolean;
     /** Quieten ambient motion, FX particles, and celebration bursts. */

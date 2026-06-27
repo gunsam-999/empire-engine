@@ -46,6 +46,7 @@ import NotificationDrawer from './components/shared/NotificationDrawer';
 import { sfx } from './systems/AudioEngine';
 import { setHapticsEnabled } from './utils/haptics';
 import { useCelebrations } from './hooks/useCelebrations';
+import { useMusicEngine } from './hooks/useMusicEngine';
 
 import { MICRO_EVENTS, type GameEvent } from './data/events';
 import { pick } from './utils/random';
@@ -171,6 +172,9 @@ function Game() {
 
   // Watch for milestone / echelon / era / prestige moments and celebrate them.
   useCelebrations();
+
+  // Adaptive procedural music — starts on first gesture, tracks era/threat.
+  useMusicEngine();
 
   // ---- Guidance (co-founder coaching) driver -------------------------------
   // The reducer queues eligible beat ids into state.guidance.queue (min-interval

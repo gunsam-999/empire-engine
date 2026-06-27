@@ -17,6 +17,7 @@ import { useEffect, useRef } from 'react';
 import { useGame } from '../game/GameContext';
 import { celebrate } from '../components/shared/CelebrationHost';
 import { sfx } from '../systems/AudioEngine';
+import { music } from '../systems/MusicEngine';
 import { MILESTONES } from '../data/milestones';
 import { ECHELON_LABELS } from '../systems/EchelonEngine';
 import type { EchelonTier } from '../game/types';
@@ -81,6 +82,7 @@ export function useCelebrations(): void {
       if (m) {
         celebrate({ kind: 'milestone', icon: m.icon, title: m.name, subtitle: m.desc });
         sfx.play('milestone');
+        music.sting('milestone');
       }
     }
 
@@ -113,6 +115,7 @@ export function useCelebrations(): void {
           subtitle: ERA_SUB[era],
         });
         sfx.play('era');
+        music.sting('era');
       }
       lastEra.current = era;
     }
@@ -126,6 +129,7 @@ export function useCelebrations(): void {
         subtitle: 'A new cycle begins — stronger, wiser, compounding.',
       });
       sfx.play('prestige');
+      music.sting('prestige');
       lastPrestige.current = state.prestigeCount;
     }
   }, [

@@ -31,7 +31,12 @@ export type Sfx =
   | 'era'
   | 'prestige'
   | 'error'
-  | 'toggle';
+  | 'toggle'
+  | 'tierUnlock'
+  | 'rivalAlert'
+  | 'echelonUp'
+  | 'companionUp'
+  | 'fanfare';
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -97,6 +102,11 @@ const N = {
   C6: 1046.5,
 };
 
+/** Expose the shared AudioContext so MusicEngine can attach its own sub-graph. */
+export function getAudioCtx(): AudioContext | null {
+  return ensure();
+}
+
 function render(ac: AudioContext, name: Sfx) {
   switch (name) {
     case 'tap':
@@ -145,6 +155,39 @@ function render(ac: AudioContext, name: Sfx) {
       break;
     case 'error':
       note(ac, 160, 0, 0.12, 'square', 0.3, 110);
+      break;
+    case 'tierUnlock':
+      // Dramatic ascent — unlock gates opening.
+      note(ac, N.G4, 0,    0.08, 'triangle', 0.45, N.G5);
+      note(ac, N.C5, 0.06, 0.14, 'triangle', 0.50);
+      note(ac, N.E5, 0.12, 0.18, 'sine',     0.45);
+      note(ac, N.G5, 0.18, 0.32, 'sine',     0.38);
+      break;
+    case 'rivalAlert':
+      // Tense, dissonant — danger is near.
+      note(ac, 185, 0,    0.09, 'square',   0.38, 130);
+      note(ac, 245, 0.04, 0.12, 'sawtooth', 0.30, 190);
+      break;
+    case 'echelonUp':
+      // Triumphant 4-note major arpeggio with shimmer tail.
+      [N.C5, N.E5, N.G5, N.C6].forEach((f, i) =>
+        note(ac, f, i * 0.065, 0.22, 'triangle', 0.44)
+      );
+      note(ac, N.C6, 0.24, 0.55, 'sine', 0.26);
+      break;
+    case 'companionUp':
+      // Warm and emotional — trust deepening.
+      note(ac, N.E4, 0,    0.22, 'sine', 0.38);
+      note(ac, N.G4, 0.07, 0.22, 'sine', 0.36);
+      note(ac, N.C5, 0.14, 0.28, 'sine', 0.32);
+      break;
+    case 'fanfare':
+      // Full celebration — biggest possible moment.
+      [N.C5, N.E5, N.G5, N.C6].forEach((f, i) =>
+        note(ac, f, i * 0.07, 0.28, 'triangle', 0.50)
+      );
+      note(ac, N.G5, 0.30, 0.44, 'sine', 0.30);
+      note(ac, N.C6, 0.36, 0.65, 'sine', 0.26);
       break;
   }
 }
