@@ -32,13 +32,15 @@ import {
 import type { FacilityConfig, GameState } from '../../game/types';
 import { formatMoney, formatNumber } from '../../utils/bigNumber';
 import AnimatedCounter from '../shared/AnimatedCounter';
-import LiveEmpireView from './LiveEmpireView';
+import SwipeableEmpireView from './SwipeableEmpireView';
+import { useFirstVisitGuidance } from '../../hooks/useFirstVisitGuidance';
 import { AmbientFeed } from '../shared/AmbientFeed';
 
 type BuyQty = GameState['settings']['buyQty'];
 const BUY_OPTIONS: BuyQty[] = [1, 10, 100, 'max'];
 
 export default function EmpireScreen() {
+  useFirstVisitGuidance('g-visit-empire');
   const { state, dispatch } = useGame();
   const industry = getIndustry(state);
 
@@ -152,7 +154,7 @@ export default function EmpireScreen() {
         {/* ===================== Live empire view (when enabled) ===================== */}
         {liveView && (
           <div className="mb-3">
-            <LiveEmpireView />
+            <SwipeableEmpireView />
             <div className="mt-1.5 flex items-center justify-center gap-1 text-[10px] text-muted">
               <span>↓</span>
               <span>Your facilities are below</span>

@@ -8,6 +8,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useFirstVisit } from '../../hooks/useFirstVisit';
+import { useFirstVisitGuidance } from '../../hooks/useFirstVisitGuidance';
 
 import {
   useGame,
@@ -237,6 +238,7 @@ function ResearchCard({
 // ---- Screen -----------------------------------------------------------------
 
 export default function ResearchScreen() {
+  useFirstVisitGuidance('g-visit-research');
   useFirstVisit('hint-research-first');
   const { state } = useGame();
   const now = useNow(120);

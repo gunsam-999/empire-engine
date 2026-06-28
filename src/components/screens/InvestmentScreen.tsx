@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useFirstVisit } from '../../hooks/useFirstVisit';
+import { useFirstVisitGuidance } from '../../hooks/useFirstVisitGuidance';
 
 import {
   useGame,
@@ -368,6 +369,7 @@ function CommodityPanel() {
 // ---- Main screen ------------------------------------------------------------
 
 export default function InvestmentScreen() {
+  useFirstVisitGuidance('g-visit-invest');
   useFirstVisit('hint-invest-first');
   const { state, dispatch } = useGame();
   const [, force] = useState(0);

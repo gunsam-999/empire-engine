@@ -232,6 +232,9 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
             >
               <span aria-hidden>{badge.emoji}</span>
               <span>{badge.label}</span>
+              {setup?.playerName && (
+                <span className="opacity-60">· {setup.playerName}</span>
+              )}
               {state.legacyPoints > 0 && (
                 <span className="text-[var(--accent)]">
                   · {formatNumber(state.legacyPoints)} LP

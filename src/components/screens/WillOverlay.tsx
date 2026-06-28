@@ -86,6 +86,11 @@ export default function WillOverlay({ onClose }: { onClose: () => void }) {
               Old Master's Will · {industry?.name ?? ''}
             </div>
             <div className="text-base font-bold text-[#e7ecf5]">{master.name}</div>
+            {setup?.playerName && (
+              <div className="text-[10px] text-[#8a94a8] mt-0.5">
+                Entrusted to <span className="text-[#e7ecf5] font-semibold">{setup.playerName}</span>
+              </div>
+            )}
             <div className="text-[11px] font-medium mt-0.5" style={{ color: master.accent }}>
               {master.title}
             </div>

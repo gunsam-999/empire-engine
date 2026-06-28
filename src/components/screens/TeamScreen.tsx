@@ -4,6 +4,7 @@
 
 import { useState } from 'react';
 import { useGame } from '../../game/GameContext';
+import { useFirstVisitGuidance } from '../../hooks/useFirstVisitGuidance';
 import AdvisorScreen from './AdvisorScreen';
 import { CompanionPanel } from '../shared/CompanionPanel';
 import { WorkforcePanel } from '../shared/WorkforcePanel';
@@ -21,6 +22,7 @@ const SECTIONS: { id: Section; label: string; icon: string; desc: string }[] = [
 ];
 
 export default function TeamScreen() {
+  useFirstVisitGuidance('g-visit-team');
   const { state } = useGame();
   const [active, setActive] = useState<Section>('advisors');
 

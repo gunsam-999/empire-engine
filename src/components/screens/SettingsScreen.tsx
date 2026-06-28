@@ -4,13 +4,13 @@
 //   Danger:      Hard Reset behind a double confirmation.
 //   Preferences: buy quantity + sound toggles.
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useGame } from '../../game/GameContext';
 import { ADVISORS } from '../../data/advisors';
 import { MILESTONES } from '../../data/milestones';
 import { exportSave, importSave, saveGame } from '../../game/SaveSystem';
 import { sfx } from '../../systems/AudioEngine';
-import { music } from '../../systems/MusicEngine';
+import { music, TRACK_PRESETS } from '../../systems/MusicEngine';
 import { formatMoney } from '../../utils/bigNumber';
 import { formatDuration } from '../../utils/time';
 import ShareCardModal from '../shared/ShareCardModal';
@@ -60,6 +60,123 @@ function useSwUpdate() {
   });
 
   return { pending, checking, checkNow, applyUpdate };
+}
+
+const MOOD_COLORS: Record<string, string> = {
+  Calm:   '#60a5fa',
+  Upbeat: '#34d399',
+  Focus:  '#a78bfa',
+  Tense:  '#fb923c',
+};
+
+function MusicPlayerPanel() {
+  const [activeId, setActiveId] = useState(() => music.currentTrack().id);
+  const [showList, setShowList] = useState(false);
+
+  const current = TRACK_PRESETS.find(t => t.id === activeId) ?? TRACK_PRESETS[0];
+  const idx = TRACK_PRESETS.findIndex(t => t.id === activeId);
+  const moodColor = MOOD_COLORS[current.mood] ?? '#8a94a8';
+
+  const selectAt = useCallback((i: number) => {
+    const t = TRACK_PRESETS[((i % TRACK_PRESETS.length) + TRACK_PRESETS.length) % TRACK_PRESETS.length];
+    music.selectTrack(t.id);
+    setActiveId(t.id);
+  }, []);
+
+  return (
+    <div className="mx-3.5 mb-3 rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(0,0,0,0.22)' }}>
+      {/* Now playing */}
+      <div className="flex items-center gap-3 px-4 py-3">
+        <div
+          className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center text-lg"
+          style={{ background: `${moodColor}18`, border: `1px solid ${moodColor}35` }}
+        >
+          🎵
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] text-[#4d5a72] uppercase tracking-wider mb-0.5">Now Playing</div>
+          <div className="text-[13px] font-bold text-[#e7ecf5] truncate">{current.name}</div>
+          <span
+            className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{ background: `${moodColor}20`, color: moodColor }}
+          >
+            {current.mood}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => selectAt(idx - 1)}
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-[#8a94a8] hover:text-[#e7ecf5] transition-colors"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
+          >‹</button>
+          <button
+            onClick={() => selectAt(idx + 1)}
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-[#8a94a8] hover:text-[#e7ecf5] transition-colors"
+            style={{ background: 'rgba(255,255,255,0.05)' }}
+          >›</button>
+          <button
+            onClick={() => setShowList(v => !v)}
+            className="w-8 h-8 flex items-center justify-center rounded-xl transition-colors text-xs"
+            style={{
+              background: showList ? `${moodColor}20` : 'rgba(255,255,255,0.05)',
+              color: showList ? moodColor : '#8a94a8',
+            }}
+            title="Browse tracks"
+          >
+            ☰
+          </button>
+        </div>
+      </div>
+
+      {/* Track list */}
+      {showList && (
+        <div className="max-h-56 overflow-y-auto no-scrollbar border-t border-white/5">
+          {TRACK_PRESETS.map((t, i) => {
+            const mc = MOOD_COLORS[t.mood] ?? '#8a94a8';
+            const isActive = t.id === activeId;
+            return (
+              <button
+                key={t.id}
+                className="w-full flex items-center gap-2.5 px-4 py-2 text-left transition-colors"
+                style={{
+                  background: isActive ? `${mc}12` : 'transparent',
+                  borderLeft: isActive ? `2px solid ${mc}` : '2px solid transparent',
+                }}
+                onClick={() => selectAt(i)}
+              >
+                <span className="text-[10px] font-mono text-[#3d4a62] w-5 shrink-0">{String(i + 1).padStart(2, '0')}</span>
+                <span className="flex-1 text-[12px] font-medium" style={{ color: isActive ? mc : '#c4cedd' }}>{t.name}</span>
+                <span
+                  className="text-[9px] px-1.5 py-0.5 rounded-full shrink-0"
+                  style={{ background: `${mc}15`, color: mc }}
+                >{t.mood}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* BPM indicator */}
+      <div className="px-4 py-2 border-t border-white/5 flex items-center gap-2">
+        <span className="text-[9px] text-[#3d4a62] uppercase tracking-wider">Tempo</span>
+        <div className="flex gap-0.5">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div
+              key={i}
+              className="rounded-full"
+              style={{
+                width: 3,
+                height: 3 + i * 2,
+                alignSelf: 'flex-end',
+                background: i < Math.round(current.bpmMul * 3) ? moodColor : 'rgba(255,255,255,0.08)',
+              }}
+            />
+          ))}
+        </div>
+        <span className="text-[9px] text-[#4d5a72] ml-auto">{idx + 1}/{TRACK_PRESETS.length}</span>
+      </div>
+    </div>
+  );
 }
 
 export default function SettingsScreen() {
@@ -242,7 +359,7 @@ export default function SettingsScreen() {
             />
           </div>
 
-          {/* Music */}
+          {/* Music toggle */}
           <div className="flex items-center justify-between gap-3 p-3.5">
             <div>
               <div className="text-sm font-medium text-[#e7ecf5]">Music</div>
@@ -258,6 +375,11 @@ export default function SettingsScreen() {
               }}
             />
           </div>
+
+          {/* Music player panel */}
+          {state.settings.music !== false && (
+            <MusicPlayerPanel />
+          )}
 
           {/* Haptics */}
           <div className="flex items-center justify-between gap-3 p-3.5">

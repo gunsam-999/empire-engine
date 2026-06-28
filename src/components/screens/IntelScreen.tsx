@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { useGame } from '../../game/GameContext';
 import { useFirstVisit } from '../../hooks/useFirstVisit';
+import { useFirstVisitGuidance } from '../../hooks/useFirstVisitGuidance';
 import {
   canGatherIntel,
   intelCooldownRemainingSec,
@@ -796,6 +797,7 @@ function PantheonSection() {
 // ---- Main screen ------------------------------------------------------------
 
 export default function IntelScreen() {
+  useFirstVisitGuidance('g-visit-intel');
   useFirstVisit('hint-intel-first');
   const [subTab, setSubTab] = useState<SubTab>('warroom');
   const { state } = useGame();

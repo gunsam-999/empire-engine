@@ -87,6 +87,60 @@ const ERA_GAINS: Record<string, EraGains> = {
   TITAN:         { pad: 0.52, bass: 0.88, melody: 0.74, arp: 0.66, perc: 0.82 },
 };
 
+// ---- Track presets (25 named moods) ----------------------------------------
+// Each preset tunes the synthesis via root-key transposition, BPM modifier,
+// chord-mode shift, arp pattern, and layer-gain shape.
+
+export interface TrackPreset {
+  id: string;
+  name: string;
+  mood: string;
+  /** Semitone shift applied to all note frequencies (e.g. +2 = D minor feel). */
+  semiShift: number;
+  /** BPM multiplier relative to era base. */
+  bpmMul: number;
+  /** Which chord slot order to use (rotation of CHORDS indices). */
+  chordRot: number;
+  /** Master volume trim (0.8–1.2). */
+  volTrim: number;
+  /** Arp density: fraction of steps that play arp (0 = off, 1 = full). */
+  arpDensity: number;
+  /** Pad brightness: lowpass cutoff multiplier (1 = default 860 Hz). */
+  padBright: number;
+  /** Perc density: fraction of percussion hits to include. */
+  percDensity: number;
+}
+
+export const TRACK_PRESETS: TrackPreset[] = [
+  { id: 'midnight-build',   name: 'Midnight Build',     mood: 'Calm',    semiShift: 0,  bpmMul: 1.00, chordRot: 0, volTrim: 1.0,  arpDensity: 0.5,  padBright: 1.0,  percDensity: 1.0  },
+  { id: 'morning-grind',    name: 'Morning Grind',      mood: 'Upbeat',  semiShift: 2,  bpmMul: 1.10, chordRot: 1, volTrim: 1.05, arpDensity: 0.8,  padBright: 1.3,  percDensity: 1.0  },
+  { id: 'empire-rising',    name: 'Empire Rising',      mood: 'Upbeat',  semiShift: 5,  bpmMul: 1.15, chordRot: 2, volTrim: 1.1,  arpDensity: 1.0,  padBright: 1.5,  percDensity: 1.0  },
+  { id: 'late-night-deals', name: 'Late Night Deals',   mood: 'Calm',    semiShift: -2, bpmMul: 0.90, chordRot: 3, volTrim: 0.9,  arpDensity: 0.3,  padBright: 0.7,  percDensity: 0.5  },
+  { id: 'boardroom',        name: 'The Boardroom',      mood: 'Tense',   semiShift: -5, bpmMul: 0.95, chordRot: 0, volTrim: 0.95, arpDensity: 0.2,  padBright: 0.6,  percDensity: 0.7  },
+  { id: 'neon-district',    name: 'Neon District',      mood: 'Upbeat',  semiShift: 3,  bpmMul: 1.20, chordRot: 1, volTrim: 1.1,  arpDensity: 1.0,  padBright: 1.6,  percDensity: 1.0  },
+  { id: 'rooftop-vision',   name: 'Rooftop Vision',     mood: 'Calm',    semiShift: 7,  bpmMul: 0.85, chordRot: 2, volTrim: 0.9,  arpDensity: 0.6,  padBright: 1.1,  percDensity: 0.4  },
+  { id: 'market-surge',     name: 'Market Surge',       mood: 'Upbeat',  semiShift: 4,  bpmMul: 1.25, chordRot: 0, volTrim: 1.15, arpDensity: 1.0,  padBright: 1.7,  percDensity: 1.0  },
+  { id: 'founders-oath',    name: 'Founder\'s Oath',    mood: 'Calm',    semiShift: 0,  bpmMul: 0.80, chordRot: 3, volTrim: 0.85, arpDensity: 0.4,  padBright: 0.8,  percDensity: 0.3  },
+  { id: 'city-lights',      name: 'City Lights',        mood: 'Upbeat',  semiShift: 2,  bpmMul: 1.05, chordRot: 1, volTrim: 1.0,  arpDensity: 0.7,  padBright: 1.2,  percDensity: 0.8  },
+  { id: 'deep-code',        name: 'Deep Code',          mood: 'Focus',   semiShift: -3, bpmMul: 0.88, chordRot: 0, volTrim: 0.88, arpDensity: 0.3,  padBright: 0.65, percDensity: 0.6  },
+  { id: 'venture-capital',  name: 'Venture Capital',    mood: 'Tense',   semiShift: 1,  bpmMul: 1.00, chordRot: 2, volTrim: 0.95, arpDensity: 0.5,  padBright: 0.9,  percDensity: 0.9  },
+  { id: 'hustle-mode',      name: 'Hustle Mode',        mood: 'Upbeat',  semiShift: 5,  bpmMul: 1.30, chordRot: 1, volTrim: 1.2,  arpDensity: 1.0,  padBright: 1.8,  percDensity: 1.0  },
+  { id: 'legacy-hall',      name: 'Legacy Hall',        mood: 'Calm',    semiShift: -7, bpmMul: 0.75, chordRot: 3, volTrim: 0.82, arpDensity: 0.2,  padBright: 0.55, percDensity: 0.2  },
+  { id: 'silicon-dawn',     name: 'Silicon Dawn',       mood: 'Upbeat',  semiShift: 3,  bpmMul: 1.12, chordRot: 0, volTrim: 1.05, arpDensity: 0.9,  padBright: 1.4,  percDensity: 0.9  },
+  { id: 'quiet-empire',     name: 'Quiet Empire',       mood: 'Focus',   semiShift: 0,  bpmMul: 0.82, chordRot: 2, volTrim: 0.80, arpDensity: 0.35, padBright: 0.72, percDensity: 0.35 },
+  { id: 'cold-merger',      name: 'Cold Merger',        mood: 'Tense',   semiShift: -4, bpmMul: 0.92, chordRot: 1, volTrim: 0.90, arpDensity: 0.25, padBright: 0.6,  percDensity: 0.65 },
+  { id: 'golden-hour',      name: 'Golden Hour',        mood: 'Upbeat',  semiShift: 6,  bpmMul: 1.08, chordRot: 3, volTrim: 1.1,  arpDensity: 0.8,  padBright: 1.5,  percDensity: 0.75 },
+  { id: 'undercroft',       name: 'Undercroft',         mood: 'Tense',   semiShift: -6, bpmMul: 0.86, chordRot: 0, volTrim: 0.85, arpDensity: 0.15, padBright: 0.5,  percDensity: 0.55 },
+  { id: 'momentum',         name: 'Momentum',           mood: 'Upbeat',  semiShift: 2,  bpmMul: 1.18, chordRot: 2, volTrim: 1.1,  arpDensity: 0.95, padBright: 1.6,  percDensity: 1.0  },
+  { id: 'protocol-seven',   name: 'Protocol Seven',     mood: 'Focus',   semiShift: -1, bpmMul: 0.95, chordRot: 1, volTrim: 0.92, arpDensity: 0.45, padBright: 0.85, percDensity: 0.7  },
+  { id: 'skyward',          name: 'Skyward',            mood: 'Upbeat',  semiShift: 4,  bpmMul: 1.22, chordRot: 3, volTrim: 1.15, arpDensity: 1.0,  padBright: 1.9,  percDensity: 1.0  },
+  { id: 'the-long-game',    name: 'The Long Game',      mood: 'Calm',    semiShift: -2, bpmMul: 0.78, chordRot: 0, volTrim: 0.78, arpDensity: 0.3,  padBright: 0.68, percDensity: 0.25 },
+  { id: 'titan-awakens',    name: 'Titan Awakens',      mood: 'Tense',   semiShift: 1,  bpmMul: 1.10, chordRot: 2, volTrim: 1.05, arpDensity: 0.6,  padBright: 1.0,  percDensity: 1.0  },
+  { id: 'dynasty',          name: 'Dynasty',            mood: 'Upbeat',  semiShift: 7,  bpmMul: 1.15, chordRot: 1, volTrim: 1.2,  arpDensity: 0.85, padBright: 1.6,  percDensity: 0.9  },
+];
+
+let _activePreset: TrackPreset = TRACK_PRESETS[0];
+
 // ---- Module state -----------------------------------------------------------
 
 let _master: GainNode | null = null;
@@ -276,6 +330,12 @@ function synthHat(ac: AudioContext, dest: AudioNode, t: number, open: boolean) {
   ns.start(t); ns.stop(t + dur + 0.01);
 }
 
+// ---- Semitone shift: multiply frequency by 2^(n/12) -------------------------
+
+function shiftHz(hz: number, semi: number): number {
+  return hz * Math.pow(2, semi / 12);
+}
+
 // ---- Melody duration: gap to the next non-null note (wraps) -----------------
 
 function melDur(step: number, sd: number): number {
@@ -291,39 +351,47 @@ function scheduleStep(step: number, t: number) {
   const ac = getAudioCtx();
   if (!ac || !_layers) return;
   const sd = _stepDur;
-  const ci = Math.floor(step / 16) % 4; // chord index (0-3)
+  const preset = _activePreset;
+  const ss = preset.semiShift;
+
+  // Chord index rotated by preset
+  const ci = (Math.floor(step / 16) + preset.chordRot) % 4;
   const chord = CHORDS[ci];
-  const si = step % 16; // step within bar
+  const si = step % 16;
 
-  // PAD: trigger on every new bar (step 0 within bar)
-  if (si === 0) synthPad(ac, _layers.pad, chord.pad, t, sd * 17);
-
-  // BASS: strong beat (si=0), mid beat (si=8), approach pickup (si=14)
+  // PAD
   if (si === 0) {
-    synthBass(ac, _layers.bass, chord.bass, t, sd * 3.5, 0.88);
+    const padFreqs = chord.pad.map(f => shiftHz(f, ss));
+    synthPad(ac, _layers.pad, padFreqs, t, sd * 17);
+  }
+
+  // BASS
+  if (si === 0) {
+    synthBass(ac, _layers.bass, shiftHz(chord.bass, ss), t, sd * 3.5, 0.88);
   } else if (si === 8) {
-    synthBass(ac, _layers.bass, chord.bass * 2, t, sd * 3.0, 0.72);
+    synthBass(ac, _layers.bass, shiftHz(chord.bass * 2, ss), t, sd * 3.0, 0.72);
   } else if (si === 14) {
-    const next = CHORDS[(ci + 1) % 4];
-    synthBass(ac, _layers.bass, next.bass * 2, t, sd * 1.3, 0.52);
+    const next = CHORDS[((Math.floor(step / 16) + preset.chordRot + 1) % 4)];
+    synthBass(ac, _layers.bass, shiftHz(next.bass * 2, ss), t, sd * 1.3, 0.52);
   }
 
   // MELODY
   const mf = MEL[step];
-  if (mf !== null) synthTri(ac, _layers.melody, mf, t, melDur(step, sd), 0.60);
+  if (mf !== null) synthTri(ac, _layers.melody, shiftHz(mf, ss), t, melDur(step, sd), 0.60);
 
-  // ARP: every 2 steps (8th-note grid)
-  if (step % 2 === 0) {
+  // ARP: respect arpDensity
+  if (step % 2 === 0 && Math.random() < preset.arpDensity) {
     const af = chord.arp[ARP_SEQ[Math.floor(si / 2) % ARP_SEQ.length]];
-    if (af) synthSine(ac, _layers.arp, af, t, sd * 1.7, 0.48);
+    if (af) synthSine(ac, _layers.arp, shiftHz(af, ss), t, sd * 1.7, 0.48);
   }
 
-  // PERCUSSION
+  // PERCUSSION: respect percDensity
   const ph = PERC_BAR[si];
+  const playPerc = Math.random() < preset.percDensity;
   if (ph === 'K')  synthKick(ac, _layers.perc, t);
-  if (ph === 'S')  synthSnare(ac, _layers.perc, t);
-  if (ph === 'H')  synthHat(ac, _layers.perc, t, false);
-  if (ph === 'Oh') synthHat(ac, _layers.perc, t, true);
+  if (ph === 'S' && playPerc)  synthSnare(ac, _layers.perc, t);
+  if (ph === 'H' && playPerc)  synthHat(ac, _layers.perc, t, false);
+  if (ph === 'Oh' && playPerc) synthHat(ac, _layers.perc, t, true);
 }
 
 function runScheduler() {
@@ -439,6 +507,25 @@ export const music = {
 
   isEnabled() { return _enabled; },
 
+  currentTrack(): TrackPreset { return _activePreset; },
+
+  selectTrack(id: string) {
+    const preset = TRACK_PRESETS.find(p => p.id === id);
+    if (!preset || preset.id === _activePreset.id) return;
+    _activePreset = preset;
+    // Apply BPM change: recalculate step duration with era base × preset multiplier
+    const baseBpm = ERA_BPM[_era] ?? 88;
+    _stepDur = 60 / (baseBpm * preset.bpmMul) / 4;
+    // Apply master volume trim
+    const ac = getAudioCtx();
+    if (ac && _master) {
+      const t = ac.currentTime;
+      _master.gain.cancelScheduledValues(t);
+      _master.gain.setValueAtTime(_master.gain.value, t);
+      _master.gain.linearRampToValueAtTime(BASE_VOL * preset.volTrim, t + 2.5);
+    }
+  },
+
   /**
    * Called periodically with a lightweight game-state snapshot.
    * Updates BPM step duration and crossfades layer gains on era changes.
@@ -454,7 +541,7 @@ export const music = {
 
     if (safeEra !== _era) {
       _era = safeEra;
-      _stepDur = 60 / (ERA_BPM[safeEra] ?? 88) / 4;
+      _stepDur = 60 / ((ERA_BPM[safeEra] ?? 88) * _activePreset.bpmMul) / 4;
       const ac = getAudioCtx();
       if (ac && _layers) {
         const targets = ERA_GAINS[safeEra];

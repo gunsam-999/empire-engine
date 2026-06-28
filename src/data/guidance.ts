@@ -220,6 +220,99 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     lines: ["The portfolio is where idle cash becomes compounding wealth."],
     tip: 'Diversify early - The Wiz signals when to rotate positions.',
   },
+
+  // ---- First-visit 'ui' beats (fired by useFirstVisitGuidance hook) ----------
+
+  {
+    id: 'g-visit-team',
+    trigger: { type: 'ui', uiKey: 'team' },
+    emotion: 'tip',
+    lines: [
+      "Your team is your unfair advantage.",
+      "Advisors amplify everything — production, reach, decision speed.",
+    ],
+    tip: 'Unlock advisors as you scale; each one changes the game differently.',
+  },
+  {
+    id: 'g-visit-rivals',
+    trigger: { type: 'ui', uiKey: 'rivals' },
+    emotion: 'urgent',
+    lines: [
+      "I'm tracking three players who want your market share.",
+      "Watch their aggression meter — once it goes red, expect a strike.",
+    ],
+    tip: 'Counter hostile rivals quickly; ignoring them costs you audience and reach.',
+  },
+  {
+    id: 'g-visit-will',
+    trigger: { type: 'ui', uiKey: 'will' },
+    emotion: 'proud',
+    lines: [
+      "This is the Old Master's Will — the covenant behind this whole empire.",
+      "Every clause you fulfill strengthens your foundation.",
+    ],
+    tip: 'Fulfilled clauses persist across prestige cycles as permanent boosts.',
+  },
+  {
+    id: 'g-visit-research',
+    trigger: { type: 'ui', uiKey: 'research' },
+    emotion: 'calm',
+    lines: [
+      "The R&D tree is where you build moats competitors can't easily copy.",
+      "Each node unlocks asymmetric advantages.",
+    ],
+    tip: "Prioritise Research nodes that complement your industry's bottleneck.",
+  },
+  {
+    id: 'g-visit-intel',
+    trigger: { type: 'ui', uiKey: 'intel' },
+    emotion: 'tip',
+    lines: [
+      "Intel is how you stay two moves ahead.",
+      "Market signals here will telegraph competitor moves before they happen.",
+    ],
+    tip: 'Check Intel before spending big — the market cycle matters.',
+  },
+  {
+    id: 'g-visit-prestige',
+    trigger: { type: 'ui', uiKey: 'prestige' },
+    emotion: 'hype',
+    lines: [
+      "Prestige is the reset that compounds everything.",
+      "You lose cash, but you keep your edge — and gain Legacy Points.",
+    ],
+    tip: 'Each rebirth starts faster and unlocks new prestige-only upgrades.',
+  },
+  {
+    id: 'g-visit-dispatch',
+    trigger: { type: 'ui', uiKey: 'dispatch' },
+    emotion: 'tip',
+    lines: [
+      "The Dispatch is your co-founder's ops centre.",
+      "Campaigns, intel reports, and aide actions all flow through here.",
+    ],
+    tip: 'Run campaigns regularly — each one compounds audience and income.',
+  },
+  {
+    id: 'g-visit-invest',
+    trigger: { type: 'ui', uiKey: 'invest' },
+    emotion: 'calm',
+    lines: [
+      "The investment desk compounds what operations produce.",
+      "Think of it as the engine room for passive wealth.",
+    ],
+    tip: 'Re-invest earnings during boom cycles for maximum compounding.',
+  },
+  {
+    id: 'g-visit-empire',
+    trigger: { type: 'ui', uiKey: 'empire' },
+    emotion: 'proud',
+    lines: [
+      "This is your empire at a glance — every facility, every beat of production.",
+      "Swipe right to see how rivals stack up.",
+    ],
+    tip: 'The isometric view updates in real-time as you build and earn.',
+  },
 ];
 
 export function getGuidanceBeat(id: string): GuidanceBeat | undefined {
