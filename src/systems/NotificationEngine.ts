@@ -11,7 +11,6 @@ import type {
   NotificationPriority,
   NotificationState,
 } from '../game/types';
-import { toast } from '../components/shared/ToastNotification';
 import { ECHELON_LABELS } from './EchelonEngine';
 import { getRivalConfig } from '../data/rivals';
 import { getCompanionConfig } from '../data/companions';
@@ -35,7 +34,8 @@ function push(
   icon: string,
   title: string,
   body: string,
-  now: number
+  now: number,
+  toastOpts?: { msg: string; kind: 'bad' | 'good' | 'warn'; durationMs: number }
 ): NotificationState {
   const notif: GameNotification = {
     id: `notif-${priority}-${now}-${title.slice(0, 6).replace(/\s/g, '')}`,
@@ -45,6 +45,7 @@ function push(
     title,
     body,
     read: false,
+    toast: toastOpts ? { ...toastOpts, icon } : undefined,
   };
   return { ...notifications, items: [notif, ...notifications.items].slice(0, 50) };
 }
@@ -71,8 +72,8 @@ export function detectNotifications(
     ) {
       const rivalName = getRivalConfig(r.id)?.name ?? 'A rival';
       const msg = r.telegraph.message;
-      ns = push(ns, 'urgent', '⚔️', `${rivalName}: Strike Incoming`, msg, now);
-      toast.bad(`${rivalName}: ${msg}`, { icon: '⚔️', durationMs: 4_000 });
+      ns = push(ns, 'urgent', '⚔️', `${rivalName}: Strike Incoming`, msg, now,
+        { msg: `${rivalName}: ${msg}`, kind: 'bad', durationMs: 4_000 });
     }
   }
 
@@ -85,30 +86,32 @@ export function detectNotifications(
       .slice(0, 3)
       .join(', ');
     const body = coalitionNames
-      ? `${coalitionNames} — and others — have united against you. Expect a coordinated assault.`
+      ? `${coalitionNames} - and others - have united against you. Expect a coordinated assault.`
       : 'Your rivals have united against you. Expect heightened aggression on all fronts.';
-    ns = push(ns, 'urgent', '⚠️', 'Coalition Formed', body, now);
-    toast.bad('Coalition formed  -  rivals are coordinating against you.', {
-      icon: '⚠️',
-      durationMs: 5_000,
-    });
+    ns = push(ns, 'urgent', '⚠️', 'Coalition Formed', body, now,
+      { msg: 'Coalition formed  -  rivals are coordinating against you.', kind: 'bad', durationMs: 5_000 });
   }
 
   // 3. Echelon tier advanced
   if (next.echelon?.tier && next.echelon.tier !== prev.echelon?.tier) {
     const label = ECHELON_LABELS[next.echelon.tier] ?? next.echelon.tier;
     const prevLabel = ECHELON_LABELS[prev.echelon?.tier ?? ''] ?? 'lower';
-    const body = `You've ascended from ${prevLabel} to ${label}. The competitive landscape is shifting — new rivals take notice.`;
-    ns = push(ns, 'success', '🏆', `Echelon: ${label}`, body, now);
-    toast.good(`Echelon advanced  -  ${label}!`, { icon: '🏆', durationMs: 3_500 });
+    const body = `You've ascended from ${prevLabel} to ${label}. The competitive landscape is shifting - new rivals take notice.`;
+    ns = push(ns, 'success', '🏆', `Echelon: ${label}`, body, now,
+      { msg: `Echelon advanced  -  ${label}!`, kind: 'good', durationMs: 3_500 });
   }
 
-  // 4. Newspaper negative headline published
+  // 4. Newspaper negative headline published (skip breaking — caught by #11 below)
   const nextNewsFirst = next.newspaper?.items[0];
   const prevNewsFirst = prev.newspaper?.items[0];
-  if (nextNewsFirst && nextNewsFirst.id !== prevNewsFirst?.id && nextNewsFirst.sentimentScore < 0) {
-    ns = push(ns, 'info', '📰', 'Press Coverage', nextNewsFirst.headline, now);
-    toast.warn(nextNewsFirst.headline, { icon: '📰', durationMs: 3_000 });
+  if (
+    nextNewsFirst &&
+    nextNewsFirst.id !== prevNewsFirst?.id &&
+    nextNewsFirst.sentimentScore < 0 &&
+    !nextNewsFirst.isBreaking
+  ) {
+    ns = push(ns, 'info', '📰', 'Press Coverage', nextNewsFirst.headline, now,
+      { msg: nextNewsFirst.headline, kind: 'warn', durationMs: 3_000 });
   }
 
   // 5. Premise clause breached
@@ -118,11 +121,8 @@ export function detectNotifications(
       if (cl.status === 'breached' && prevCl?.status === 'fulfilled') {
         const clauseName = cl.id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         const body = `The "${clauseName}" clause has been violated. The Old Master's reward is suspended until you restore it.`;
-        ns = push(ns, 'urgent', '📜', 'Clause Breached', body, now);
-        toast.warn(`"${clauseName}" clause breached  -  reward suspended.`, {
-          icon: '📜',
-          durationMs: 4_000,
-        });
+        ns = push(ns, 'urgent', '📜', 'Clause Breached', body, now,
+          { msg: `"${clauseName}" clause breached  -  reward suspended.`, kind: 'warn', durationMs: 4_000 });
       }
     }
   }
@@ -135,11 +135,8 @@ export function detectNotifications(
       next.workforce.reduce((s, w) => s + w.morale, 0) / next.workforce.length;
     if (nextAvg < 20 && prevAvg >= 20) {
       const body = 'Team morale has collapsed. Rally your people before productivity craters.';
-      ns = push(ns, 'info', '👥', 'Team Crisis', body, now);
-      toast.warn('Workforce is burning out  -  rally them soon.', {
-        icon: '👥',
-        durationMs: 3_500,
-      });
+      ns = push(ns, 'info', '👥', 'Team Crisis', body, now,
+        { msg: 'Workforce is burning out  -  rally them soon.', kind: 'warn', durationMs: 3_500 });
     }
   }
 
@@ -147,17 +144,13 @@ export function detectNotifications(
   const prevConf = prev.publicAffairs?.confidence ?? 50;
   const nextConf = next.publicAffairs?.confidence ?? 50;
   if (nextConf < 20 && prevConf >= 20) {
-    // Check if Intel Desk has a vendetta that could explain the PR crisis
     const knownAgitator = (next.intel?.vendettas ?? [])[0];
     const agitatorName = knownAgitator ? getRivalConfig(knownAgitator.rivalId)?.name : undefined;
     const body = agitatorName
       ? `Public confidence at crisis level. Intel links this to ${agitatorName}'s recent campaign against you. Issue a statement now.`
       : 'Public confidence has reached crisis levels. Issue a statement before your production suffers.';
-    ns = push(ns, 'urgent', '📢', 'Confidence Crisis', body, now);
-    toast.bad('Public confidence critical  -  issue a statement.', {
-      icon: '📢',
-      durationMs: 4_000,
-    });
+    ns = push(ns, 'urgent', '📢', 'Confidence Crisis', body, now,
+      { msg: 'Public confidence critical  -  issue a statement.', kind: 'bad', durationMs: 4_000 });
   }
 
   // 8. Titan has noticed the player (from Pantheon system).
@@ -165,9 +158,9 @@ export function detectNotifications(
     const prevT = (prev.pantheon?.titans ?? []).find((p) => p.id === t.id);
     if (t.hasNoticedPlayer && !prevT?.hasNoticedPlayer) {
       const titanName = getPantheonConfig(t.id)?.name ?? 'A Pantheon titan';
-      const body = `${titanName} has taken notice of your empire. A Pantheon titan is watching — check the Pantheon standings.`;
-      ns = push(ns, 'success', '🌐', `${titanName} Noticed You`, body, now);
-      toast.good(`${titanName} is watching your empire.`, { icon: '🌐', durationMs: 4_000 });
+      const body = `${titanName} has taken notice of your empire. A Pantheon titan is watching - check the Pantheon standings.`;
+      ns = push(ns, 'success', '🌐', `${titanName} Noticed You`, body, now,
+        { msg: `${titanName} is watching your empire.`, kind: 'good', durationMs: 4_000 });
     }
   }
 
@@ -178,8 +171,8 @@ export function detectNotifications(
     if (nextLE >= t.estimatedValuation && prevLE < t.estimatedValuation) {
       const titanName = getPantheonConfig(t.id)?.name ?? 'A Pantheon titan';
       const body = `Your empire has surpassed ${titanName} in estimated valuation. The Pantheon cannot ignore you now.`;
-      ns = push(ns, 'success', '👑', `Surpassed ${titanName}!`, body, now);
-      toast.good(`You have surpassed ${titanName}!`, { icon: '👑', durationMs: 5_000 });
+      ns = push(ns, 'success', '👑', `Surpassed ${titanName}!`, body, now,
+        { msg: `You have surpassed ${titanName}!`, kind: 'good', durationMs: 5_000 });
     }
   }
 
@@ -189,8 +182,8 @@ export function detectNotifications(
     if (!prevV) {
       const rivalName = getRivalConfig(v.rivalId)?.name ?? 'A rival';
       const body = `${rivalName} has declared a personal vendetta against you. Their attacks will intensify and target your weakest fronts. Check the War Room.`;
-      ns = push(ns, 'urgent', '🔥', `${rivalName}: Vendetta`, body, now);
-      toast.bad(`${rivalName} declared vendetta  -  this just got personal.`, { icon: '🔥', durationMs: 4_500 });
+      ns = push(ns, 'urgent', '🔥', `${rivalName}: Vendetta`, body, now,
+        { msg: `${rivalName} declared vendetta  -  this just got personal.`, kind: 'bad', durationMs: 4_500 });
     }
   }
 
@@ -209,8 +202,8 @@ export function detectNotifications(
           milestone <= 75 ? 'considers this a real alliance' :
           'is fully committed  -  their loyalty is absolute';
         const body = `${cName} ${milestoneLabel}. Their strongest abilities are now available to you.`;
-        ns = push(ns, 'success', '🤝', `${cName}: Trust Milestone`, body, now);
-        toast.good(`${cName} trust milestone reached.`, { icon: '🤝', durationMs: 3_500 });
+        ns = push(ns, 'success', '🤝', `${cName}: Trust Milestone`, body, now,
+          { msg: `${cName} trust milestone reached.`, kind: 'good', durationMs: 3_500 });
       }
     }
   }
@@ -222,8 +215,8 @@ export function detectNotifications(
     (n) => n.isBreaking && !prevNews.some((p) => p.id === n.id)
   );
   if (newBreaking) {
-    ns = push(ns, 'info', '🔴', 'Breaking: Ledger', newBreaking.headline, now);
-    toast.warn(newBreaking.headline, { icon: '🔴', durationMs: 4_000 });
+    ns = push(ns, 'info', '🔴', 'Breaking: Ledger', newBreaking.headline, now,
+      { msg: newBreaking.headline, kind: 'warn', durationMs: 4_000 });
   }
 
   return ns;

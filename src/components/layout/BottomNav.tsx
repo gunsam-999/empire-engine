@@ -4,9 +4,9 @@ import TabButton from '../shared/TabButton';
 import { sfx } from '../../systems/AudioEngine';
 import { haptic } from '../../utils/haptics';
 
-export type TabId = 'empire' | 'marketing' | 'research' | 'invest' | 'prestige' | 'intel';
+export type TabId = 'empire' | 'team' | 'marketing' | 'research' | 'invest' | 'prestige' | 'intel';
 
-export const TAB_IDS: TabId[] = ['empire', 'marketing', 'research', 'invest', 'prestige', 'intel'];
+export const TAB_IDS: TabId[] = ['empire', 'team', 'marketing', 'research', 'invest', 'prestige', 'intel'];
 
 interface TabMeta {
   id: TabId;
@@ -23,14 +23,20 @@ const TABS: TabMeta[] = [
     desc: 'Buy & upgrade facilities to grow your income streams',
   },
   {
+    id: 'team',
+    label: 'Team',
+    icon: '👥',
+    desc: 'Advisors, companions, aides, workforce and your inner circle',
+  },
+  {
     id: 'marketing',
-    label: 'Marketing',
+    label: 'Reach',
     icon: '📣',
     desc: 'Build reach through social, content, PR and partnerships',
   },
   {
     id: 'research',
-    label: 'Research',
+    label: 'R&D',
     icon: '🔬',
     desc: 'Unlock passive multipliers and breakthroughs in your R&D lab',
   },
@@ -38,11 +44,11 @@ const TABS: TabMeta[] = [
     id: 'invest',
     label: 'Invest',
     icon: '💎',
-    desc: 'The Wiz — portfolio investments that pay market-beating returns',
+    desc: 'The Wiz - portfolio investments that pay market-beating returns',
   },
   {
     id: 'prestige',
-    label: 'Prestige',
+    label: 'Legacy',
     icon: '♻️',
     desc: 'Rebirth for Legacy Points when income outgrows your current tier',
   },
@@ -116,11 +122,12 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
         </div>
       )}
 
-      <div className="flex items-stretch px-2 py-1 pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-stretch overflow-x-auto no-scrollbar px-1 py-1 pb-[env(safe-area-inset-bottom)] gap-0.5">
         {TABS.map((tab) => (
           <div
             key={tab.id}
-            className="flex flex-1"
+            className="flex shrink-0"
+            style={{ minWidth: '62px', flex: '1 1 62px' }}
             title={tab.desc}
             onMouseEnter={() => setTooltipId(tab.id)}
             onMouseLeave={() => setTooltipId(null)}
@@ -140,7 +147,7 @@ export default function BottomNav({ active, onChange }: BottomNavProps) {
               }
               onClick={() => {
                 cancelLongPress();
-                if (tooltipId) { setTooltipId(null); return; } // dismiss tooltip on tap
+                if (tooltipId) { setTooltipId(null); return; }
                 if (active !== tab.id) {
                   sfx.play('tap');
                   haptic('tap');

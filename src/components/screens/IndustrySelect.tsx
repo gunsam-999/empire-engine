@@ -390,6 +390,7 @@ function AideCard({
 export default function IndustrySelect({ initialMode }: { initialMode?: GameMode } = {}) {
   const { dispatch } = useGame();
 
+  const [playerName, setPlayerName] = useState('');
   const [name, setName] = useState('');
   const [industry, setIndustry] = useState<IndustryType | null>(null);
   const [gameMode, setGameMode] = useState<GameMode>(initialMode ?? 'inheritance');
@@ -439,7 +440,8 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
   }
 
   const trimmedName = name.trim();
-  const ready = trimmedName.length > 0 && !!industry && !!philosophy;
+  const trimmedPlayerName = playerName.trim();
+  const ready = trimmedName.length > 0 && trimmedPlayerName.length > 0 && !!industry && !!philosophy;
 
   function found() {
     if (!ready || !industry || !philosophy) return;
@@ -447,6 +449,7 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
     haptic('heavy');
     const setup: CompanySetup = {
       name: trimmedName,
+      playerName: trimmedPlayerName || undefined,
       industry,
       accent,
       philosophy,
@@ -515,8 +518,30 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
         </p>
       </header>
 
-      {/* 1. Company name */}
-      <Section index={1} title="Name your company">
+      {/* 0. Founder name */}
+      <Section index={1} title="Your full name">
+        <p className="text-[11px] text-muted -mt-1 mb-3 leading-snug">
+          You'll be referenced by name throughout your journey.
+        </p>
+        <div className="relative">
+          <input
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+            maxLength={36}
+            placeholder="e.g. Jordan Reeve"
+            className="w-full rounded-xl bg-[#0e1420] border border-[#232c3e] px-4 py-3 text-base
+                       text-[#e7ecf5] placeholder:text-[#54607a] outline-none transition-colors
+                       focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]"
+            aria-label="Your full name"
+          />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-mono text-muted">
+            {trimmedPlayerName.length}/36
+          </span>
+        </div>
+      </Section>
+
+      {/* 2. Company name */}
+      <Section index={2} title="Name your company">
         <div className="relative">
           <input
             value={name}
@@ -571,7 +596,7 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
         {originSeen && oldMaster && (
           <div className="mt-2 text-center text-[11px] text-muted flex items-center justify-center gap-1.5">
             <span style={{ color: accent }}>✓</span>
-            <span>Origin seen — {oldMaster.name}'s legacy is yours</span>
+            <span>Origin seen - {oldMaster.name}'s legacy is yours</span>
           </div>
         )}
       </Section>
@@ -580,11 +605,11 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
       <Section index={4} title={gameMode === 'inheritance' ? "Choose your starting aide" : "Your inner circle"}>
         {gameMode === 'inheritance' ? (
           <p className="text-[11px] text-muted leading-snug mb-3 -mt-1">
-            The Old Master's inner circle. Each brings a unique mechanic — not a simple bonus. Choose the one whose approach matches yours.
+            The Old Master's inner circle. Each brings a unique mechanic - not a simple bonus. Choose the one whose approach matches yours.
           </p>
         ) : (
           <p className="text-[11px] text-muted leading-snug mb-3 -mt-1">
-            All six come with the empire. They start neutral — earn their loyalty.
+            All six come with the empire. They start neutral - earn their loyalty.
           </p>
         )}
         <div className="grid grid-cols-1 gap-2.5">
@@ -601,7 +626,7 @@ export default function IndustrySelect({ initialMode }: { initialMode?: GameMode
         {gameMode === 'inheritance' && (
           <div className="mt-2.5 rounded-lg px-3 py-2 text-[11px] text-muted"
                style={{ background: `color-mix(in srgb, ${accent} 6%, #0a0f1a)`, border: `1px solid color-mix(in srgb, ${accent} 15%, transparent)` }}>
-            Your chosen aide starts at loyalty 80 — already bonded through years in the Old Master's circle. The others join at 50.
+            Your chosen aide starts at loyalty 80 - already bonded through years in the Old Master's circle. The others join at 50.
           </div>
         )}
       </Section>

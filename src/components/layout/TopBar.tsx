@@ -14,6 +14,7 @@
 // overlay state  -  it calls `onOpenOverlay(id)` so App can render the overlay.
 // ============================================================================
 
+import type { CSSProperties } from 'react';
 import { useRef, useState } from 'react';
 import {
   useGame,
@@ -27,7 +28,7 @@ import { formatMoney, formatNumber } from '../../utils/bigNumber';
 import { unreadCount } from '../../systems/NotificationEngine';
 
 /** Header overlay buttons. App maps these to its overlay surfaces. */
-export type OverlayId = 'story' | 'territory' | 'settings' | 'advisors' | 'notifications';
+export type OverlayId = 'story' | 'dispatch' | 'will' | 'rivals' | 'territory' | 'settings';
 
 export interface TopBarProps {
   onOpenOverlay: (id: OverlayId) => void;
@@ -111,14 +112,16 @@ interface IconButtonProps {
   onClick: () => void;
   pulse?: boolean;
   badge?: number;
+  accentColor?: string;
 }
 
-function IconButton({ icon, label, desc, onClick, pulse = false, badge }: IconButtonProps) {
+function IconButton({ icon, label, desc, onClick, pulse = false, badge, accentColor }: IconButtonProps) {
   const [showTip, setShowTip] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const color = accentColor ?? 'var(--accent)';
 
   function startPress() {
-    timerRef.current = setTimeout(() => setShowTip(true), 550);
+    timerRef.current = setTimeout(() => setShowTip(true), 500);
   }
   function endPress() {
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -126,16 +129,19 @@ function IconButton({ icon, label, desc, onClick, pulse = false, badge }: IconBu
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col items-center gap-0.5">
       {showTip && desc && (
         <div
-          className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 z-50
-            pointer-events-none whitespace-nowrap rounded-lg border border-[var(--accent)]/25
-            px-2.5 py-1.5 text-center animate-fade-in"
-          style={{ background: 'rgba(10,14,24,0.97)', backdropFilter: 'blur(20px)' }}
+          className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50
+            pointer-events-none whitespace-nowrap rounded-xl border px-3 py-2 text-center animate-fade-in"
+          style={{
+            background: 'rgba(8,12,22,0.98)',
+            backdropFilter: 'blur(24px)',
+            borderColor: `${color}30`,
+          }}
         >
-          <div className="text-[10px] font-bold text-[var(--accent)]">{label}</div>
-          <div className="mt-0.5 text-[9px] text-[#8a94a8] max-w-[160px] leading-snug whitespace-normal">
+          <div className="text-[10px] font-bold mb-0.5" style={{ color }}>{label}</div>
+          <div className="text-[9px] text-[#8a94a8] max-w-[180px] leading-snug whitespace-normal">
             {desc}
           </div>
         </div>
@@ -150,21 +156,33 @@ function IconButton({ icon, label, desc, onClick, pulse = false, badge }: IconBu
         onTouchMove={endPress}
         onMouseEnter={() => setShowTip(true)}
         onMouseLeave={() => setShowTip(false)}
-        className="relative grid h-9 w-9 place-items-center rounded-xl glass
-          text-base transition-transform active:scale-90 hover:brightness-110"
+        className="relative flex flex-col items-center justify-center rounded-2xl transition-all active:scale-90"
+        style={{
+          width: '46px',
+          height: '46px',
+          background: pulse
+            ? `linear-gradient(145deg, ${color}22, ${color}0a)`
+            : 'rgba(255,255,255,0.04)',
+          border: `1.5px solid ${pulse ? `${color}55` : 'rgba(255,255,255,0.07)'}`,
+          boxShadow: pulse ? `0 0 16px -4px ${color}60` : 'none',
+        }}
       >
         {pulse && (
           <span
-            className="absolute inset-0 rounded-xl animate-pulse-accent pointer-events-none"
+            className="absolute inset-0 rounded-2xl animate-pulse-accent pointer-events-none"
             aria-hidden
+            style={{ '--accent': color } as CSSProperties}
           />
         )}
-        <span aria-hidden>{icon}</span>
+        <span className="text-xl leading-none" aria-hidden>{icon}</span>
+        <span className="text-[8px] font-semibold leading-none mt-0.5" style={{ color: pulse ? color : '#6b7899' }}>
+          {label}
+        </span>
         {badge !== undefined && badge > 0 && (
           <span
-            className="absolute -right-1 -top-1 min-w-[16px] h-4 px-1 rounded-full text-[10px]
-              font-bold leading-4 text-center text-[#070b12]"
-            style={{ background: 'var(--accent)' }}
+            className="absolute -right-1 -top-1 min-w-[17px] h-[17px] px-1 rounded-full text-[9px]
+              font-bold leading-none flex items-center justify-center text-[#070b12]"
+            style={{ background: color }}
             aria-hidden
           >
             {badge > 9 ? '9+' : badge}
@@ -223,33 +241,27 @@ export default function TopBar({ onOpenOverlay }: TopBarProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <IconButton
-            icon="📖"
-            label="Saga"
-            desc="Your story arc — mentor guidance, rival confrontations, and active beats"
-            onClick={() => onOpenOverlay('story')}
+            icon="📡"
+            label="Dispatch"
+            desc="Story beats, alerts and live empire feed"
+            onClick={() => onOpenOverlay(storyQueued > 0 ? 'story' : 'dispatch')}
             pulse={storyQueued > 0}
-            badge={storyQueued}
+            badge={storyQueued > 0 ? storyQueued : notifUnread}
+            accentColor={storyQueued > 0 ? '#F5C842' : undefined}
           />
           <IconButton
-            icon="🃏"
-            label="Advisors"
-            desc="Hire advisors who multiply income and unlock powerful perks"
-            onClick={() => onOpenOverlay('advisors')}
+            icon="📜"
+            label="The Will"
+            desc="Old Master's will — wealth tranches, clauses, legacy"
+            onClick={() => onOpenOverlay('will')}
           />
           <IconButton
-            icon="🗺️"
-            label="Territory"
-            desc="Expand your empire's geographic footprint for region bonuses"
-            onClick={() => onOpenOverlay('territory')}
-          />
-          <IconButton
-            icon="🔔"
-            label="Alerts"
-            desc="Rival moves, press coverage, market events and milestones"
-            onClick={() => onOpenOverlay('notifications')}
-            badge={notifUnread}
+            icon="⚔️"
+            label="Rivals"
+            desc="Rival movements, posture and threats"
+            onClick={() => onOpenOverlay('rivals')}
           />
           <IconButton
             icon="⚙️"

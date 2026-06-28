@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // Premise data  -  the Old Master's will.
 // 2 universal clauses + 3 per industry = 5 clauses per run.
 // Conditions checked against live GameState each tick; never stored here.
@@ -59,7 +59,7 @@ const INDUSTRY_CLAUSES: ClauseConfig[] = [
   {
     id: 'tech_stay_human',
     label: 'Stay Human',
-    description: 'Keep an active research project running. Ezra never let the lab go quiet — not even once.',
+    description: 'Keep an active research project running. Ezra never let the lab go quiet - not even once.',
     industrySpecific: 'tech',
     fulfillRequireSec: 30,
     breachGraceSec: 180,
@@ -171,7 +171,7 @@ const INDUSTRY_CLAUSES: ClauseConfig[] = [
   {
     id: 'energy_grid_balance',
     label: 'Grid Balance',
-    description: 'Sell into the market continuously for 3 minutes — no hoarding. The grid serves the people first.',
+    description: 'Sell into the market continuously for 3 minutes - no hoarding. The grid serves the people first.',
     industrySpecific: 'energy',
     fulfillRequireSec: 180,
     breachGraceSec: 20,
@@ -181,7 +181,7 @@ const INDUSTRY_CLAUSES: ClauseConfig[] = [
   {
     id: 'energy_invest_in_tomorrow',
     label: 'Invest in Tomorrow',
-    description: 'Complete 2 research nodes. Miriam predicted the solar revolution 20 years out — she always read the science.',
+    description: 'Complete 2 research nodes. Miriam predicted the solar revolution 20 years out - she always read the science.',
     industrySpecific: 'energy',
     fulfillRequireSec: 0,
     breachGraceSec: 0,

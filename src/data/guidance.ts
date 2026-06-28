@@ -183,7 +183,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'ui', uiKey: 'research_tab' },
     emotion: 'calm',
     lines: ["Research is how we build advantages the market can't copy."],
-    tip: "Pick your branch early — some nodes compound for the entire run.",
+    tip: "Pick your branch early - some nodes compound for the entire run.",
   },
   {
     id: 'hint-market-first',
@@ -197,7 +197,7 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'ui', uiKey: 'intel_tab' },
     emotion: 'calm',
     lines: ["Intelligence is leverage. The more we know, the fewer surprises land."],
-    tip: 'The War Room shows rival telegraphs before they strike — act first.',
+    tip: 'The War Room shows rival telegraphs before they strike - act first.',
   },
   {
     id: 'hint-prestige-first',
@@ -211,14 +211,14 @@ export const GUIDANCE_BEATS: GuidanceBeat[] = [
     trigger: { type: 'ui', uiKey: 'rival_appeared' },
     emotion: 'urgent',
     lines: ["Our first real rival. Means we're big enough to threaten someone."],
-    tip: 'Watch their posture — HOSTILE escalates quickly if you ignore it.',
+    tip: 'Watch their posture - HOSTILE escalates quickly if you ignore it.',
   },
   {
     id: 'hint-invest-first',
     trigger: { type: 'ui', uiKey: 'invest_tab' },
     emotion: 'tip',
     lines: ["The portfolio is where idle cash becomes compounding wealth."],
-    tip: 'Diversify early — The Wiz signals when to rotate positions.',
+    tip: 'Diversify early - The Wiz signals when to rotate positions.',
   },
 ];
 

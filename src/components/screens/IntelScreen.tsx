@@ -120,7 +120,7 @@ function WarRoomSection() {
               🕵️ WAR ROOM
             </div>
             <div className="mt-0.5 text-[11px]" style={{ color: '#a78bfa' }}>
-              Level {intel.warRoomLevel} — {WAR_ROOM_LEVEL_LABELS[intel.warRoomLevel]}
+              Level {intel.warRoomLevel} - {WAR_ROOM_LEVEL_LABELS[intel.warRoomLevel]}
             </div>
           </div>
           {intel.warRoomLevel < 5 && (
@@ -145,7 +145,7 @@ function WarRoomSection() {
         </p>
         {intel.warRoomLevel < 5 && (
           <p className="mt-1 text-[10px] text-[#a78bfa]/70">
-            Next: {WAR_ROOM_LEVEL_LABELS[(intel.warRoomLevel + 1) as keyof typeof WAR_ROOM_LEVEL_LABELS]} — {WAR_ROOM_LEVEL_DESC[(intel.warRoomLevel + 1) as keyof typeof WAR_ROOM_LEVEL_DESC]}
+            Next: {WAR_ROOM_LEVEL_LABELS[(intel.warRoomLevel + 1) as keyof typeof WAR_ROOM_LEVEL_LABELS]} - {WAR_ROOM_LEVEL_DESC[(intel.warRoomLevel + 1) as keyof typeof WAR_ROOM_LEVEL_DESC]}
           </p>
         )}
       </div>
@@ -167,7 +167,7 @@ function WarRoomSection() {
 
           {pending.length > 0 && (
             <div className="mt-2 text-[11px] text-[#fbbf24]">
-              {pending.length} report{pending.length > 1 ? 's' : ''} in progress —{' '}
+              {pending.length} report{pending.length > 1 ? 's' : ''} in progress -{' '}
               ~{Math.round(Math.max(0, (pending[0].revealsAt - now) / 1000))}s
             </div>
           )}
@@ -184,7 +184,7 @@ function WarRoomSection() {
             }}
           >
             {canCommit
-              ? `Commission Report${selectedRivalId ? ` on ${selectedCfg?.name ?? selectedRivalId}` : ''} — 🤝${INTEL_COMMISSION_COST}`
+              ? `Commission Report${selectedRivalId ? ` on ${selectedCfg?.name ?? selectedRivalId}` : ''} - 🤝${INTEL_COMMISSION_COST}`
               : cooldownSecs > 0
                 ? `Cooldown: ${fmt(cooldownSecs)}`
                 : `Need 🤝${INTEL_COMMISSION_COST}`}
@@ -209,7 +209,7 @@ function WarRoomSection() {
             className="mt-2 rounded-lg px-3 py-1.5 text-[11px] font-semibold disabled:opacity-50 active:scale-[0.97]"
             style={{ background: '#f8717122', border: '1px solid #f8717155', color: '#f87171' }}
           >
-            Neutralise Operation — 🤝{INTEL_COMMISSION_COST}
+            Neutralise Operation - 🤝{INTEL_COMMISSION_COST}
           </button>
         </div>
       )}
@@ -353,7 +353,7 @@ function WarRoomSection() {
           {selectedVendetta && (
             <div className="mt-3 rounded-lg bg-[#f87171]/10 border border-[#f87171]/30 p-2.5">
               <div className="text-[11px] font-semibold text-[#f87171]">
-                🔥 VENDETTA — Escalation Level {selectedVendetta.escalationLevel}/3
+                🔥 VENDETTA - Escalation Level {selectedVendetta.escalationLevel}/3
               </div>
               <div className="mt-0.5 text-[10px] text-[#e7ecf5]">
                 {selectedCfg.name} has attacked you {selectedVendetta.totalAttacks} times. This is personal.
@@ -365,7 +365,7 @@ function WarRoomSection() {
                 className="mt-2 rounded-lg px-2.5 py-1 text-[10px] font-semibold disabled:opacity-50 active:scale-[0.97]"
                 style={{ background: '#f8717122', border: '1px solid #f8717155', color: '#f87171' }}
               >
-                De-escalate — 🤝300
+                De-escalate - 🤝300
               </button>
             </div>
           )}
@@ -428,7 +428,7 @@ function WarRoomSection() {
               color: canUpgrade ? '#a78bfa' : '#8a94a8',
             }}
           >
-            Commission War Room — 🤝{WAR_ROOM_UPGRADE_COSTS[1]}
+            Commission War Room - 🤝{WAR_ROOM_UPGRADE_COSTS[1]}
           </button>
         </div>
       )}
@@ -451,7 +451,7 @@ function LedgerSection() {
         <div className="text-2xl mb-2">🗞</div>
         <div className="text-[13px] font-semibold text-[#e7ecf5] mb-1">The Financial Ledger</div>
         <div className="text-[11px] text-[#8a94a8]">
-          No headlines yet. Keep building your empire — the world is watching.
+          No headlines yet. Keep building your empire - the world is watching.
         </div>
       </div>
     );
@@ -632,7 +632,7 @@ function LedgerSection() {
                     color: hasInfluence ? '#f87171' : '#8a94a8',
                   }}
                 >
-                  Respond publicly — 🤝{NEWS_RESPOND_COST}
+                  Respond publicly - 🤝{NEWS_RESPOND_COST}
                 </button>
               )}
               {item.responded && isNeg && (
@@ -673,7 +673,7 @@ function PantheonSection() {
       <div className="rounded-2xl border border-[#232c3e] bg-[#0e1420] p-4">
         <div className="text-[15px] font-black text-[#e7ecf5] tracking-tight">🌐 THE PANTHEON</div>
         <div className="text-[11px] text-[#8a94a8] mt-1">
-          The six founders who own the global economy. Your arc is to close the gap — then surpass them.
+          The six founders who own the global economy. Your arc is to close the gap - then surpass them.
         </div>
         <div className="mt-3 rounded-xl bg-[#151c2b] border border-[#232c3e] p-3">
           <div className="text-[11px] text-[#8a94a8]">Your position</div>
@@ -710,7 +710,7 @@ function PantheonSection() {
           const noticeLabel =
             noticeStatus === 'rival' ? '⚔️ RIVAL'
             : noticeStatus === 'watching' ? '👁 WATCHING'
-            : '— Unaware';
+            : '- Unaware';
 
           return (
             <div

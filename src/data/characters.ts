@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // Empire Engine  -  CHARACTER DATA
 // NPC co-founders (recruitable) and shared avatar rendering tables.
 // Pure data + helpers. No React.
@@ -71,7 +71,7 @@ export const NPC_COFOUNDERS: NpcCofounder[] = [
     role: 'Head of Growth',
     tagline: 'Growth is a system, not a strategy.',
     backstory:
-      'Built three companies\' growth engines from scratch — each cleared $50M ARR. He doesn\'t take equity for the journey. He takes it for the destination.',
+      'Built three companies\' growth engines from scratch - each cleared $50M ARR. He doesn\'t take equity for the journey. He takes it for the destination.',
     bonusLabel: 'Revenue Surge',
     bonusDesc: '+12% to all income. Compounds with your market multipliers to accelerate scaling.',
     bonusMult: 1.12,
@@ -103,7 +103,7 @@ export const NPC_COFOUNDERS: NpcCofounder[] = [
     role: 'Chief Brand Officer',
     tagline: "People don't buy products. They buy stories.",
     backstory:
-      'Built a $200M brand from a single social post and a $0 budget. Believes every empire has a story worth telling — and that most are too afraid to tell it.',
+      'Built a $200M brand from a single social post and a $0 budget. Believes every empire has a story worth telling - and that most are too afraid to tell it.',
     bonusLabel: 'Brand Reach',
     bonusDesc: '+20% Marketing reach and audience growth. Rival morale hits land 10% harder.',
     bonusMult: 1.20,

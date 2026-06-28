@@ -21,7 +21,7 @@ export interface GameShellProps {
   activeTab: TabId;
   /** Switch tabs. */
   onTabChange: (tab: TabId) => void;
-  /** Open a header overlay (story / territory / settings). */
+  /** Open a header overlay (dispatch / will / rivals / territory / settings). */
   onOpenOverlay: (id: OverlayId) => void;
   /** The active screen's content. */
   children: ReactNode;
@@ -40,14 +40,13 @@ export default function GameShell({
 
       <TopBar onOpenOverlay={onOpenOverlay} />
 
-      {/* Rival telegraphs  -  always visible, above scroll content. */}
+      {/* Rival telegraphs — always visible, above scroll content. */}
       <div className="fixed left-1/2 top-[148px] z-40 w-full max-w-[480px] -translate-x-1/2">
         <RivalAlert />
       </div>
 
-      {/* Scrollable content. pt clears the (3-row) TopBar + any rival banners,
-          pb-24 clears the nav. Re-keyed per tab so each screen fades/slides in fresh.
-          Sits above the ambient backdrop (z-10). */}
+      {/* Scrollable content. pt-[148px] clears the TopBar.
+          pb-24 clears the nav. Re-keyed per tab so each screen fades/slides in fresh. */}
       <main
         key={activeTab}
         className="no-scrollbar animate-fade-in relative z-10 min-h-screen px-3 pt-[148px] pb-24"

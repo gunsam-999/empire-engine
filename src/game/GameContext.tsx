@@ -105,6 +105,7 @@ import {
 import { tickPantheon, defaultPantheonState, getRankedTitans } from '../systems/PantheonEngine';
 import { getPantheonConfig } from '../data/pantheon';
 import { detectNotifications, defaultNotificationState, markAllRead } from '../systems/NotificationEngine';
+import { toast } from '../components/shared/ToastNotification';
 import {
   tickPublicAffairs,
   defaultPublicAffairsState,
@@ -1468,7 +1469,7 @@ export function reducer(state: GameState, action: Action): GameState {
               boost: {
                 mult: cfg.deployMult,
                 endsAt: now + cfg.deployDurationSec * 1000,
-                source: `${cfg.name} — ${cfg.deployLabel}`,
+                source: `${cfg.name} - ${cfg.deployLabel}`,
               },
             }
           : state.events,
@@ -1644,6 +1645,19 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const handle = startGameLoop(dispatch);
     return () => handle.stop();
   }, [state.setup !== null]);
+
+  // Fire notification toasts exactly once per notification (dedup via ref set).
+  // Toasts are stored as metadata on each GameNotification so the reducer stays pure.
+  const toastedIds = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    const items = state.notifications?.items;
+    if (!items) return;
+    for (const n of items) {
+      if (!n.toast || toastedIds.current.has(n.id)) continue;
+      toastedIds.current.add(n.id);
+      toast[n.toast.kind](n.toast.msg, { icon: n.toast.icon, durationMs: n.toast.durationMs });
+    }
+  }, [state.notifications?.items]);
 
   // Autosave: every 30s and on visibility -> hidden.
   const stateRef = useRef(state);

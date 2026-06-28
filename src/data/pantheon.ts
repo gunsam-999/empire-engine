@@ -61,7 +61,7 @@ export const PANTHEON_CONFIGS: PantheonTitanConfig[] = [
         section: 'pantheon',
       },
       {
-        headline: 'Solaris Foundation Pledges $50B to Mars Colonisation — "Earth is a Backup"',
+        headline: 'Solaris Foundation Pledges $50B to Mars Colonisation - "Earth is a Backup"',
         body: 'The Solaris Foundation has committed $50 billion to permanent off-world habitat. "Civilisation needs a second save file," Solaris explained at a conference held inside a rocket.',
         section: 'pantheon',
       },

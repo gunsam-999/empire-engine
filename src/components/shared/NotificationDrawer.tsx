@@ -55,10 +55,10 @@ function inferNextStep(notif: GameNotification): NextStep {
   if (t.includes('territory') || t.includes('region') || t.includes('expand'))
     return { hint: 'Open Territory (🗺️ header button) to claim the new region.', where: 'Territory panel' };
   if (notif.priority === 'urgent')
-    return { hint: 'This needs attention — check Intel or Empire for active threats.', where: 'Intel tab' };
+    return { hint: 'This needs attention - check Intel or Empire for active threats.', where: 'Intel tab' };
   if (notif.priority === 'success')
-    return { hint: 'Well done! Keep building — check Empire for the next upgrade.', where: 'Empire tab' };
-  return { hint: 'Stay informed — this event may shift your strategy.', where: 'Empire tab' };
+    return { hint: 'Well done! Keep building - check Empire for the next upgrade.', where: 'Empire tab' };
+  return { hint: 'Stay informed - this event may shift your strategy.', where: 'Empire tab' };
 }
 
 interface NotifCardProps {

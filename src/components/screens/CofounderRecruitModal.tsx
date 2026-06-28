@@ -130,7 +130,7 @@ export default function CofounderRecruitModal({ onClose }: CofounderRecruitModal
       kind: 'milestone',
       icon: '🤝',
       title: `${npc.name} joins the empire`,
-      subtitle: `${npc.role} — ${npc.bonusLabel} unlocked.`,
+      subtitle: `${npc.role} - ${npc.bonusLabel} unlocked.`,
       color: npc.avatar.accent,
     });
     onClose();
@@ -158,7 +158,7 @@ export default function CofounderRecruitModal({ onClose }: CofounderRecruitModal
             </div>
             <h2 className="text-xl font-bold text-[#e7ecf5]">Recruit a Co-Founder</h2>
             <p className="mt-1 text-[12px] text-[#8a94a8] leading-snug">
-              You've built enough to know what you need. Choose the partner who fills the gap — their bonus is permanent.
+              You've built enough to know what you need. Choose the partner who fills the gap - their bonus is permanent.
             </p>
           </div>
 

@@ -120,7 +120,7 @@ export default function OldMasterOriginModal({ master, onComplete }: Props) {
             }}
           >
             {isHandoff && (
-              <span className="mr-2 not-italic opacity-60">—</span>
+              <span className="mr-2 not-italic opacity-60">-</span>
             )}
             {currentLine}
           </p>

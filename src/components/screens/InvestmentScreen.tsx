@@ -140,11 +140,35 @@ function BuyModal({
             </div>
           </div>
 
-          <div className="flex items-center justify-between mb-3 px-3 py-2 rounded-xl bg-white/5">
-            <span className="text-xs text-gray-400">Current price</span>
-            <span className="font-mono font-bold text-white text-sm">{currentPrice.toFixed(4)}</span>
+          {/* Price + immediate action */}
+          <div className="rounded-2xl overflow-hidden mb-3" style={{ border: `1px solid ${def.color}30` }}>
+            <div className="flex items-center justify-between px-4 py-2.5 bg-white/5">
+              <span className="text-xs text-gray-400">Current price</span>
+              <span className="font-mono font-bold text-white text-sm">{currentPrice.toFixed(4)}</span>
+            </div>
+            <button
+              disabled={!canBuy}
+              onClick={handleBuy}
+              className="w-full py-4 font-black text-base tracking-wide text-black disabled:opacity-40 transition-all active:scale-[0.98]"
+              style={{ background: canBuy ? def.color : '#1a1f2e' }}
+            >
+              {canBuy ? `INVEST ${formatMoney(amount)}` : 'Select an amount below'}
+            </button>
           </div>
 
+          {/* Preview line */}
+          {canBuy && (
+            <p className="text-xs text-gray-500 mb-2 text-center">
+              You'll get ~{formatNumber(unitsPreview)} units at {currentPrice.toFixed(4)}/unit
+            </p>
+          )}
+          {!canBuy && amount > 0 && (
+            <p className="text-xs text-red-400 mb-2 text-center">
+              {amount < def.minBuy ? `Min ${formatMoney(def.minBuy)}` : 'Not enough cash'}
+            </p>
+          )}
+
+          {/* Quick amounts */}
           <p className="text-xs text-gray-500 mb-2">Quick amounts</p>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {QUICK_AMOUNTS.map((q) => {
@@ -154,14 +178,14 @@ function BuyModal({
                   key={q}
                   disabled={disabled}
                   onClick={() => setAmount(q)}
-                  className={`py-2 rounded-xl text-sm font-bold border transition-all ${
+                  className={`py-2.5 rounded-xl text-sm font-bold border transition-all ${
                     amount === q
                       ? 'border-current text-white'
                       : disabled
                       ? 'border-white/5 text-gray-600 bg-white/5 cursor-not-allowed'
-                      : 'border-white/10 text-gray-400 bg-white/5 hover:border-white/30 hover:text-white'
+                      : 'border-white/10 text-gray-400 bg-white/5 active:border-white/30'
                   }`}
-                  style={amount === q ? { borderColor: def.color, color: def.color } : {}}
+                  style={amount === q ? { borderColor: def.color, color: def.color, background: `${def.color}15` } : {}}
                 >
                   {formatMoney(q)}
                 </button>
@@ -175,27 +199,8 @@ function BuyModal({
             min={def.minBuy}
             max={cash}
             onChange={(e) => setAmount(Number(e.target.value))}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-white/30 mb-1"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-white/30"
           />
-          {!canBuy && (
-            <p className="text-xs text-red-400 mb-2">
-              {amount < def.minBuy ? `Min $${def.minBuy.toLocaleString()}` : 'Not enough cash'}
-            </p>
-          )}
-          {canBuy && (
-            <p className="text-xs text-gray-500 mb-2">
-              You'll get ~{formatNumber(unitsPreview)} units
-            </p>
-          )}
-
-          <button
-            disabled={!canBuy}
-            onClick={handleBuy}
-            className="w-full py-3.5 rounded-2xl font-black text-sm tracking-wide text-black disabled:opacity-40 transition-all"
-            style={{ background: canBuy ? def.color : '#333' }}
-          >
-            INVEST {formatMoney(amount)}
-          </button>
         </div>
       </div>
     </div>

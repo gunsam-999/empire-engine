@@ -205,6 +205,7 @@ export interface GameReward {
 
 export interface CompanySetup {
   name: string;
+  playerName?: string;
   industry: IndustryType;
   accent: string;
   philosophy: Philosophy;
@@ -676,6 +677,8 @@ export interface GameNotification {
   title: string;
   body: string;
   read: boolean;
+  /** Ephemeral — consumed by GameProvider useEffect, not persisted. */
+  toast?: { msg: string; kind: 'bad' | 'good' | 'warn'; icon: string; durationMs: number };
 }
 
 export interface NotificationState {

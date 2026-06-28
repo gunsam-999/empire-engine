@@ -1,88 +1,123 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <radialGradient id="bg-glow" cx="50%" cy="40%" r="55%">
-      <stop offset="0%" stop-color="#1c1545"/>
-      <stop offset="100%" stop-color="#070b12"/>
-    </radialGradient>
-    <linearGradient id="crown-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#b4a7fb"/>
-      <stop offset="45%" stop-color="#7d6ff7"/>
-      <stop offset="100%" stop-color="#4338ca"/>
+    <!-- Tower fill: dark amber → bright gold → cream at peak -->
+    <linearGradient id="ic-tg" gradientUnits="userSpaceOnUse" x1="76" y1="346" x2="76" y2="152">
+      <stop offset="0%"   stop-color="#B87A0A"/>
+      <stop offset="40%"  stop-color="#F5C842"/>
+      <stop offset="100%" stop-color="#FFF4A3"/>
     </linearGradient>
-    <linearGradient id="base-grad" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#7d6ff7"/>
-      <stop offset="100%" stop-color="#3730a3"/>
+    <!-- Tower highlight: left-edge bevel -->
+    <linearGradient id="ic-th" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="white" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
     </linearGradient>
-    <radialGradient id="halo" cx="50%" cy="45%" r="45%">
-      <stop offset="0%" stop-color="#7d6ff7" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#5a4af2" stop-opacity="0"/>
+    <!-- Gold outer ring: bright top, deepens at sides -->
+    <linearGradient id="ic-rg" gradientUnits="userSpaceOnUse" x1="256" y1="101" x2="256" y2="415">
+      <stop offset="0%"   stop-color="#FFF4A3"/>
+      <stop offset="45%"  stop-color="#F5C842"/>
+      <stop offset="100%" stop-color="#C8890A"/>
+    </linearGradient>
+    <!-- Teal bottom arc -->
+    <linearGradient id="ic-tr" gradientUnits="userSpaceOnUse" x1="256" y1="355" x2="256" y2="418">
+      <stop offset="0%"   stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#1E8A83"/>
+    </linearGradient>
+    <!-- Teal base fill inside disc -->
+    <linearGradient id="ic-tb" gradientUnits="userSpaceOnUse" x1="256" y1="346" x2="256" y2="409">
+      <stop offset="0%"   stop-color="#2A9D8F" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#0C3D3A"/>
+    </linearGradient>
+    <!-- Inner atmosphere glow -->
+    <radialGradient id="ic-ia" cx="50%" cy="85%" r="38%">
+      <stop offset="0%"   stop-color="#4ECDC4" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#4ECDC4" stop-opacity="0"/>
     </radialGradient>
-    <filter id="glow-f" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="14" result="blur"/>
-      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-    </filter>
-    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6"/>
+    <!-- Background: deep navy -->
+    <radialGradient id="ic-bg" cx="50%" cy="45%" r="55%">
+      <stop offset="0%"   stop-color="#0A1525"/>
+      <stop offset="100%" stop-color="#040810"/>
+    </radialGradient>
+    <!-- Subtle gold aurora on background -->
+    <radialGradient id="ic-au" cx="50%" cy="40%" r="42%">
+      <stop offset="0%"   stop-color="#F5C842" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#F5C842" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Clip to inner disc -->
+    <clipPath id="ic-cc">
+      <circle cx="256" cy="256" r="144"/>
+    </clipPath>
+    <!-- Tower glow filter -->
+    <filter id="ic-gf" x="-25%" y="-25%" width="150%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
 
-  <!-- Background rounded square -->
-  <rect width="512" height="512" rx="110" fill="url(#bg-glow)"/>
-  <!-- Border ring -->
-  <rect width="512" height="512" rx="110" fill="none" stroke="#5a4af2" stroke-width="5" stroke-opacity="0.55"/>
+  <!-- Rounded square background -->
+  <rect width="512" height="512" rx="110" fill="url(#ic-bg)"/>
+  <rect width="512" height="512" rx="110" fill="url(#ic-au)"/>
+  <!-- Gold border ring -->
+  <rect width="512" height="512" rx="110" fill="none" stroke="#F5C842" stroke-width="6" stroke-opacity="0.30"/>
 
-  <!-- Ambient halo -->
-  <ellipse cx="256" cy="240" rx="200" ry="180" fill="url(#halo)" filter="url(#soft)"/>
+  <!-- Accent dots in corners for polish -->
+  <circle cx="90"  cy="90"  r="3"   fill="#F5C842" opacity="0.25"/>
+  <circle cx="422" cy="90"  r="2.5" fill="#F5C842" opacity="0.20"/>
+  <circle cx="90"  cy="422" r="2"   fill="#4ECDC4" opacity="0.18"/>
+  <circle cx="422" cy="422" r="3"   fill="#4ECDC4" opacity="0.22"/>
 
-  <!-- Crown shadow for depth -->
-  <path d="M156,354 L156,268 L198,310 L230,210 L256,278 L282,210 L314,310 L356,268 L356,354 Z"
-        fill="#3730a3" opacity="0.6" transform="translate(4,8)" filter="url(#soft)"/>
+  <!-- === MEDALLION === -->
 
-  <!-- Crown body (5-point silhouette) -->
-  <path d="M156,354 L156,268 L198,310 L230,210 L256,278 L282,210 L314,310 L356,268 L356,354 Z"
-        fill="url(#crown-grad)" filter="url(#glow-f)"/>
+  <!-- Dark base disc (two layers for depth) -->
+  <circle cx="256" cy="256" r="167" fill="#04080F"/>
+  <circle cx="256" cy="256" r="162" fill="#060C1A"/>
 
-  <!-- Crown inner bevel (lighter edge on left face) -->
-  <path d="M156,268 L198,310 L230,210 L256,278" fill="none" stroke="white" stroke-width="2" stroke-opacity="0.25" stroke-linejoin="round"/>
-  <path d="M282,210 L308,310 L356,268" fill="none" stroke="white" stroke-width="2" stroke-opacity="0.12" stroke-linejoin="round"/>
+  <!-- Teal base fill — bottom portion, clipped to inner circle -->
+  <rect x="105" y="346" width="302" height="72" fill="url(#ic-tb)" clip-path="url(#ic-cc)"/>
 
-  <!-- Crown base band -->
-  <rect x="142" y="344" width="228" height="42" rx="11" fill="url(#base-grad)"/>
-  <!-- Base highlight strip -->
-  <rect x="142" y="344" width="228" height="10" rx="11" fill="white" opacity="0.16"/>
-  <!-- Base bottom shadow -->
-  <rect x="142" y="376" width="228" height="10" rx="11" fill="#1e1b4b" opacity="0.5"/>
+  <!-- Teal atmosphere glow from bottom -->
+  <circle cx="256" cy="256" r="144" fill="url(#ic-ia)"/>
 
-  <!-- Notch engravings on base (circuit-board motif) -->
-  <rect x="168" y="357" width="20" height="4" rx="2" fill="white" opacity="0.22"/>
-  <rect x="200" y="357" width="12" height="4" rx="2" fill="white" opacity="0.22"/>
-  <rect x="224" y="357" width="20" height="4" rx="2" fill="white" opacity="0.22"/>
-  <rect x="256" y="357" width="12" height="4" rx="2" fill="white" opacity="0.22"/>
-  <rect x="280" y="357" width="20" height="4" rx="2" fill="white" opacity="0.22"/>
-  <rect x="312" y="357" width="16" height="4" rx="2" fill="white" opacity="0.22"/>
+  <!-- 5 towers with gold glow -->
+  <g filter="url(#ic-gf)" clip-path="url(#ic-cc)">
+    <!-- T1 — far left, short -->
+    <rect x="171" y="251" width="23" height="95"  rx="3" fill="url(#ic-tg)"/>
+    <rect x="171" y="251" width="7"  height="95"  rx="3" fill="url(#ic-th)"/>
+    <!-- T2 — left-center, medium -->
+    <rect x="200" y="207" width="27" height="139" rx="3" fill="url(#ic-tg)"/>
+    <rect x="200" y="207" width="9"  height="139" rx="3" fill="url(#ic-th)"/>
+    <!-- T3 — center, tallest -->
+    <rect x="233" y="159" width="36" height="187" rx="4" fill="url(#ic-tg)"/>
+    <rect x="233" y="159" width="11" height="187" rx="4" fill="url(#ic-th)"/>
+    <!-- T4 — right-center, medium -->
+    <rect x="276" y="218" width="25" height="128" rx="3" fill="url(#ic-tg)"/>
+    <rect x="276" y="218" width="7"  height="128" rx="3" fill="url(#ic-th)"/>
+    <!-- T5 — far right, short -->
+    <rect x="308" y="263" width="22" height="83"  rx="3" fill="url(#ic-tg)"/>
+    <rect x="308" y="263" width="7"  height="83"  rx="3" fill="url(#ic-th)"/>
+  </g>
 
-  <!-- Gem: left peak -->
-  <circle cx="230" cy="206" r="13" fill="#f472b6" filter="url(#glow-f)"/>
-  <circle cx="230" cy="206" r="7" fill="white" opacity="0.5"/>
+  <!-- Gold outer ring — top 270° (large arc, counterclockwise) -->
+  <!-- Endpoints (146,366) and (366,366) are at radius≈155 from center (256,256) -->
+  <path d="M 146,366 A 155,155 0 1,0 366,366"
+        fill="none" stroke="url(#ic-rg)" stroke-width="18" stroke-linecap="round"/>
 
-  <!-- Gem: center peak (tallest, largest) -->
-  <circle cx="256" cy="275" r="0"/>
-  <!-- Crown tip jewel -->
-  <circle cx="256" cy="190" r="0"/>
+  <!-- Teal bottom arc — bottom 90° (small arc, clockwise) -->
+  <path d="M 146,366 A 155,155 0 0,1 366,366"
+        fill="none" stroke="url(#ic-tr)" stroke-width="18" stroke-linecap="round"/>
 
-  <!-- Gem: right peak -->
-  <circle cx="282" cy="206" r="13" fill="#fbbf24" filter="url(#glow-f)"/>
-  <circle cx="282" cy="206" r="7" fill="white" opacity="0.5"/>
+  <!-- Circuit node at tower base -->
+  <line x1="184" y1="346" x2="328" y2="346" stroke="#2A9D8F" stroke-width="2.5" opacity="0.65"/>
+  <line x1="256" y1="346" x2="256" y2="364" stroke="#2A9D8F" stroke-width="2.5" opacity="0.55"/>
+  <line x1="188" y1="346" x2="177" y2="335" stroke="#2A9D8F" stroke-width="2"   opacity="0.4"/>
+  <line x1="324" y1="346" x2="335" y2="335" stroke="#2A9D8F" stroke-width="2"   opacity="0.4"/>
+  <circle cx="211" cy="346" r="4.5" fill="#4ECDC4" opacity="0.85"/>
+  <circle cx="301" cy="346" r="4.5" fill="#4ECDC4" opacity="0.85"/>
+  <circle cx="256" cy="346" r="10"  fill="#F5C842" stroke="#2A9D8F" stroke-width="2.5"/>
+  <circle cx="256" cy="346" r="4.5" fill="#FFF8D0"/>
 
-  <!-- Center gem (valley, accent color) -->
-  <circle cx="256" cy="274" r="9" fill="#38bdf8" filter="url(#glow-f)"/>
-  <circle cx="256" cy="274" r="4.5" fill="white" opacity="0.55"/>
-
-  <!-- Decorative stars (background) -->
-  <circle cx="152" cy="142" r="3" fill="white" opacity="0.55"/>
-  <circle cx="360" cy="128" r="2.5" fill="white" opacity="0.45"/>
-  <circle cx="388" cy="210" r="2" fill="white" opacity="0.35"/>
-  <circle cx="126" cy="218" r="2" fill="white" opacity="0.35"/>
-  <circle cx="195" cy="118" r="1.8" fill="white" opacity="0.4"/>
-  <circle cx="330" cy="148" r="1.5" fill="white" opacity="0.3"/>
+  <!-- Subtle inner ring accent -->
+  <circle cx="256" cy="256" r="130" fill="none" stroke="#F5C842" stroke-width="1" opacity="0.12"/>
 </svg>

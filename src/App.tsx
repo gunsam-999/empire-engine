@@ -23,14 +23,17 @@ import IndustrySelect from './components/screens/IndustrySelect';
 import EmpireScreen from './components/screens/EmpireScreen';
 import MarketingScreen from './components/screens/MarketingScreen';
 import ResearchScreen from './components/screens/ResearchScreen';
-import AdvisorScreen from './components/screens/AdvisorScreen';
 import InvestmentScreen from './components/screens/InvestmentScreen';
 import PrestigeScreen from './components/screens/PrestigeScreen';
 import IntelScreen from './components/screens/IntelScreen';
 import StoryScreen from './components/screens/StoryScreen';
+import TeamScreen from './components/screens/TeamScreen';
 import TerritoryScreen from './components/screens/TerritoryScreen';
 import SettingsScreen from './components/screens/SettingsScreen';
+import WillOverlay from './components/screens/WillOverlay';
+import RivalsOverlay from './components/screens/RivalsOverlay';
 import RyNoIntro from './components/screens/RyNoIntro';
+import LoadingScreen from './components/screens/LoadingScreen';
 import HomeScreen from './components/screens/HomeScreen';
 
 import WelcomeBackModal from './components/screens/WelcomeBackModal';
@@ -43,8 +46,8 @@ import { ToastHost } from './components/shared/ToastNotification';
 import { FxLayer } from './components/shared/FxLayer';
 import { CelebrationHost } from './components/shared/CelebrationHost';
 import Modal from './components/shared/Modal';
-import NotificationDrawer from './components/shared/NotificationDrawer';
 import AmbientCharacterLayer from './components/shared/AmbientCharacterLayer';
+import DispatchSheet from './components/shared/DispatchSheet';
 
 import { sfx } from './systems/AudioEngine';
 import { setHapticsEnabled } from './utils/haptics';
@@ -60,6 +63,7 @@ import { pick } from './utils/random';
 function ActiveScreen({ tab }: { tab: TabId }) {
   switch (tab) {
     case 'empire':    return <EmpireScreen />;
+    case 'team':      return <TeamScreen />;
     case 'marketing': return <MarketingScreen />;
     case 'research':  return <ResearchScreen />;
     case 'invest':    return <InvestmentScreen />;
@@ -71,25 +75,40 @@ function ActiveScreen({ tab }: { tab: TabId }) {
 
 // ---- Overlay (header sheets) ------------------------------------------------
 
-const OVERLAY_META: Record<OverlayId, { icon: string; title: string }> = {
-  story:         { icon: '📖', title: 'Saga' },
-  advisors:      { icon: '🃏', title: 'Advisors' },
-  territory:     { icon: '🗺️', title: 'Territory' },
-  settings:      { icon: '⚙️', title: 'Settings' },
-  notifications: { icon: '🔔', title: 'Notifications' },
-};
-
-function OverlaySheet({ id, onClose }: { id: OverlayId; onClose: () => void }) {
-  const meta = OVERLAY_META[id];
-  return (
-    <Modal icon={meta.icon} title={meta.title} onClose={onClose} size="lg">
-      {id === 'story'         && <StoryScreen />}
-      {id === 'advisors'      && <AdvisorScreen />}
-      {id === 'territory'     && <TerritoryScreen />}
-      {id === 'settings'      && <SettingsScreen />}
-      {id === 'notifications' && <NotificationDrawer />}
-    </Modal>
-  );
+function OverlaySheet({
+  id,
+  onClose,
+  onOpenStory,
+}: {
+  id: OverlayId;
+  onClose: () => void;
+  onOpenStory: () => void;
+}) {
+  if (id === 'dispatch') return <DispatchSheet onOpenStory={onOpenStory} onClose={onClose} />;
+  if (id === 'will')     return <WillOverlay onClose={onClose} />;
+  if (id === 'rivals')   return <RivalsOverlay onClose={onClose} />;
+  if (id === 'story') {
+    return (
+      <Modal icon="📖" title="Story Beat" onClose={onClose} size="lg">
+        <StoryScreen />
+      </Modal>
+    );
+  }
+  if (id === 'territory') {
+    return (
+      <Modal icon="🗺️" title="Territory" onClose={onClose} size="lg">
+        <TerritoryScreen />
+      </Modal>
+    );
+  }
+  if (id === 'settings') {
+    return (
+      <Modal icon="⚙️" title="Settings" onClose={onClose} size="lg">
+        <SettingsScreen />
+      </Modal>
+    );
+  }
+  return null;
 }
 
 // ---- Golden-bubble driver: appears every 60-180s, auto-despawns ~12s --------
@@ -213,7 +232,7 @@ function UpdateBanner() {
 
 // ---- The playing experience -------------------------------------------------
 
-type AppPhase = 'intro' | 'home' | 'game';
+type AppPhase = 'intro' | 'loading' | 'home' | 'game';
 
 function Game() {
   const { state, dispatch, offlineSummary } = useGame();
@@ -246,11 +265,10 @@ function Game() {
   }, [hasSetup, state.cofounder.recruited, state.lifetimeEarnings]);
 
   const guidanceQueued = state.guidance.queue.length > 0;
-  const storyQueued    = state.story.queue.length > 0;
-  const blocking = overlay !== null || offlineSummary !== null || storyQueued || guidanceQueued;
+  const blocking = overlay !== null || offlineSummary !== null || guidanceQueued;
 
   const guidanceBeatId =
-    guidanceQueued && overlay === null && offlineSummary === null && !storyQueued
+    guidanceQueued && overlay === null && offlineSummary === null
       ? state.guidance.queue[0]
       : null;
   const guidanceBeat = guidanceBeatId ? getGuidanceBeat(guidanceBeatId) : undefined;
@@ -258,20 +276,28 @@ function Game() {
   const golden = useGoldenBubble(hasSetup && phase === 'game');
   const micro  = useMicroEvents(hasSetup && phase === 'game', blocking);
 
-  // ---- Intro phase -----------------------------------------------------------
+  // ---- Intro phase (RyNo Studios ident, 2 s) ----------------------------------
   if (phase === 'intro') {
     return (
       <>
-        <RyNoIntro
-          onDone={() => setPhase(hasSetup ? 'game' : 'home')}
-        />
+        <RyNoIntro onDone={() => setPhase('loading')} />
         <ToastHost />
       </>
     );
   }
 
-  // ---- Home screen (no save exists) ------------------------------------------
-  if (phase === 'home' && !hasSetup) {
+  // ---- Loading phase (Empire Engine splash, 2 s) ------------------------------
+  if (phase === 'loading') {
+    return (
+      <>
+        <LoadingScreen onDone={() => setPhase('home')} />
+        <ToastHost />
+      </>
+    );
+  }
+
+  // ---- Home screen (always shown after loading; Continue shown if save exists) -
+  if (phase === 'home') {
     return (
       <>
         <HomeScreen
@@ -279,6 +305,7 @@ function Game() {
             setPreferredMode(mode);
             setPhase('game');
           }}
+          onContinue={hasSetup ? () => setPhase('game') : undefined}
         />
         <ToastHost />
         <UpdateBanner />
@@ -306,7 +333,13 @@ function Game() {
         <ActiveScreen tab={tab} />
       </GameShell>
 
-      {overlay && <OverlaySheet id={overlay} onClose={() => setOverlay(null)} />}
+      {overlay && (
+        <OverlaySheet
+          id={overlay}
+          onClose={() => setOverlay(null)}
+          onOpenStory={() => setOverlay('story')}
+        />
+      )}
 
       <WelcomeBackModal />
 

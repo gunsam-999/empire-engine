@@ -9,7 +9,7 @@
   "display_override": ["standalone", "fullscreen"],
   "orientation": "portrait",
   "background_color": "#070b12",
-  "theme_color": "#5a4af2",
+  "theme_color": "#F5C842",
   "lang": "en",
   "dir": "ltr",
   "categories": ["games", "entertainment"],

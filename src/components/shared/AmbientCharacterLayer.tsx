@@ -35,7 +35,7 @@ const CF_LINES_NEUTRAL = [
 ];
 
 const CF_LINES_INCOME_UP = [
-  ["Revenue's climbing. Whatever you just did — do more of it."],
+  ["Revenue's climbing. Whatever you just did - do more of it."],
   ["That's a new high watermark. The team can feel it too."],
   ["Cash flow is singing right now. Let it compound."],
 ];
@@ -47,7 +47,7 @@ const CF_LINES_RIVAL = [
 ];
 
 const CF_LINES_WELCOME_BACK = [
-  ["You're back. Things moved while you were out — check the feed."],
+  ["You're back. Things moved while you were out - check the feed."],
   ["Welcome back. The empire kept running. Let's see what it built."],
   ["Good timing. A few things need your eye."],
 ];

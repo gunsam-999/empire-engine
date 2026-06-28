@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // Empire Engine  -  INDUSTRIES DATA
 // 8 industries, each with 50 facilities (10 per tier x 5 tiers).
 // Facilities are generated from themed name/icon tables via a helper so we
@@ -126,8 +126,8 @@ const SEEDS: IndustrySeed[] = [
       'Chain your fabs to boost the next tier. Overclock active rigs for burst throughput before they throttle.',
     chain: ['Garage', 'Startup', 'Datacenter', 'Cloud Region', 'Quantum Grid'],
     advisorTitles: ['Hacker', 'CTO', 'AI Architect', 'Chief Scientist', 'Singularity Sage'],
-    flavor: 'Where thought becomes silicon and silicon becomes power. Build the infrastructure that runs the world — before the world knows it needs you.',
-    challenge: 'Research never sleeps — and neither do your competitors.',
+    flavor: 'Where thought becomes silicon and silicon becomes power. Build the infrastructure that runs the world - before the world knows it needs you.',
+    challenge: 'Research never sleeps - and neither do your competitors.',
     archetype: 'Systems builders and relentless optimizers',
     tiers: [
       {
@@ -188,7 +188,7 @@ const SEEDS: IndustrySeed[] = [
       'Stack thrust through your launch chain. Hit the launch window for a stacked multiplier, then refuel.',
     chain: ['Hangar', 'Spaceport', 'Orbital Yard', 'Lunar Base', 'Interstellar Dock'],
     advisorTitles: ['Test Pilot', 'Flight Director', 'Chief Engineer', 'Mission Commander', 'Astrarch'],
-    flavor: 'The vacuum between stars is a problem without a solution yet. Provide the solution — at launch windows the world will revolve around.',
+    flavor: 'The vacuum between stars is a problem without a solution yet. Provide the solution - at launch windows the world will revolve around.',
     challenge: 'Timing is everything; the window closes without apology.',
     archetype: 'Long-bet strategists and mission-driven builders',
     tiers: [
@@ -251,7 +251,7 @@ const SEEDS: IndustrySeed[] = [
     chain: ['Street Cart', 'Bistro', 'Fine Dining', 'Restaurant Group', 'Culinary Dynasty'],
     advisorTitles: ['Line Cook', 'Sous Chef', 'Head Chef', 'Restaurateur', 'Culinary Maestro'],
     flavor: 'A meal is a memory in the making. Build the kitchens that create them, the supply chains that sustain them, the empires that carry them across borders.',
-    challenge: 'Quality cannot survive scale — unless you make it your obsession.',
+    challenge: 'Quality cannot survive scale - unless you make it your obsession.',
     archetype: 'Detail-obsessed operators who never forget the dish',
     tiers: [
       {
@@ -312,7 +312,7 @@ const SEEDS: IndustrySeed[] = [
       'Generators feed substations feed the grid. Balance peak load to ride a surge-pricing multiplier.',
     chain: ['Generator', 'Power Plant', 'Grid Station', 'Mega Utility', 'Fusion Authority'],
     advisorTitles: ['Lineworker', 'Plant Manager', 'Grid Operator', 'Utility Director', 'Energy Sovereign'],
-    flavor: 'Power the present, bet on the future. The grid doesn\'t care about ideology — but the people it feeds do. Navigate both.',
+    flavor: 'Power the present, bet on the future. The grid doesn\'t care about ideology - but the people it feeds do. Navigate both.',
     challenge: 'Political exposure arrives with scale and doesn\'t leave.',
     archetype: 'Infrastructure visionaries who think in decades',
     tiers: [
@@ -374,8 +374,8 @@ const SEEDS: IndustrySeed[] = [
       'Ateliers feed boutiques feed houses. Drop a collection at peak hype for a trend multiplier.',
     chain: ['Atelier', 'Boutique', 'Label', 'Fashion House', 'Couture Empire'],
     advisorTitles: ['Seamstress', 'Stylist', 'Designer', 'Creative Director', 'Couturier'],
-    flavor: 'A garment is a statement before it\'s a product. The question isn\'t what you\'re selling — it\'s what you\'re saying with it. Answer carefully.',
-    challenge: 'Identity vs. commercialization — every collection makes the argument again.',
+    flavor: 'A garment is a statement before it\'s a product. The question isn\'t what you\'re selling - it\'s what you\'re saying with it. Answer carefully.',
+    challenge: 'Identity vs. commercialization - every collection makes the argument again.',
     archetype: 'Cultural curators and precision aestheticians',
     tiers: [
       {
@@ -437,7 +437,7 @@ const SEEDS: IndustrySeed[] = [
     chain: ['Wet Lab', 'Sequencer', 'Pharma Wing', 'Genomics Campus', 'Life Foundry'],
     advisorTitles: ['Lab Tech', 'Geneticist', 'Principal Investigator', 'Chief Medical Officer', 'Bio-Visionary'],
     flavor: 'Life is the only market that doesn\'t care about margins. Until it has to. Navigate the space between discovery and delivery.',
-    challenge: 'Ethics holds the scalpel over profit — and it should.',
+    challenge: 'Ethics holds the scalpel over profit - and it should.',
     archetype: 'Patient, precise builders who think in breakthroughs',
     tiers: [
       {
@@ -498,7 +498,7 @@ const SEEDS: IndustrySeed[] = [
       'Creators feed studios feed networks. Catch the algorithm at peak for a virality multiplier.',
     chain: ['Creator', 'Studio', 'Network', 'Media Empire', 'Cultural Monopoly'],
     advisorTitles: ['Editor', 'Producer', 'Showrunner', 'Studio Head', 'Media Mogul'],
-    flavor: 'Attention is the currency; truth is the reserve. When the reserve runs low, the currency devalues. Protect both — or choose.',
+    flavor: 'Attention is the currency; truth is the reserve. When the reserve runs low, the currency devalues. Protect both - or choose.',
     challenge: 'Trust is fragile and rivals know exactly how to break it.',
     archetype: 'Narrative strategists and platform architects',
     tiers: [
@@ -561,7 +561,7 @@ const SEEDS: IndustrySeed[] = [
     chain: ['Plot', 'Farm', 'Agribusiness', 'Agri-Conglomerate', 'Biosphere Authority'],
     advisorTitles: ['Farmhand', 'Agronomist', 'Farm Manager', 'Agribusiness Baron', 'Gaia Steward'],
     flavor: 'The oldest industry is the one nobody romanticizes until it fails. You know it won\'t fail on your watch. Prove it to the world that forgot.',
-    challenge: 'Climate and timing answer to no one — not even you.',
+    challenge: 'Climate and timing answer to no one - not even you.',
     archetype: 'Patient pragmatists who build for the long season',
     tiers: [
       {
@@ -746,7 +746,7 @@ const SEEDS: IndustrySeed[] = [
       'Release a title at cultural peak for a compound engagement surge. The right story at the right moment rewrites the market.',
     chain: ['Indie Creator', 'Production Studio', 'Distribution Network', 'Entertainment Empire', 'Cultural Monopoly'],
     advisorTitles: ['Script Reader', 'Line Producer', 'Executive Producer', 'Studio President', 'Cultural Visionary'],
-    flavor: 'Stories change laws. Stories move markets. Stories are the only thing that outlasts the empire. Build the machine that tells them — carefully.',
+    flavor: 'Stories change laws. Stories move markets. Stories are the only thing that outlasts the empire. Build the machine that tells them - carefully.',
     challenge: 'Influence without propaganda is the tightest wire in the industry.',
     archetype: 'Narrative builders and cultural power brokers',
     tiers: [
@@ -805,10 +805,10 @@ const SEEDS: IndustrySeed[] = [
     currency: '$',
     mechanicName: 'Experience Peak',
     mechanicDesc:
-      'Staff morale directly multiplies guest output. Peak season compounds everything — the secret is the people, not the property.',
+      'Staff morale directly multiplies guest output. Peak season compounds everything - the secret is the people, not the property.',
     chain: ['Inn', 'Hotel', 'Resort', 'Hospitality Group', 'Empire of Experience'],
     advisorTitles: ['Front Desk Agent', 'Guest Relations Manager', 'General Manager', 'VP of Operations', 'Legendary Host'],
-    flavor: 'Every guest arrives carrying a story and leaves making one. The hotel is the space between. Make that space worth remembering — always.',
+    flavor: 'Every guest arrives carrying a story and leaves making one. The hotel is the space between. Make that space worth remembering - always.',
     challenge: 'People business at scale is the hardest art form that exists.',
     archetype: 'Experience curators and detail perfectionists who build for memory',
     tiers: [
